@@ -1,0 +1,40 @@
+{
+  "name": "learn-react-native-nguyen",
+  "author": {
+    "name": "Nguyen IT",
+    "url": "https://hoidanit.vn"
+  },
+  "version": "1.0.0",
+  "main": "expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "dev": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.23.1",
+    "@react-native-community/geolocation": "^3.4.0",
+    "@react-native-picker/picker": "^2.11.0",
+    "@react-navigation/bottom-tabs": "^7.3.2",
+    "@react-navigation/native": "^7.0.18",
+    "@react-navigation/stack": "^7.1.2",
+    "date-fns": "^2.30.0",
+    "expo": "~52.0.38",
+    "expo-router": "^4.0.20",
+    "expo-status-bar": "~2.0.1",
+    "react": "18.3.1",
+    "react-hook-form": "^7.55.0",
+    "react-native": "0.76.7",
+    "react-native-calendars": "^1.1310.0",
+    "react-native-linking": "^0.0.0",
+    "react-native-maps": "^1.18.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@types/react": "~18.3.12",
+    "typescript": "5.3.3"
+  },
+  "private": true
+}
