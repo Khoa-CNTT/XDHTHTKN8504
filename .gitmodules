@@ -1,0 +1,12 @@
+[submodule "elder-care-user-mobile2"]
+	path = elder-care-user-mobile2
+	url = https://github.com/LuuNv025/elder-care-user-mobile2.git
+[submodule "elder-care-staff-mobile"]
+	path = elder-care-staff-mobile
+	url = https://github.com/LuuNv025/elder-care-staff-mobile.git
+[submodule "elder-care-api"]
+	path = elder-care-api
+	url = https://github.com/LuuNv025/elder-care-api.git
+[submodule "elder-care-dashboard"]
+	path = elder-care-dashboard
+	url = https://github.com/LuuNv025/elder-care-dashboard.git
