@@ -1,5 +1,6 @@
 import React from "react";
 import Layout from "../Layout";
+import { FaFacebookMessenger } from "react-icons/fa";
 import {
   BsArrowDownLeft,
   BsArrowDownRight,
@@ -17,10 +18,31 @@ import {
 } from "../components/Datas";
 import { Transactiontable } from "../components/Tables";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const navigate = useNavigate();
+
+  const onCloseModal = () => {
+    setIsOpen(false);
+  };
+  const preview = () => {
+    navigate(`/chat`);
+  };
   return (
     <Layout>
+      {/* {messger} */}
+      <button
+        onClick={() => {
+          setIsOpen(true);
+          preview();
+        }}
+        className="w-16 animate-bounce h-16 border border-border z-50 bg-subMain text-white rounded-full flex-colo fixed bottom-8 right-12 button-fb"
+      >
+        <FaFacebookMessenger className="text-2xl" />
+      </button>
+
       {/* boxes */}
       <div className="w-full grid xl:grid-cols-4 gap-6 lg:grid-cols-3 sm:grid-cols-2 grid-cols-1">
         {dashboardCards.map((card, index) => (
@@ -132,7 +154,7 @@ function Dashboard() {
             ))}
           </div>
           {/* today apointments */}
-          <div className="bg-white rounded-xl border-[1px] border-border p-5 xl:mt-6">
+          {/* <div className="bg-white rounded-xl border-[1px] border-border p-5 xl:mt-6">
             <h2 className="text-sm mb-4 font-medium">Cuộc hẹn hôm nay</h2>
             {appointmentsData.map((appointment, index) => (
               <div
@@ -177,7 +199,7 @@ function Dashboard() {
                 </Link>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
       </div>
     </Layout>
