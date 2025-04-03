@@ -64,14 +64,14 @@ function Nurses() {
             />
           </div>
           {/* Link chuyển đến trang thanh toán chung */}
-          <div className="md:col-span-5 grid  items-center gap-4 bg-subMain text-white text-sm font-medium px-2 py-2 rounded w-fit">
+          {/* <div className="md:col-span-5 grid  items-center gap-4 bg-subMain text-white text-sm font-medium px-2 py-2 rounded w-fit">
             <Link
               to="/nurses/payroll"
               className="text-white  px-4 py-2 rounded-md text-sm font-semibold"
             >
               Go to Payroll
             </Link>
-          </div>
+          </div> */}
 
           {/* export */}
           <Button
