@@ -31,7 +31,7 @@ app.get('/', (req, res) => {
 });
 
 // use routes
-app.use('.api/v1/auth', AuthRouter)
+app.use('/api/v1/auth', AuthRouter)
 
 const port = process.env.SERVER_PORT || 8080;
 const listener = app.listen(port, () => {
