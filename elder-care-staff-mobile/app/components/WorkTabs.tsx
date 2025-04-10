@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import PagerView from "react-native-pager-view";
-import WorkList from "./WorkList";
+import WorkList from "./home/WorkList" // Assuming WorkList is in the same directory
 
 const WorkTabs = () => {
   const [page, setPage] = useState(0);
