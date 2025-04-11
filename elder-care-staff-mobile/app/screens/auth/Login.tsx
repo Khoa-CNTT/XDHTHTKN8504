@@ -1,3 +1,6 @@
+import API from "@/utils/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Alert } from "react-native";
 import React, { useState } from "react";
 import {
   View,
@@ -12,33 +15,60 @@ import { useRouter } from "expo-router";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 
+// Định nghĩa dữ liệu form
 type FormData = {
   phone: string;
   password: string;
 };
 
+// Định nghĩa kiểu dữ liệu trả về từ API
+type LoginResponse = {
+  token: string;
+  user: {
+    id: number;
+    name: string;
+    // Bổ sung các trường nếu cần
+  };
+};
+
 export default function LoginScreen() {
   const { control, handleSubmit } = useForm<FormData>();
   const router = useRouter();
-  const [secureText, setSecureText] = useState(true); // Trạng thái ẩn/hiện mật khẩu
+  const [secureText, setSecureText] = useState(true); // Ẩn/hiện mật khẩu
 
   const togglePasswordVisibility = () => {
     setSecureText(!secureText);
   };
 
-  const onSubmit = (data: FormData) => {
-    console.log("Login Data:", data);
+  const onSubmit = async (data: FormData) => {
+    try {
+      const response = await API.post<LoginResponse>("/auth/login", {
+        email: `0${data.phone}@eldercare.vn`,
+        password: data.password,
+      });
+
+      const { token, user } = response.data;
+
+      await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("user", JSON.stringify(user));
+
+      router.replace("/screens/tabs/home");
+    } catch (error: any) {
+      console.log("Login error:", error);
+      Alert.alert(
+        "Lỗi đăng nhập",
+        error?.response?.data?.message || "Đã xảy ra lỗi"
+      );
+    }
   };
 
   return (
     <View style={styles.container}>
-      {/* Logo */}
       <Image
         source={require("../../../assets/images/logo.png")}
         style={styles.logo}
       />
 
-      {/* Tiêu đề */}
       <Text style={styles.title}>
         Chào mừng đến với <Text style={styles.highlight}>ElderCare</Text>
       </Text>
@@ -48,7 +78,6 @@ export default function LoginScreen() {
         bạn và gia đình nhé!
       </Text>
 
-      {/* Ô nhập số điện thoại */}
       <View style={styles.phoneContainer}>
         <TextInput style={styles.countryCode} value="+84" editable={false} />
         <Controller
@@ -67,7 +96,6 @@ export default function LoginScreen() {
         />
       </View>
 
-      {/* Ô nhập mật khẩu có icon ẩn/hiện */}
       <View style={styles.passwordContainer}>
         <Controller
           control={control}
@@ -95,14 +123,12 @@ export default function LoginScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Quên mật khẩu */}
       <TouchableOpacity
         onPress={() => router.push("/screens/auth/ForgotPassword")}
       >
         <Text style={styles.forgotPassword}>Quên mật khẩu?</Text>
       </TouchableOpacity>
 
-      {/* Nút đăng nhập */}
       <TouchableOpacity
         style={styles.loginButton}
         onPress={handleSubmit(onSubmit)}
@@ -110,17 +136,13 @@ export default function LoginScreen() {
         <Text style={styles.loginButtonText}>Đăng nhập</Text>
       </TouchableOpacity>
 
-      {/* Đăng ký */}
-      <TouchableOpacity
-        onPress={() => router.push("/screens/auth/Register")}
-      >
+      <TouchableOpacity onPress={() => router.push("/screens/auth/Register")}>
         <Text style={styles.registerText}>
           Bạn chưa có tài khoản?{" "}
           <Text style={styles.registerLink}>Đăng ký ngay</Text>
         </Text>
       </TouchableOpacity>
 
-      {/* Hỗ trợ */}
       <View style={styles.supportContainer}>
         <Text style={styles.supportText}>Bạn cần liên hệ hỗ trợ?</Text>
         <View style={styles.supportIcons}>
