@@ -1,5 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Image, Dimensions, Animated } from 'react-native';
+import { View, Text, StyleSheet, Image, Dimensions, Animated, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+
+type RootStackParamList = {
+  Home: undefined;
+  MyBookings: undefined;
+  Profile: undefined;
+  Map: undefined;
+  DoctorDetails: { doctor: any };
+  BookAppointment: { doctor: any };
+  FeaturedService: undefined; // Add FeaturedServiceScreen to the navigation stack
+  AllDoctors: undefined;
+};
+
+type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 const bannerData = [
   {
@@ -33,6 +48,7 @@ const Banner: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
   const bannerRef = useRef<any>(null);
+  const navigation = useNavigation<NavigationProp>();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -47,14 +63,21 @@ const Banner: React.FC = () => {
     return () => clearInterval(timer);
   }, [activeIndex]);
 
+  const handleBannerPress = () => {
+    // navigation.navigate('AllDoctors'); 
+    navigation.navigate('FeaturedService'); // ssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+    
+    // Navigate to FeaturedServiceScreen
+  };
+
   const renderItem = ({ item }: { item: typeof bannerData[0] }) => (
-    <View style={[styles.slide, { backgroundColor: item.backgroundColor }]}>
+    <TouchableOpacity onPress={handleBannerPress} style={[styles.slide, { backgroundColor: item.backgroundColor }]}>
       <View style={styles.textContainer}>
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.subtitle}>{item.subtitle}</Text>
       </View>
       <Image source={item.image} style={styles.image} resizeMode="cover" />
-    </View>
+    </TouchableOpacity>
   );
 
   return (
