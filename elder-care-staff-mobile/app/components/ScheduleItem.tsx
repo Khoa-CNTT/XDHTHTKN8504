@@ -1,30 +1,26 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-
-type StatusType = "done" | "progress" | "pending";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
 interface ScheduleItemProps {
   time: string;
   title: string;
   details: string;
+  onPress?: () => void; // 👈 Thêm dòng này
 }
-
 
 const ScheduleItem: React.FC<ScheduleItemProps> = ({
   time,
   title,
   details,
+  onPress, // 👈 Nhận prop này
 }) => {
   return (
-    <View style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={onPress}>
       <Text style={styles.time}>{time}</Text>
       <View style={styles.content}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.details}>{details}</Text>
       </View>
-      
-    </View>
+    </TouchableOpacity>
   );
 };
 
