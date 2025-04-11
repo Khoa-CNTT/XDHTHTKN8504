@@ -1,34 +1,17 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import type { StackNavigationOptions } from '@react-navigation/stack';
-
-import OnboardingScreen from '../screens/OnboardingScreen';
-import LoginScreen from '../screens/LoginScreen';
-import RegisterScreen from '../screens/Register';
-import ForgotPassword from '../screens/ForgotPassword';
-import OTPVerificationScreen from '../screens/OTPVerificationScreen';
-
-import HomeScreen from "../screens/HomeScreen";
-import AllDoctors from "../screens/AllDoctors";
-import DoctorDetails from "../screens/DoctorDetails";
-import BookAppointment from "../screens/BookAppointment";
-import MyBookings from "../screens/MyBookings";
-import Profile from "../screens/Profile";
-import Favorites from "../screens/Favorites";
-import Notifications from "../screens/Notifications";
-import MapScreen from "../screens/MapScreen";
-import FeaturedServiceScreen from '../screens/FeaturedServiceScreen';
-import PaymentScreen from '../screens/PaymentScreen';
-
-
+import HomeScreen from '../screens/HomeScreen';
+import AllDoctors from '../screens/AllDoctors';
+import DoctorDetails from '../screens/DoctorDetails';
+import BookAppointment from '../screens/BookAppointment';
+import MyBookings from '../screens/MyBookings';
+import Profile from '../screens/Profile';
+import Favorites from '../screens/Favorites';
+import Notifications from '../screens/Notifications';
+import MapScreen from '../screens/MapScreen';
 
 export type RootStackParamList = {
-  Onboarding: undefined;
-  Login: undefined;
-  Register: undefined;
-  ForgotPassword: undefined;
-  OTPVerification: undefined;
-  // Add other screens here
   Home: undefined;
   AllDoctors: undefined;
   DoctorDetails: { doctor: any };
@@ -38,8 +21,6 @@ export type RootStackParamList = {
   Favorites: undefined;
   Notifications: undefined;
   Map: undefined;
-  FeaturedService: undefined;
-  Payment: undefined; // Add Payment screen
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -48,19 +29,12 @@ const defaultScreenOptions: StackNavigationOptions = {
   headerShown: false,
 };
 
-const StackNavigator = (): JSX.Element => {
+const StackNavigator = () => {
   return (
     <Stack.Navigator 
       id={undefined}
       screenOptions={defaultScreenOptions}
     >
-      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
-      <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
-      {/* Add other screens here */}
-
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="AllDoctors" component={AllDoctors} />
       <Stack.Screen name="DoctorDetails" component={DoctorDetails} />
@@ -70,9 +44,6 @@ const StackNavigator = (): JSX.Element => {
       <Stack.Screen name="Favorites" component={Favorites} />
       <Stack.Screen name="Notifications" component={Notifications} />
       <Stack.Screen name="Map" component={MapScreen} />
-      <Stack.Screen name="FeaturedService" component={FeaturedServiceScreen} />
-      <Stack.Screen name="Payment" component={PaymentScreen} />
-      {/* Add other screens here */}
     </Stack.Navigator>
   );
 };
