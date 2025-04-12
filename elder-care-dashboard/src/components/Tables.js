@@ -39,7 +39,7 @@ export function Transactiontable({ data, action, functions }) {
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
           <th className={thclass}>#</th>
-          <th className={thclass}>Bệnh nhân</th>
+          <th className={thclass}>Khách hàng</th>
           <th className={thclass}>Ngày</th>
           <th className={thclass}>Trạng thái</th>
           <th className={thclass}>
@@ -141,7 +141,7 @@ export function InvoiceTable({ data }) {
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
           <th className={thclass}>Mã hóa đơn</th>
-          <th className={thclass}>Bệnh nhân</th>
+          <th className={thclass}>khách hàng</th>
           <th className={thclass}>Ngày tạo</th>
           <th className={thclass}>Ngày đến hạn</th>
           <th className={thclass}>
@@ -361,7 +361,7 @@ export function PatientTable({ data, functions, used }) {
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
           <th className={thclasse}>#</th>
-          <th className={thclasse}>Bệnh Nhân</th>
+          <th className={thclasse}>khách hàng</th>
           <th className={thclasse}>Ngày Tạo</th>
           <th className={thclasse}>Giới Tính</th>
           {!used && (
@@ -456,7 +456,7 @@ export function DoctorsTable({ data, functions, doctor }) {
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
           <th className={thclass}>#</th>
-          <th className={thclass}>{doctor ? "Bác Sĩ" : "Y Tá"}</th>
+          <th className={thclass}>{doctor ? "Điều dưỡng" : "Y Tá"}</th>
           <th className={thclass}>Ngày Tạo</th>
           <th className={thclass}>Điện Thoại</th>
           <th className={thclass}>Chức Danh</th>
@@ -519,7 +519,7 @@ export function AppointmentTable({ data, functions, doctor }) {
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
           <th className={thclass}>Ngày</th>
-          <th className={thclass}>{doctor ? "Bệnh nhân" : "Bác sĩ"}</th>
+          <th className={thclass}>{doctor ? "khách hàng" : "Điều dưỡng"}</th>
           <th className={thclass}>Trạng thái</th>
           <th className={thclass}>Thời gian</th>
 
@@ -586,7 +586,7 @@ export function PaymentTable({ data, functions, doctor }) {
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
           <th className={thclass}>Ngày</th>
-          <th className={thclass}>{doctor ? "Bệnh nhân" : "Bác sĩ"}</th>
+          <th className={thclass}>{doctor ? "khách hàng" : "Điều dưỡng"}</th>
           <th className={thclass}>Trạng thái</th>
           <th className={thclass}>Số tiền</th>
           <th className={thclass}>Phương thức</th>

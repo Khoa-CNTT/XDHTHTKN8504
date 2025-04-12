@@ -337,11 +337,11 @@ export const sortsDatas = {
     },
     {
       id: 2,
-      name: "Bệnh nhân mới nhất",
+      name: "khách hàng mới nhất",
     },
     {
       id: 3,
-      name: "Bệnh nhân cũ nhất",
+      name: "khách hàng cũ nhất",
     },
   ],
   genderFilter: [
@@ -858,7 +858,7 @@ export const transactionData = [
 export const dashboardCards = [
   {
     id: 1,
-    title: "Tổng số bệnh nhân",
+    title: "Tổng số khách hàng",
     icon: TbUsers,
     value: 1600,
     percent: 45.06,
@@ -926,25 +926,25 @@ export const shareData = [
     id: 1,
     icon: HiOutlineMail,
     title: "Email",
-    description: "Gửi đến địa chỉ email của bệnh nhân",
+    description: "Gửi đến địa chỉ email của khách hàng",
   },
   {
     id: 2,
     icon: MdOutlineTextsms,
     title: "SMS",
-    description: "Gửi đến số điện thoại của bệnh nhân",
+    description: "Gửi đến số điện thoại của khách hàng",
   },
   {
     id: 3,
     icon: FaWhatsapp,
     title: "WhatsApp",
-    description: "Gửi đến tài khoản WhatsApp của bệnh nhân",
+    description: "Gửi đến tài khoản WhatsApp của khách hàng",
   },
   {
     id: 4,
     icon: FaTelegramPlane,
     title: "Telegram",
-    description: "Gửi đến tài khoản Telegram của bệnh nhân",
+    description: "Gửi đến tài khoản Telegram của khách hàng",
   },
 ];
 
