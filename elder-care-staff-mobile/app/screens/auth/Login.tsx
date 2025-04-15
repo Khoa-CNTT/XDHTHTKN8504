@@ -14,6 +14,7 @@ import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "expo-router";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
+import useAuthStore from "../../stores/authStore"; // Dùng Zustand store
 
 // Định nghĩa dữ liệu form
 type FormData = {
@@ -44,8 +45,12 @@ export default function LoginScreen() {
     setSecureText(!secureText);
   };
 
+  // Sử dụng Zustand store để lưu thông tin đăng nhập
+  const login = useAuthStore((state) => state.login);
+
   const onSubmit = async (data: FormData) => {
     try {
+      // Gọi API đăng nhập
       const response = await API.post<LoginResponse>("/auth/login", {
         phone: data.phone,
         password: data.password,
@@ -53,9 +58,14 @@ export default function LoginScreen() {
 
       const { token, user } = response.data;
 
+      // Lưu thông tin vào AsyncStorage
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("user", JSON.stringify(user));
 
+      // Lưu thông tin đăng nhập vào Zustand store
+      login(data.phone, data.password);
+
+      // Chuyển hướng sau khi đăng nhập thành công
       router.replace("/screens/tabs/home");
     } catch (error: any) {
       console.log("Login error:", error);
