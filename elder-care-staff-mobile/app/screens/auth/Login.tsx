@@ -32,7 +32,11 @@ type LoginResponse = {
 };
 
 export default function LoginScreen() {
-  const { control, handleSubmit } = useForm<FormData>();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>();
   const router = useRouter();
   const [secureText, setSecureText] = useState(true); // Ẩn/hiện mật khẩu
 
@@ -43,7 +47,7 @@ export default function LoginScreen() {
   const onSubmit = async (data: FormData) => {
     try {
       const response = await API.post<LoginResponse>("/auth/login", {
-        email: `0${data.phone}@eldercare.vn`,
+        phone: data.phone,
         password: data.password,
       });
 
@@ -74,8 +78,7 @@ export default function LoginScreen() {
       </Text>
 
       <Text style={styles.subtitle}>
-        Đăng ký hay đăng nhập để sử dụng dịch vụ và quản lý hồ sơ sức khỏe của
-        bạn và gia đình nhé!
+        Đăng nhập để sử dụng dịch vụ của chúng tôi!
       </Text>
 
       <View style={styles.phoneContainer}>
@@ -95,6 +98,9 @@ export default function LoginScreen() {
           )}
         />
       </View>
+      {errors.phone && (
+        <Text style={styles.errorText}>{errors.phone.message}</Text>
+      )}
 
       <View style={styles.passwordContainer}>
         <Controller
@@ -122,25 +128,15 @@ export default function LoginScreen() {
           />
         </TouchableOpacity>
       </View>
-
-      <TouchableOpacity
-        onPress={() => router.push("/screens/auth/ForgotPassword")}
-      >
-        <Text style={styles.forgotPassword}>Quên mật khẩu?</Text>
-      </TouchableOpacity>
+      {errors.password && (
+        <Text style={styles.errorText}>{errors.password.message}</Text>
+      )}
 
       <TouchableOpacity
         style={styles.loginButton}
         onPress={handleSubmit(onSubmit)}
       >
         <Text style={styles.loginButtonText}>Đăng nhập</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => router.push("/screens/auth/Register")}>
-        <Text style={styles.registerText}>
-          Bạn chưa có tài khoản?{" "}
-          <Text style={styles.registerLink}>Đăng ký ngay</Text>
-        </Text>
       </TouchableOpacity>
 
       <View style={styles.supportContainer}>
@@ -196,7 +192,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#F2F2F2",
     borderRadius: 8,
-    marginBottom: 12,
+    marginBottom: 4,
     overflow: "hidden",
   },
   countryCode: {
@@ -218,7 +214,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#F2F2F2",
     borderRadius: 8,
-    marginBottom: 12,
+    marginTop: 12,
+    marginBottom: 4,
     paddingRight: 10,
   },
   passwordInput: {
@@ -229,31 +226,16 @@ const styles = StyleSheet.create({
   eyeIcon: {
     padding: 10,
   },
-  forgotPassword: {
-    textAlign: "right",
-    color: "#28A745",
-    marginBottom: 20,
-    fontSize: 14,
-  },
   loginButton: {
     backgroundColor: "#28A745",
     padding: 14,
     borderRadius: 8,
     alignItems: "center",
+    marginTop: 20,
   },
   loginButtonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
-  },
-  registerText: {
-    textAlign: "center",
-    marginTop: 15,
-    color: "#666",
-    fontSize: 14,
-  },
-  registerLink: {
-    color: "#28A745",
     fontWeight: "bold",
   },
   supportContainer: {
@@ -269,5 +251,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 10,
     gap: 40,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 13,
+    marginLeft: 4,
+    marginBottom: 4,
   },
 });
