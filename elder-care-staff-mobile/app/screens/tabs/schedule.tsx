@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
+import JobDetailModal from "@/app/components/JobDetailModal";
+
 import DaySelector from "@/app/components/DaySelector";
 import ScheduleItem from "@/app/components/ScheduleItem";
 
@@ -15,6 +17,7 @@ const getWeekDays = () => {
     ).getDate(),
   }));
 };
+
 
 const scheduleData = [
   {
@@ -52,7 +55,12 @@ const scheduleData = [
 export default function ScheduleScreen() {
   const [weekDays] = useState(getWeekDays());
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const handleSelectJob = (job: any) => {
+    setSelectedJob(job);
+    setModalVisible(true);
+  };
   return (
     <View style={styles.container}>
       <Text style={styles.headerTitle}>Lịch làm việc</Text>
@@ -64,7 +72,15 @@ export default function ScheduleScreen() {
       <FlatList
         data={scheduleData}
         keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => <ScheduleItem {...item} />}
+        renderItem={({ item }) => (
+          <ScheduleItem {...item} onPress={() => handleSelectJob(item)} />
+        )}
+      />
+      <JobDetailModal
+        visible={modalVisible}
+        
+        onClose={() => setModalVisible(false)}
+        job={selectedJob}
       />
     </View>
   );
