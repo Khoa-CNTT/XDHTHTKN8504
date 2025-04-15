@@ -4,14 +4,14 @@ interface ScheduleItemProps {
   time: string;
   title: string;
   details: string;
-  onPress?: () => void; // 👈 Thêm dòng này
+  onPress?: () => void; 
 }
 
 const ScheduleItem: React.FC<ScheduleItemProps> = ({
   time,
   title,
   details,
-  onPress, // 👈 Nhận prop này
+  onPress, 
 }) => {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>

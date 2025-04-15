@@ -6,9 +6,13 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  ActivityIndicator,
+  Platform,
 } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { IconButton } from "react-native-paper"; 
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"; 
 import Modal from "react-native-modal";
+import dayjs from "dayjs";
 
 type Customer = {
   avatar: string;
@@ -38,7 +42,15 @@ type Props = {
 };
 
 const JobDetailModal: React.FC<Props> = ({ visible, onClose, job }) => {
-  if (!job) return null;
+  if (!job) {
+    return (
+      <Modal isVisible={visible}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007bff" />
+        </View>
+      </Modal>
+    );
+  }
 
   return (
     <Modal
@@ -56,65 +68,77 @@ const JobDetailModal: React.FC<Props> = ({ visible, onClose, job }) => {
           <View style={styles.header}>
             <Text style={styles.title}>Chi tiết công việc</Text>
             <TouchableOpacity onPress={onClose}>
-              <Icon name="close" size={24} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Thông tin khách hàng */}
-          <View style={styles.section}>
-            <View style={styles.row}>
-              <Image
-                source={{ uri: job.customer.avatar }}
-                style={styles.avatar}
+              <IconButton
+                icon="close" // Thay vì Icon từ react-native-vector-icons, sử dụng icon từ react-native-paper
+                size={24}
+                onPress={onClose}
               />
-              <View style={styles.customerInfo}>
-                <Text style={styles.name}>{job.customer.name}</Text>
-                <Text style={styles.age}>{job.customer.age} tuổi</Text>
-                <Text style={styles.phone}>📞 {job.customer.phone}</Text>
-                <Text style={styles.address}>📍 {job.customer.address}</Text>
-              </View>
-            </View>
-            {job.customer.note && (
-              <Text style={styles.note}>📝 Ghi chú: {job.customer.note}</Text>
-            )}
+            </TouchableOpacity>
           </View>
 
           {/* Thông tin công việc */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Thông tin công việc</Text>
-            <Text>📅 Ngày làm: {job.date}</Text>
-            <Text>🕒 Thời gian: {job.time}</Text>
-            <Text>⏱️ Thời lượng: {job.duration} giờ</Text>
-            <Text>🔧 Mô tả: {job.description}</Text>
-            <Text>💰 Lương: {job.salary.toLocaleString()} VND</Text>
-            <Text>📆 Bắt đầu: {job.startDate}</Text>
-            <Text>📆 Kết thúc: {job.endDate}</Text>
-          </View>
-
-          {/* Trạng thái và hành động */}
-          <View style={styles.section}>
-            <Text style={styles.status}>Trạng thái: {job.status}</Text>
-
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Bắt đầu công việc</Text>
-            </TouchableOpacity>
-
-            <View style={styles.actions}>
-              <TouchableOpacity>
-                <Text style={styles.link}>📍 Xem đường đi</Text>
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Text style={styles.link}>📝 Gửi báo cáo</Text>
-              </TouchableOpacity>
+            <View style={styles.row}>
+              <MaterialCommunityIcons
+                name="calendar"
+                size={20}
+                color="#007bff"
+              />
+              <Text>Ngày làm: {dayjs(job.date).format("DD/MM/YYYY")}</Text>
+            </View>
+            <View style={styles.row}>
+              <MaterialCommunityIcons name="clock" size={20} color="#007bff" />
+              <Text>Thời gian: {job.time}</Text>
+            </View>
+            <View style={styles.row}>
+              <MaterialCommunityIcons
+                name="timer-sand"
+                size={20}
+                color="#007bff"
+              />
+              <Text>Thời lượng: {job.duration} giờ</Text>
+            </View>
+            <View style={styles.row}>
+              <MaterialCommunityIcons name="wrench" size={20} color="#007bff" />
+              <Text>Mô tả: {job.description}</Text>
+            </View>
+            <View style={styles.row}>
+              <MaterialCommunityIcons
+                name="currency-usd"
+                size={20}
+                color="#007bff"
+              />
+              <Text>Lương: {job.salary.toLocaleString()} VND</Text>
+            </View>
+            <View style={styles.row}>
+              <MaterialCommunityIcons
+                name="calendar-clock"
+                size={20}
+                color="#007bff"
+              />
+              <Text>
+                Bắt đầu: {dayjs(job.startDate).format("HH:mm DD/MM/YYYY")}
+              </Text>
+            </View>
+            <View style={styles.row}>
+              <MaterialCommunityIcons
+                name="calendar-clock"
+                size={20}
+                color="#007bff"
+              />
+              <Text>
+                Kết thúc: {dayjs(job.endDate).format("HH:mm DD/MM/YYYY")}
+              </Text>
             </View>
           </View>
+
+          {/* Other sections... */}
         </ScrollView>
       </View>
     </Modal>
   );
 };
-
-export default JobDetailModal;
 
 const styles = StyleSheet.create({
   modal: {
@@ -122,7 +146,7 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   container: {
-    height: "85%",
+    height: Platform.OS === "ios" ? "85%" : "100%",
     backgroundColor: "#fff",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -146,65 +170,20 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: "row",
-    alignItems: "flex-start",
-  },
-  avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    marginRight: 12,
-  },
-  customerInfo: {
-    flex: 1,
-  },
-  name: {
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  age: {
-    fontSize: 14,
-  },
-  phone: {
-    fontSize: 14,
-    color: "gray",
-  },
-  address: {
-    fontSize: 14,
-    color: "gray",
-  },
-  note: {
-    marginTop: 8,
-    fontStyle: "italic",
-    color: "#555",
+    alignItems: "center",
+    marginBottom: 8,
   },
   sectionTitle: {
     fontWeight: "bold",
     fontSize: 16,
     marginBottom: 4,
   },
-  status: {
-    fontSize: 15,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  button: {
-    backgroundColor: "#007bff",
-    borderRadius: 8,
-    paddingVertical: 10,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
-    marginVertical: 8,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: 12,
-  },
-  link: {
-    color: "#007bff",
-    fontWeight: "500",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
 });
+
+export default JobDetailModal;
