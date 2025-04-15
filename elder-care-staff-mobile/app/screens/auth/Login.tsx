@@ -42,8 +42,8 @@ export default function LoginScreen() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await API.post<LoginResponse>("/auth/login", {
-        email: `0${data.phone}@eldercare.vn`,
+      const response = await API.post<LoginResponse>("/login", {
+        phone: data.phone,
         password: data.password,
       });
 
@@ -74,8 +74,7 @@ export default function LoginScreen() {
       </Text>
 
       <Text style={styles.subtitle}>
-        Đăng ký hay đăng nhập để sử dụng dịch vụ và quản lý hồ sơ sức khỏe của
-        bạn và gia đình nhé!
+        Đăng nhập để sử dụng dịch vụ của chúng tôi!
       </Text>
 
       <View style={styles.phoneContainer}>
@@ -122,25 +121,11 @@ export default function LoginScreen() {
           />
         </TouchableOpacity>
       </View>
-
-      <TouchableOpacity
-        onPress={() => router.push("/screens/auth/ForgotPassword")}
-      >
-        <Text style={styles.forgotPassword}>Quên mật khẩu?</Text>
-      </TouchableOpacity>
-
       <TouchableOpacity
         style={styles.loginButton}
         onPress={handleSubmit(onSubmit)}
       >
         <Text style={styles.loginButtonText}>Đăng nhập</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => router.push("/screens/auth/Register")}>
-        <Text style={styles.registerText}>
-          Bạn chưa có tài khoản?{" "}
-          <Text style={styles.registerLink}>Đăng ký ngay</Text>
-        </Text>
       </TouchableOpacity>
 
       <View style={styles.supportContainer}>
