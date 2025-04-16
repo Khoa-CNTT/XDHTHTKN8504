@@ -18,5 +18,5 @@ export default function Index() {
     return <Redirect href="/screens/tabs/home" />;
   }
   // Nếu chưa, chuyển hướng tới trang login
-  return <Redirect href="/screens/auth/Login" />;
+  return <Redirect href="/screens/chat" />;
 }
