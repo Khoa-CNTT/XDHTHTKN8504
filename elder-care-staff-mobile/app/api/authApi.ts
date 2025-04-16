@@ -1,5 +1,5 @@
 import API from "@/utils/api";
-import { LoginResponse } from "../_types/auth";
+import { LoginResponse } from "../.types/auth";
 
  const loginApi = async (
   phone: string,
