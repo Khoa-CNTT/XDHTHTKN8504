@@ -7,6 +7,16 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import morgan from "morgan";
 import AuthRouter from "./src/routes/authRouter.js";
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import morgan from 'morgan';
+import AuthRouter from './src/routes/authRouter.js';
+import OtpRouter from './src/routes/otpRouter.js';
+import ServiceRouter from './src/routes/serviceRouter.js';
+import ProfileRouter from './src/routes/profileRouter.js';
+import BookingRouter from './src/routes/bookingRouter.js';
+import DoctorRouter from './src/routes/doctorRouter.js';
+import NurseRouter from './src/routes/nurseRouter.js';
 
 const app = express();
 
@@ -33,6 +43,13 @@ app.get("/", (req, res) => {
 
 // use routes
 app.use("/api/v1/auth", AuthRouter);
+app.use('/api/v1/auth', AuthRouter)
+app.use('/api/v1/otp', OtpRouter)
+app.use('/api/v1/services', ServiceRouter)
+app.use('/api/v1/profiles', ProfileRouter)
+app.use('/api/v1/bookings', BookingRouter)
+app.use('/api/v1/doctors', DoctorRouter)
+app.use('/api/v1/nurses', NurseRouter)
 
 const port = process.env.SERVER_PORT || 8080;
 const listener = app.listen(port, () => {

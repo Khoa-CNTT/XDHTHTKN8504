@@ -7,6 +7,7 @@ import axios from "axios";
 dotenv.config();
 
 const authController = {
+<<<<<<< HEAD
   // ADD USER
   registerUser: async (req, res) => {
     try {
@@ -24,6 +25,23 @@ const authController = {
       if (!emailRegex.test(email)) {
         return res.status(400).json({ message: "Email không hợp lệ" });
       }
+=======
+    // ADD USER
+    registerUser: async (req, res) => {
+        try {
+            const { phone, password, role } = req.body;
+
+            // Kiểm tra các trường bắt buộc
+            if (!phone || !password || !role) {
+                return res.status(400).json({ message: "Vui lòng điền đủ phone, password và role" });
+            }
+
+            // Kiểm tra định dạng phone
+            const phoneRegex = /^(0|\+84)\d{9,10}$/;
+            if (!phoneRegex.test(phone)) {
+                return res.status(400).json({ message: "Số điện thoại không hợp lệ" });
+            }
+>>>>>>> abd0158 (Hoan thien chuc nang Dat lich, tao ho so)
 
       // Kiểm tra role hợp lệ
       const validRoles = ["family_member", "nurse", "admin", "doctor"];
@@ -31,16 +49,25 @@ const authController = {
         return res.status(400).json({ message: "Role không hợp lệ" });
       }
 
+<<<<<<< HEAD
       // Kiểm tra email đã tồn tại
       const existingUser = await User.findOne({ email });
       if (existingUser) {
         return res.status(400).json({ message: "Email đã được sử dụng" });
       }
+=======
+            // Kiểm tra phone đã tồn tại
+            const existingUser = await User.findOne({ phone });
+            if (existingUser) {
+                return res.status(400).json({ message: "Số điện thoại đã được sử dụng" });
+            }
+>>>>>>> abd0158 (Hoan thien chuc nang Dat lich, tao ho so)
 
       // Hash password
       const saltRounds = 10;
       const hashedPassword = await bcryptjs.hash(password, saltRounds);
 
+<<<<<<< HEAD
       // Tạo user mới
       const newUser = new User({
         email,
@@ -48,6 +75,14 @@ const authController = {
         role,
         phone: phone || "",
       });
+=======
+            // Tạo user mới
+            const newUser = new User({
+                phone,
+                password: hashedPassword,
+                role,
+            });
+>>>>>>> abd0158 (Hoan thien chuc nang Dat lich, tao ho so)
 
       // Lưu vào database
       const savedUser = await newUser.save();
@@ -71,6 +106,7 @@ const authController = {
     try {
       const { email, password } = req.body;
 
+<<<<<<< HEAD
       const userExists = await User.findOne({ email });
       if (!userExists) {
         return res.status(400).json({
@@ -84,6 +120,19 @@ const authController = {
           message: "Mật khẩu không đúng",
         });
       }
+=======
+    // LOGIN USER
+    loginUser: async (req, res) => {
+        try {
+            const { phone, password } = req.body;
+
+            const userExists = await User.findOne({ phone });
+            if (!userExists) {
+                return res.status(400).json({
+                    message: "Số điện thoại này chưa được đăng ký",
+                });
+            }
+>>>>>>> abd0158 (Hoan thien chuc nang Dat lich, tao ho so)
 
       const token = jwt.sign(
         { _id: userExists._id, role: userExists.role },
@@ -91,7 +140,15 @@ const authController = {
         { expiresIn: "7d" }
       );
 
+<<<<<<< HEAD
       userExists.password = undefined;
+=======
+            const token = jwt.sign(
+                { _id: userExists._id, role: userExists.role },
+                process.env.SECRET_KEY,
+                { expiresIn: '7d' }
+            );
+>>>>>>> abd0158 (Hoan thien chuc nang Dat lich, tao ho so)
 
       res.status(201).json({
         message: "Đăng nhập thành công",
