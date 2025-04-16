@@ -1,107 +1,116 @@
-import dotenv from 'dotenv';
-import User from '../models/User.js';
-import bcryptjs from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import axios from 'axios';
+import dotenv from "dotenv";
+import User from "../models/User.js";
+import bcryptjs from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 
 const authController = {
-    // ADD USER
-    registerUser: async (req, res) => {
-        try {
-            const { phone, password, role } = req.body;
+  // ADD USER
+  registerUser: async (req, res) => {
+    try {
+      const { phone, password, role } = req.body;
 
-            // Kiểm tra các trường bắt buộc
-            if (!phone || !password || !role) {
-                return res.status(400).json({ message: "Vui lòng điền đủ phone, password và role" });
-            }
+      // Kiểm tra các trường bắt buộc
+      if (!phone || !password || !role) {
+        return res.status(400).json({ message: "Vui lòng điền đủ phone, password và role" });
+      }
 
-            // Kiểm tra định dạng phone
-            const phoneRegex = /^(0|\+84)\d{9,10}$/;
-            if (!phoneRegex.test(phone)) {
-                return res.status(400).json({ message: "Số điện thoại không hợp lệ" });
-            }
+      // Kiểm tra định dạng phone
+      const phoneRegex = /^(0|\+84)\d{9,10}$/;
+      if (!phoneRegex.test(phone)) {
+        return res.status(400).json({ message: "Số điện thoại không hợp lệ" });
+      }
 
-            // Kiểm tra role hợp lệ
-            const validRoles = ["family_member", "nurse", "admin", "doctor"];
-            if (!validRoles.includes(role)) {
-                return res.status(400).json({ message: "Role không hợp lệ" });
-            }
+      // Kiểm tra role hợp lệ
+      const validRoles = ["family_member", "nurse", "admin", "doctor"];
+      if (!validRoles.includes(role)) {
+        return res.status(400).json({ message: "Role không hợp lệ" });
+      }
 
-            // Kiểm tra phone đã tồn tại
-            const existingUser = await User.findOne({ phone });
-            if (existingUser) {
-                return res.status(400).json({ message: "Số điện thoại đã được sử dụng" });
-            }
+      // Kiểm tra phone đã tồn tại
+      const existingUser = await User.findOne({ phone });
+      if (existingUser) {
+        return res.status(400).json({ message: "Số điện thoại đã được sử dụng" });
+      }
 
-            // Hash password
-            const saltRounds = 10;
-            const hashedPassword = await bcryptjs.hash(password, saltRounds);
+      // Mã hóa mật khẩu
+      const saltRounds = 10;
+      const hashedPassword = await bcryptjs.hash(password, saltRounds);
 
-            // Tạo user mới
-            const newUser = new User({
-                phone,
-                password: hashedPassword,
-                role,
-            });
+      // Tạo user mới
+      const newUser = new User({
+        phone,
+        password: hashedPassword,
+        role,
+      });
 
-            // Lưu vào database
-            const savedUser = await newUser.save();
+      const savedUser = await newUser.save();
 
-            // Ẩn password trong response
-            const userToReturn = savedUser.toObject();
-            delete userToReturn.password;
+      // Xóa mật khẩu khỏi dữ liệu trả về
+      const userToReturn = savedUser.toObject();
+      delete userToReturn.password;
 
-            res.status(201).json(userToReturn);
+      res.status(201).json(userToReturn);
+    } catch (error) {
+      console.error("Lỗi khi đăng ký user:", error);
+      res.status(500).json({
+        message: "Lỗi server",
+        error: error.message,
+      });
+    }
+  },
 
-        } catch (error) {
-            console.error("Lỗi khi thêm user:", error);
-            res.status(500).json({
-                message: "Lỗi server",
-                error: error.message
-            });
-        }
-    },
+  // Đăng nhập
+  loginUser: async (req, res) => {
+    try {
+      const { phone, password } = req.body;
 
-    // LOGIN USER
-    loginUser: async (req, res) => {
-        try {
-            const { phone, password } = req.body;
+      if (!phone || !password) {
+        return res
+          .status(400)
+          .json({ message: "Vui lòng nhập đầy đủ phone và password" });
+      }
 
-            const userExists = await User.findOne({ phone });
-            if (!userExists) {
-                return res.status(400).json({
-                    message: "Số điện thoại này chưa được đăng ký",
-                });
-            }
+      // Tìm người dùng
+      const userExists = await User.findOne({ phone });
+      if (!userExists) {
+        return res.status(400).json({
+          message: "Số điện thoại này chưa được đăng ký",
+        });
+      }
 
-            const comparePass = await bcryptjs.compare(password, userExists.password);
-            if (!comparePass) {
-                return res.status(400).json({
-                    message: "Mật khẩu không đúng"
-                });
-            }
+      // So sánh mật khẩu
+      const isMatch = await bcryptjs.compare(password, userExists.password);
+      if (!isMatch) {
+        return res.status(401).json({
+          message: "Mật khẩu không đúng",
+        });
+      }
 
-            const token = jwt.sign(
-                { _id: userExists._id, role: userExists.role },
-                process.env.SECRET_KEY,
-                { expiresIn: '7d' }
-            );
+      const token = jwt.sign(
+        { _id: userExists._id, role: userExists.role },
+        process.env.SECRET_KEY,
+        { expiresIn: '7d' }
+      );
 
-            userExists.password = undefined;
+      // Xóa mật khẩu khỏi dữ liệu trả về
+      const userToReturn = userExists.toObject();
+      delete userToReturn.password;
 
-            res.status(201).json({
-                message: "Đăng nhập thành công",
-                token: token || null,
-                user: userExists,
-            });
-            console.log("SECRET_KEY:", process.env.SECRET_KEY);
-        } catch (error) {
-            console.error("Error during login:", error);
-            res.status(500).json({ message: "Lỗi server, vui lòng thử lại", error: error.message });
-        }
-    },
+      res.status(200).json({
+        message: "Đăng nhập thành công",
+        token,
+        user: userToReturn,
+      });
+    } catch (error) {
+      console.error("Lỗi khi đăng nhập:", error);
+      res.status(500).json({
+        message: "Lỗi server, vui lòng thử lại",
+        error: error.message,
+      });
+    }
+  },
 };
 
 export default authController;

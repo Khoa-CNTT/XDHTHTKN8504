@@ -14,10 +14,9 @@ import DoctorRouter from './src/routes/doctorRouter.js';
 import NurseRouter from './src/routes/nurseRouter.js';
 import ScheduleRouter from './src/routes/scheduleRouter.js';
 
-
 const app = express();
 
-// connect to database
+// Connect to database
 connectDB();
 
 // use cors
