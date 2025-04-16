@@ -1,30 +1,55 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
-const nurseSchema = new Schema({
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-    unique: true
-  },
-  fullName: { type: String, required: true },
-  licenseNumber: { type: String, required: true, unique: true },
-  specialties: [String],
-  availability: {
-    workingHours: [{
-      day: String,
-      startTime: Date,
-      endTime: Date
-    }],
-    isAvailable: { type: Boolean, default: true }
-  },
-  rating: { type: Number, min: 1, max: 5 },
-  location: {
-    type: { type: String, enum: ["Point"], default: "Point" },
-    coordinates: [Number]
-  }
-}, { timestamps: true });
+const nurseSchema = new Schema(
+  {
+    // Liên kết đến tài khoản người dùng
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true,
+    },
+    firstName: {
+      type: String,
+      required: true,
+    },
+    lastName: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    specialties: [String], // Các chuyên môn phụ (nếu có)
+    licenseNumber: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    // Trạng thái chung của điều dưỡng (sẵn sàng nhận đơn hay không)
+    isAvailable: {
+      type: Boolean,
+      default: true,
+    },
+    // Đánh giá từ người dùng (từ 1 đến 5)
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+    },
+    // Vị trí địa lý của điều dưỡng (hữu ích cho tìm kiếm gần)
+    location: {
+      type: { type: String, enum: ["Point"], default: "Point" },
+      coordinates: [Number],
+    },
+  }, { timestamps: true }
+);
 
 nurseSchema.index({ location: "2dsphere" });
-module.exports = mongoose.model("Nurse", nurseSchema);
+
+const Nurse = mongoose.model("Nurse", nurseSchema);
+
+export default Nurse;

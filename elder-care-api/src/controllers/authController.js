@@ -10,17 +10,17 @@ const authController = {
     // ADD USER
     registerUser: async (req, res) => {
         try {
-            const { email, password, role, phone } = req.body;
+            const { phone, password, role } = req.body;
 
             // Kiểm tra các trường bắt buộc
-            if (!email || !password || !role) {
-                return res.status(400).json({ message: "Vui lòng điền đủ email, password và role" });
+            if (!phone || !password || !role) {
+                return res.status(400).json({ message: "Vui lòng điền đủ phone, password và role" });
             }
 
-            // Kiểm tra định dạng email
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                return res.status(400).json({ message: "Email không hợp lệ" });
+            // Kiểm tra định dạng phone
+            const phoneRegex = /^(0|\+84)\d{9,10}$/;
+            if (!phoneRegex.test(phone)) {
+                return res.status(400).json({ message: "Số điện thoại không hợp lệ" });
             }
 
             // Kiểm tra role hợp lệ
@@ -29,10 +29,10 @@ const authController = {
                 return res.status(400).json({ message: "Role không hợp lệ" });
             }
 
-            // Kiểm tra email đã tồn tại
-            const existingUser = await User.findOne({ email });
+            // Kiểm tra phone đã tồn tại
+            const existingUser = await User.findOne({ phone });
             if (existingUser) {
-                return res.status(400).json({ message: "Email đã được sử dụng" });
+                return res.status(400).json({ message: "Số điện thoại đã được sử dụng" });
             }
 
             // Hash password
@@ -41,10 +41,9 @@ const authController = {
 
             // Tạo user mới
             const newUser = new User({
-                email,
+                phone,
                 password: hashedPassword,
                 role,
-                phone: phone || "",
             });
 
             // Lưu vào database
@@ -68,12 +67,12 @@ const authController = {
     // LOGIN USER
     loginUser: async (req, res) => {
         try {
-            const { email, password } = req.body;
+            const { phone, password } = req.body;
 
-            const userExists = await User.findOne({ email });
+            const userExists = await User.findOne({ phone });
             if (!userExists) {
                 return res.status(400).json({
-                    message: "Email này chưa được đăng ký",
+                    message: "Số điện thoại này chưa được đăng ký",
                 });
             }
 
@@ -86,7 +85,7 @@ const authController = {
 
             const token = jwt.sign(
                 { _id: userExists._id, role: userExists.role },
-                process.env.SECKET_KEY,
+                process.env.SECRET_KEY,
                 { expiresIn: '7d' }
             );
 
