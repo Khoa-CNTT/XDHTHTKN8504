@@ -1,10 +1,10 @@
-export interface User {
+export default interface User {
   id: string;
   name: string;
   email: string;
 }
 
-export interface LoginResponse {
+export default interface LoginResponse {
   user: User;
   token: string;
 }
