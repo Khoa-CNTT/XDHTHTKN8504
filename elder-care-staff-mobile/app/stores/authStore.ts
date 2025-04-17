@@ -1,8 +1,9 @@
 // stores/authStore.ts
+
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import loginApi  from "../api/authApi";
-import type { User } from "../.types/auth";
+import loginApi from "../api/authApi";
+import type User from "../../types/auth";
 
 interface AuthState {
   user: User | null;
@@ -10,9 +11,17 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   login: (phone: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   restoreSession: () => Promise<void>;
+  setSession: (user: User, token: string) => Promise<void>;
 }
+
+// Tách xử lý lỗi vào hàm riêng để sử dụng lại khi cần
+const extractErrorMessage = (err: any, defaultMsg = "Đã xảy ra lỗi") => {
+  if (err?.response?.data?.message) return err.response.data.message;
+  if (err?.message) return err.message;
+  return defaultMsg;
+};
 
 const useAuthStore = create<AuthState>((set) => ({
   user: null,
@@ -20,55 +29,76 @@ const useAuthStore = create<AuthState>((set) => ({
   loading: false,
   error: null,
 
+  // Phương thức đăng nhập
   login: async (phone, password) => {
     set({ loading: true, error: null });
     try {
       const data = await loginApi(phone, password);
+      const { user, token } = data;
 
-      await AsyncStorage.setItem("token", data.token); // 🔐 lưu token
+      // Kiểm tra dữ liệu trả về
+      if (!user || !token) {
+        throw new Error("Dữ liệu trả về không hợp lệ");
+      }
 
-      set({
-        user: data.user,
-        token: data.token,
-        loading: false,
-        error: null,
-      });
+      // Lưu token và user vào AsyncStorage
+      await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("user", JSON.stringify(user));
+
+      set({ user, token, loading: false, error: null });
     } catch (err: any) {
-      const message =
-        err?.response?.data?.message || err.message || "Lỗi đăng nhập";
-      set({ error: message, loading: false });
+      set({
+        error: extractErrorMessage(err, "Lỗi đăng nhập"),
+        loading: false,
+      });
     }
   },
 
-  logout: async () => {
-    await AsyncStorage.removeItem("token"); // 🔓 xóa token khi logout
-    set({ user: null, token: null });
+  // Phương thức thiết lập phiên đăng nhập
+  setSession: async (user, token) => {
+    try {
+      await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("user", JSON.stringify(user));
+
+      set({ user, token, error: null, loading: false });
+    } catch (err: any) {
+      set({ error: extractErrorMessage(err, "Lỗi lưu phiên đăng nhập"), loading: false });
+    }
   },
 
+  // Phương thức đăng xuất
+  logout: async () => {
+    try {
+      await AsyncStorage.multiRemove(["token", "user"]);
+      set({ user: null, token: null, error: null });
+    } catch (err: any) {
+      set({ error: extractErrorMessage(err, "Lỗi khi đăng xuất") });
+    }
+  },
+
+  // Phương thức phục hồi phiên đăng nhập
   restoreSession: async () => {
     set({ loading: true });
     try {
       const token = await AsyncStorage.getItem("token");
-      const user = await AsyncStorage.getItem("user");
+      const userStr = await AsyncStorage.getItem("user");
 
-      if (token && user) {
-        set({
-          token,
-          user: JSON.parse(user),
-          loading: false,
-          error: null,
-        });
-      } else {
-        set({
-          token: null,
-          user: null,
-          loading: false,
-          error: null,
-        });
+      // Kiểm tra sự tồn tại của token và user
+      if (!token || !userStr) {
+        throw new Error("Không tìm thấy phiên đăng nhập");
       }
-    } catch (err) {
-      set({ loading: false, error: "Lỗi phục hồi phiên đăng nhập" });
+
+      const user: User = JSON.parse(userStr);
+      set({ token, user, loading: false, error: null });
+    } catch (err: any) {
+      set({
+        user: null,
+        token: null,
+        loading: false,
+        error: extractErrorMessage(err, "Lỗi phục hồi phiên"),
+      });
     }
   },
 }));
+
 export default useAuthStore;
