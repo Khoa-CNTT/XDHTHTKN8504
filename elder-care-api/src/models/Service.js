@@ -5,7 +5,11 @@ const serviceSchema = new Schema({
     name: { type: String, required: true, unique: true },
     description: String,
     price: { type: Number, required: true },
-    isActive: { type: Boolean, default: true }
+    percentage: {
+        type: Number,
+        required: true,
+    },
+    isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 
 const Service = mongoose.model("Service", serviceSchema);

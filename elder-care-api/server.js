@@ -17,6 +17,8 @@ import ProfileRouter from "./src/routes/profileRouter.js";
 import BookingRouter from "./src/routes/bookingRouter.js";
 import DoctorRouter from "./src/routes/doctorRouter.js";
 import NurseRouter from "./src/routes/nurseRouter.js";
+import ScheduleRouter from './src/routes/scheduleRouter.js';
+import SalaryRouter from './src/routes/salaryRouter.js';
 
 const app = express();
 
@@ -50,6 +52,8 @@ app.use("/api/v1/profiles", ProfileRouter);
 app.use("/api/v1/bookings", BookingRouter);
 app.use("/api/v1/doctors", DoctorRouter);
 app.use("/api/v1/nurses", NurseRouter);
+app.use("/api/v1/schedules", ScheduleRouter);
+app.use('/api/v1/salaries', SalaryRouter);
 
 const port = process.env.SERVER_PORT || 8080;
 const listener = app.listen(port, () => {
