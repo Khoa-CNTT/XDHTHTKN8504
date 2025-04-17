@@ -1,6 +1,10 @@
+// server.js
 import dotenv from "dotenv";
 dotenv.config();
+console.log("SECRET_KEY:", process.env.SECRET_KEY);
+
 import express from "express";
+
 import connectDB from "./src/config/connectDB.js";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -14,10 +18,12 @@ import DoctorRouter from './src/routes/doctorRouter.js';
 import NurseRouter from './src/routes/nurseRouter.js';
 import ScheduleRouter from './src/routes/scheduleRouter.js';
 
+
 const app = express();
 
 // Connect to database
 connectDB();
+
 
 // use cors
 app.use(
@@ -46,6 +52,7 @@ app.use('/api/v1/bookings', BookingRouter)
 app.use('/api/v1/doctors', DoctorRouter)
 app.use('/api/v1/nurses', NurseRouter)
 app.use('/api/v1/schedules', ScheduleRouter)
+
 
 const port = process.env.SERVER_PORT || 8080;
 const listener = app.listen(port, () => {

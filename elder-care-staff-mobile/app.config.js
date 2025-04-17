@@ -39,6 +39,9 @@ export default {
       typedRoutes: true,
     },
     extra: {
+
+      apiBaseUrl: process.env.API_BASE_URL,
+
       firebaseApiKey: process.env.FIREBASE_API_KEY,
       firebaseAuthDomain: process.env.FIREBASE_AUTH_DOMAIN,
       firebaseProjectId: process.env.FIREBASE_PROJECT_ID,

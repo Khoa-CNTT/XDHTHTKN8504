@@ -16,21 +16,16 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import useAuthStore from "../../stores/authStore"; // Dùng Zustand store
 
+import  LoginResponse  from "@/types/auth"; // Định nghĩa kiểu dữ liệu cho phản hồi đăng nhập
+
+
 // Định nghĩa dữ liệu form
 type FormData = {
   phone: string;
   password: string;
 };
 
-// Định nghĩa kiểu dữ liệu trả về từ API
-type LoginResponse = {
-  token: string;
-  user: {
-    id: number;
-    name: string;
-    // Bổ sung các trường nếu cần
-  };
-};
+
 
 export default function LoginScreen() {
   const {
@@ -46,7 +41,9 @@ export default function LoginScreen() {
   };
 
   // Sử dụng Zustand store để lưu thông tin đăng nhập
-  const login = useAuthStore((state) => state.login);
+
+  const setSession = useAuthStore((state) => state.setSession);
+
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -56,14 +53,19 @@ export default function LoginScreen() {
         password: data.password,
       });
 
+      console.log("API Response:", response);
       const { token, user } = response.data;
+
+
 
       // Lưu thông tin vào AsyncStorage
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("user", JSON.stringify(user));
 
-      // Lưu thông tin đăng nhập vào Zustand store
-      login(data.phone, data.password);
+
+      // Lưu thông tin đăng nhập vào Zustand store và set phiên làm việc
+      setSession(user, token);
+
 
       // Chuyển hướng sau khi đăng nhập thành công
       router.replace("/screens/tabs/home");
@@ -96,7 +98,14 @@ export default function LoginScreen() {
         <Controller
           control={control}
           name="phone"
-          rules={{ required: "Vui lòng nhập số điện thoại" }}
+          rules={{
+            required: "Vui lòng nhập số điện thoại",
+            pattern: {
+              value:
+                /^(?:\+84|0)(?:3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-9])[0-9]{7}$/,
+              message: "Số điện thoại không hợp lệ",
+            },
+          }}
           render={({ field: { onChange, value } }) => (
             <TextInput
               style={styles.phoneInput}

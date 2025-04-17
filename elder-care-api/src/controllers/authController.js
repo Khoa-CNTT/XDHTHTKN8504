@@ -6,17 +6,23 @@ import jwt from "jsonwebtoken";
 dotenv.config();
 
 const authController = {
-  // ADD USER
+
+  // Đăng ký tài khoản mới
+
   registerUser: async (req, res) => {
     try {
       const { phone, password, role } = req.body;
 
-      // Kiểm tra các trường bắt buộc
+
+      // Kiểm tra dữ liệu bắt buộc
       if (!phone || !password || !role) {
-        return res.status(400).json({ message: "Vui lòng điền đủ phone, password và role" });
+        return res
+          .status(400)
+          .json({ message: "Vui lòng điền đủ phone, password và role" });
       }
 
-      // Kiểm tra định dạng phone
+      // Kiểm tra định dạng số điện thoại
+
       const phoneRegex = /^(0|\+84)\d{9,10}$/;
       if (!phoneRegex.test(phone)) {
         return res.status(400).json({ message: "Số điện thoại không hợp lệ" });
@@ -28,17 +34,23 @@ const authController = {
         return res.status(400).json({ message: "Role không hợp lệ" });
       }
 
-      // Kiểm tra phone đã tồn tại
+
+      // Kiểm tra trùng số điện thoại
       const existingUser = await User.findOne({ phone });
       if (existingUser) {
-        return res.status(400).json({ message: "Số điện thoại đã được sử dụng" });
+        return res
+          .status(400)
+          .json({ message: "Số điện thoại đã được sử dụng" });
+
       }
 
       // Mã hóa mật khẩu
       const saltRounds = 10;
       const hashedPassword = await bcryptjs.hash(password, saltRounds);
 
-      // Tạo user mới
+
+      // Tạo người dùng mới
+
       const newUser = new User({
         phone,
         password: hashedPassword,
@@ -88,10 +100,13 @@ const authController = {
         });
       }
 
+
+      // Tạo JWT
       const token = jwt.sign(
         { _id: userExists._id, role: userExists.role },
         process.env.SECRET_KEY,
-        { expiresIn: '7d' }
+        { expiresIn: "7d" }
+
       );
 
       // Xóa mật khẩu khỏi dữ liệu trả về

@@ -1,8 +1,13 @@
-// utils/api.ts
-import axios from "axios";
 
+import axios from "axios";
+import Constants from "expo-constants";
+
+const apiBaseUrl = Constants.expoConfig?.extra?.apiBaseUrl;
+
+console.log("👉 API BASE URL:", apiBaseUrl); 
 const API = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_BASE_URL, // đổi thành IP máy chủ thật khi deploy
+  baseURL: apiBaseUrl,
+
   headers: {
     "Content-Type": "application/json",
   },

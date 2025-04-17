@@ -1,12 +1,15 @@
 import Doctor from "../models/Doctor.js"
 import User from "../models/User.js";
+
 import Salary from "../models/Salary.js";
+
 
 const docterController = {
     // create docter
     createDoctor: async (req, res) => {
         try {
             const { userId, firstName, lastName, email, specialization, licenseNumber, experience, isAvailable, percentage } = req.body
+
 
             const existingDoctor = await Doctor.findOne({ userId })
             if (existingDoctor) {
@@ -34,6 +37,7 @@ const docterController = {
 
             await newDoctor.save()
 
+
             const newSalary = new Salary({
                 staffId: newDoctor._id,
                 role: "doctor",
@@ -45,6 +49,7 @@ const docterController = {
                 message: "Tạo bác sĩ thành công",
                 doctor: newDoctor,
                 Salary: newSalary,
+
             })
         } catch (error) {
             return res.status(500).json({
