@@ -8,4 +8,9 @@ router.get(
   scheduleController.getScheduleByBookingId
 );
 
+router.get(
+  "/:staffId/completed-jobs",
+  scheduleController.getComplatedInMonth
+);
+
 export default router;
