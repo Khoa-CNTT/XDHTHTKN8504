@@ -12,6 +12,11 @@ router.post(
     bookingController.createBooking
 );
 
-router.patch("/:bookingId/accept", auth, authorizeRoles("doctor", "nurse"), bookingController.acceptBooking);
+router.patch(
+    "/accept/:bookingId", 
+    auth, 
+    authorizeRoles("doctor", "nurse"), 
+    bookingController.acceptBooking
+);
 
 export default router
