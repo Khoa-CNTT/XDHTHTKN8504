@@ -82,8 +82,8 @@ const scheduleController = {
                 jobDetails.push({
                     patientName: profile.firstName + ' ' + profile.lastName,
                     serviceName: service ? service.name : 'Không tìm thấy dịch vụ',
-                    address: profile.address,  
-                    notes: booking.notes,      
+                    address: profile.address,
+                    notes: booking.notes,
                     jobDate: schedule.date,
                 });
             }
@@ -96,7 +96,27 @@ const scheduleController = {
             console.error("Lỗi khi lấy công việc hoàn thành:", error);
             return res.status(500).json({ message: 'Lỗi server', error: error.message });
         }
-    }
+    },
+
+    getAllSchedulesByStaffId: async (req, res) => {
+        try {
+            const staffId = req.user._id; // Lấy từ middleware auth
+
+            const schedules = await Schedule.find({ staffId })
+                .sort({ date: 1, "timeSlots.startTime": 1 });
+
+            return res.status(200).json({
+                message: 'Lấy toàn bộ lịch làm việc thành công',
+                data: schedules
+            });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                message: 'Lỗi server',
+                error: error.message
+            });
+        }
+    },
 }
 
 export default scheduleController;
