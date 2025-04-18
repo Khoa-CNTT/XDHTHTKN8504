@@ -14,4 +14,10 @@ http://localhost:5000/api/v1/salaries/monthly-salary?staffId={_id}&month=4&year=
 - {_id} là id của người cần xem, test: 67ff9881aff90e490321e316
 
 //Lịch làm việc 
+METHOD: get
 http://localhost:5000/api/v1/schedules/get-schedules
+
+//Chấp nhận đơn 
+METHOD: patch
+http://localhost:5000/api/v1/bookings/accept/{_id}
+_id: là id của booking muốn chấp nhận
