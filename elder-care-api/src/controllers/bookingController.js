@@ -1,16 +1,27 @@
 import Booking from "../models/Booking.js";
 import Profile from "../models/Profile.js";
 import Schedule from "../models/Schedule.js";
+import moment from "moment-timezone";
 
 const bookingController = {
     // create new booking
     createBooking: async (req, res) => {
         try {
-            const { profileId, serviceId, startTime, endTime, status, notes, paymentId, scheduleId, participants } = req.body;
+            const {
+                profileId,
+                serviceId,
+                status,
+                notes,
+                paymentId,
+                participants,
+                repeatFrom,
+                repeatTo,
+                timeSlot
+            } = req.body;
 
             const { _id: userId, role } = req.user;
 
-            // Bước 1: Kiểm tra xem profileId có thuộc về người dùng hay không
+            // Kiểm tra profile
             const profile = await Profile.findById(profileId);
             if (!profile) {
                 return res.status(404).json({ message: "Không tìm thấy hồ sơ (profile)" });
@@ -23,22 +34,26 @@ const bookingController = {
                 }
             }
 
-            // Kiểm tra startTime và endTime có hợp lệ không
-            if (new Date(startTime) >= new Date(endTime)) {
-                return res.status(400).json({ message: "Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc" });
+            // Kiểm tra thời gian lặp lại
+            if (new Date(repeatFrom) >= new Date(repeatTo)) {
+                return res.status(400).json({ message: "Ngày bắt đầu phải nhỏ hơn ngày kết thúc" });
             }
 
-            // Bước 4: Tạo booking mới
+            // Xác định nếu là lịch lặp lại
+            const isRecurring = new Date(repeatFrom).toDateString() !== new Date(repeatTo).toDateString();
+
+            // Tạo booking mới (không có scheduleId vì sẽ tạo sau)
             const newBooking = new Booking({
                 profileId,
                 serviceId,
-                startTime,
-                endTime,
                 status: status || "pending",
                 notes,
                 paymentId,
-                scheduleId,
-                participants
+                participants,
+                repeatFrom,
+                repeatTo,
+                timeSlot,
+                isRecurring // Xác định giá trị này dựa trên repeatFrom và repeatTo
             });
 
             await newBooking.save();
@@ -59,6 +74,7 @@ const bookingController = {
             const { bookingId } = req.params;
             const staff = req.user; // đã xác thực => có thông tin staff
 
+            // Tìm booking theo bookingId
             const booking = await Booking.findById(bookingId);
             if (!booking) {
                 return res.status(404).json({ message: 'Đơn đặt lịch không tồn tại' });
@@ -77,33 +93,53 @@ const bookingController = {
             // Tạo patientName từ firstName và lastName
             const patientName = `${profile.firstName} ${profile.lastName}`;
 
-            // Chuyển đổi startTime thành date và time
-            const date = booking.startTime.toISOString().split('T')[0]; // Lấy phần ngày (yyyy-mm-dd)
-            const time = booking.startTime.toISOString().split('T')[1].split('.')[0]; // Lấy phần giờ (hh:mm:ss)
+            // Kiểm tra kiểu của timeSlot và xử lý tương ứng
+            const timeSlots = Array.isArray(booking.timeSlot) ? booking.timeSlot : [booking.timeSlot];
 
-            // Tạo lịch làm việc tương ứng
-            const schedule = new Schedule({
-                staffId: staff._id,
-                role: staff.role,
-                bookingId: booking._id,
-                patientName: patientName, // Lấy tên bệnh nhân từ booking
-                date: date,                       // Lấy ngày từ startTime
-                time: time,                       // Lấy giờ từ startTime
-                status: 'scheduled'               // Trạng thái ban đầu là 'scheduled'
-            });
+            // Lặp qua các ngày trong thời gian khách hàng đã đặt (repeatFrom và repeatTo)
+            const schedulePromises = [];
 
-            await schedule.save();
+            const timeZone = 'Asia/Ho_Chi_Minh'; // Múi giờ của Việt Nam (GMT+7)
+            let currentDate = moment.tz(booking.repeatFrom, timeZone);
+
+            const dateStr = currentDate.clone().format('YYYY-MM-DD'); // lấy ngày dạng "2025-04-19"
+
+            while (currentDate <= new Date(booking.repeatTo)) {
+                // Lặp qua các thời gian của mỗi ngày
+                timeSlots.forEach(timeSlot => {
+                    const schedule = new Schedule({
+                        staffId: staff._id,
+                        role: staff.role,
+                        bookingId: booking._id,
+                        patientName: patientName,
+                        date: currentDate.clone().toDate(), // Ngày làm việc
+                        timeSlots: [
+                            {
+                                startTime: new Date(new Date(`${currentDate.toISOString().split('T')[0]}T${timeSlot.start}:00`).getTime() + 7 * 60 * 60 * 1000),
+                                endTime: new Date(new Date(`${currentDate.toISOString().split('T')[0]}T${timeSlot.end}:00`).getTime() + 7 * 60 * 60 * 1000),
+                            }
+                        ],
+                        status: 'scheduled',
+                    });
+
+                    schedulePromises.push(schedule.save());
+                });
+
+                // Tiến sang ngày tiếp theo
+                currentDate.add(1, 'days');
+            }
+
+            // Chờ tất cả các lịch làm việc được tạo xong
+            await Promise.all(schedulePromises);
 
             return res.status(200).json({
                 message: 'Đã chấp nhận lịch hẹn và tạo lịch làm việc thành công',
-                schedule
             });
-
         } catch (error) {
             console.error(error);
-            res.status(500).json({ message: 'Lỗi server', error: error.message });
+            return res.status(500).json({ message: 'Lỗi server', error: error.message });
         }
-    }
+    },
 }
 
 export default bookingController;

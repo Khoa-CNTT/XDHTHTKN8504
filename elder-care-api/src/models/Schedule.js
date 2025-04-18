@@ -22,19 +22,22 @@ const scheduleSchema = new mongoose.Schema({
         required: true,
     },
     date: {
-        type: Date,
+        type: Date, // Định dạng Date để dễ dàng truy vấn và so sánh
         required: true,
     },
-    time: {
-        type: String,
-        required: true,
-    },
+    timeSlots: [
+        {
+            startTime: { type: Date, required: true },  // Thời gian bắt đầu của ca làm việc
+            endTime: { type: Date, required: true },    // Thời gian kết thúc của ca làm việc
+        }
+    ],
     status: {
         type: String,
         enum: ['scheduled', 'completed', 'cancelled'],
         default: 'scheduled',
     },
 }, { timestamps: true });
+
 
 const Schedule = mongoose.model("Schedule", scheduleSchema);
 

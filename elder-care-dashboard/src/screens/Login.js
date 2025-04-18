@@ -7,7 +7,7 @@ function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("family_member"); // mặc định là family_member
+  const [role, setRole] = useState("family_member");
   const handleLogin = async (e) => {
     e.preventDefault();
 
