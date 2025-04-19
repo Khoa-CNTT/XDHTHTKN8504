@@ -9,8 +9,8 @@ import {
 import JobDetailModal from "@/app/components/JobDetailModal";
 import DaySelector from "@/app/components/DaySelector";
 import ScheduleItem from "@/app/components/ScheduleItem";
-import getSchedules from "../../api/scheduleApi"; // Đảm bảo đã import đúng hàm API
-import useScheduleStore from "@/app/stores/scheduleStore"; // Import store
+import getSchedules from "../../api/scheduleApi";
+import useScheduleStore from "@/app/stores/scheduleStore";
 
 const getWeekDays = () => {
   const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
@@ -26,8 +26,7 @@ const getWeekDays = () => {
 };
 
 export default function ScheduleScreen() {
-  // Lấy dữ liệu và phương thức từ store
-  const [loading, setLoading] = useState(false); // Trạng thái loading
+  const [loading, setLoading] = useState(false);
   const schedules = useScheduleStore((state) => state.schedules);
   const selectedDay = useScheduleStore((state) => state.selectedDay);
   const setSchedules = useScheduleStore((state) => state.setSchedules);
@@ -36,27 +35,28 @@ export default function ScheduleScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedJob, setSelectedJob] = useState<any>(null);
 
-  // Hàm để gọi API và lấy lịch làm việc
   useEffect(() => {
     const fetchSchedules = async () => {
       setLoading(true);
       try {
-        const data = await getSchedules(); // Lấy lịch làm việc từ API
-        setSchedules(data); // Lưu vào store
+        const data = await getSchedules();
+        setSchedules(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching schedules:", error);
+        setSchedules([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSchedules(); // Gọi hàm khi component render
+    fetchSchedules();
   }, [setSchedules]);
 
-  // Lọc lịch làm việc theo ngày đã chọn
-  const filteredSchedules = schedules.filter(
-    (schedule) => new Date(schedule.date).getDate() === selectedDay
-  );
+  const filteredSchedules = Array.isArray(schedules)
+    ? schedules.filter(
+        (schedule) => new Date(schedule.date).getDate() === selectedDay
+      )
+    : [];
 
   const handleSelectJob = (job: any) => {
     setSelectedJob(job);
@@ -66,24 +66,30 @@ export default function ScheduleScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.headerTitle}>Lịch làm việc</Text>
+
       <DaySelector
         days={getWeekDays()}
         selectedDay={selectedDay}
-        onSelectDay={setSelectedDay} // Cập nhật ngày đã chọn trong store
+        onSelectDay={setSelectedDay}
       />
 
       {loading ? (
         <ActivityIndicator size="large" color="#28A745" />
       ) : (
         <FlatList
-          data={schedules}
+          data={filteredSchedules}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
             <ScheduleItem
-              schedule={item} // Truyền nguyên object
+              schedule={item}
               onPress={() => handleSelectJob(item)}
             />
           )}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>
+              Không có công việc nào trong ngày.
+            </Text>
+          }
         />
       )}
 
@@ -108,5 +114,11 @@ const styles = StyleSheet.create({
     color: "#28A745",
     textAlign: "center",
     marginBottom: 15,
+  },
+  emptyText: {
+    textAlign: "center",
+    marginTop: 30,
+    fontSize: 16,
+    color: "#6c757d",
   },
 });
