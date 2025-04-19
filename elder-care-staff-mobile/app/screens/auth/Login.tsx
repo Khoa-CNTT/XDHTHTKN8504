@@ -49,7 +49,7 @@ export default function LoginScreen() {
       });
       console.log("API Response:", response);
       const { token, user } = response.data;
-      console.log("Login successful:", token, user);
+      console.log("Login successful:", token);
 
       // Lưu thông tin vào AsyncStorage
       await AsyncStorage.setItem("token", token);

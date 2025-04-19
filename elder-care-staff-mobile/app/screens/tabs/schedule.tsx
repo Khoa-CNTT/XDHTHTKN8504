@@ -1,9 +1,16 @@
-import React, { useState } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
 import JobDetailModal from "@/app/components/JobDetailModal";
-
 import DaySelector from "@/app/components/DaySelector";
 import ScheduleItem from "@/app/components/ScheduleItem";
+import getSchedules from "../../api/scheduleApi"; // Đảm bảo đã import đúng hàm API
+import useScheduleStore from "@/app/stores/scheduleStore"; // Import store
 
 const getWeekDays = () => {
   const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
@@ -18,67 +25,70 @@ const getWeekDays = () => {
   }));
 };
 
-
-const scheduleData = [
-  {
-    time: "08:00 AM",
-    title: "Chăm sóc khách A",
-    details: "Tắm rửa, ăn sáng, đo huyết áp",
-    status: "done",
-  },
-  {
-    time: "10:00 AM",
-    title: "Vật lý trị liệu khách B",
-    details: "Bài tập giãn cơ, hỗ trợ vận động",
-    status: "progress",
-  },
-  {
-    time: "12:00 PM",
-    title: "Chăm sóc khách C",
-    details: "Chuẩn bị bữa trưa, đo huyết áp",
-    status: "pending",
-  },
-  {
-    time: "03:00 PM",
-    title: "Dọn dẹp và kiểm tra phòng khách D",
-    details: "Dọn giường, kiểm tra tủ thuốc",
-    status: "done",
-  },
-  {
-    time: "06:00 PM",
-    title: "Chăm sóc buổi tối khách E",
-    details: "Chuẩn bị ăn tối, kiểm tra sức khỏe",
-    status: "progress",
-  },
-];
-
 export default function ScheduleScreen() {
-  const [weekDays] = useState(getWeekDays());
-  const [selectedDay, setSelectedDay] = useState(new Date().getDate());
+  // Lấy dữ liệu và phương thức từ store
+  const [loading, setLoading] = useState(false); // Trạng thái loading
+  const schedules = useScheduleStore((state) => state.schedules);
+  const selectedDay = useScheduleStore((state) => state.selectedDay);
+  const setSchedules = useScheduleStore((state) => state.setSchedules);
+  const setSelectedDay = useScheduleStore((state) => state.setSelectedDay);
+
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedJob, setSelectedJob] = useState<any>(null);
+
+  // Hàm để gọi API và lấy lịch làm việc
+  useEffect(() => {
+    const fetchSchedules = async () => {
+      setLoading(true);
+      try {
+        const data = await getSchedules(); // Lấy lịch làm việc từ API
+        setSchedules(data); // Lưu vào store
+      } catch (error) {
+        console.error("Error fetching schedules:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSchedules(); // Gọi hàm khi component render
+  }, [setSchedules]);
+
+  // Lọc lịch làm việc theo ngày đã chọn
+  const filteredSchedules = schedules.filter(
+    (schedule) => new Date(schedule.date).getDate() === selectedDay
+  );
+
   const handleSelectJob = (job: any) => {
     setSelectedJob(job);
     setModalVisible(true);
   };
+
   return (
     <View style={styles.container}>
       <Text style={styles.headerTitle}>Lịch làm việc</Text>
       <DaySelector
-        days={weekDays}
+        days={getWeekDays()}
         selectedDay={selectedDay}
-        onSelectDay={setSelectedDay}
+        onSelectDay={setSelectedDay} // Cập nhật ngày đã chọn trong store
       />
-      <FlatList
-        data={scheduleData}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <ScheduleItem {...item} onPress={() => handleSelectJob(item)} />
-        )}
-      />
+
+      {loading ? (
+        <ActivityIndicator size="large" color="#28A745" />
+      ) : (
+        <FlatList
+          data={schedules}
+          keyExtractor={(item) => item._id}
+          renderItem={({ item }) => (
+            <ScheduleItem
+              schedule={item} // Truyền nguyên object
+              onPress={() => handleSelectJob(item)}
+            />
+          )}
+        />
+      )}
+
       <JobDetailModal
         visible={modalVisible}
-        
         onClose={() => setModalVisible(false)}
         job={selectedJob}
       />
