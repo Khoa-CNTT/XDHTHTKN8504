@@ -12,11 +12,11 @@ export default function Index() {
     restoreSession();
   }, []);
 
-  if (loading) return null; // hoặc bạn có thể show loading UI
-  // Nếu đã đăng nhập, chuyển hướng tới màn chính
+  if (loading) return null;
+
   if (token) {
     return <Redirect href="/screens/tabs/home" />;
+  } else {
+    return <Redirect href="/screens/auth/Login" />;
   }
-  // Nếu chưa, chuyển hướng tới trang login
-  return <Redirect href="/screens/auth/Login" />;
 }

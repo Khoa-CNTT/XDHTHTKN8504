@@ -6,7 +6,11 @@ import {
   TouchableOpacity,
   FlatList,
 } from "react-native";
-import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
+
+import ConfirmLogoutModal from "../../components/ConfirmLogoutModal";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 
 const menuItems = [
@@ -20,6 +24,29 @@ const menuItems = [
 ];
 
 export default function Profile() {
+  const [showLogout, setShowLogout] = useState(false);
+
+  const handleMenuPress = (item: any) => {
+    if (item.title === "Log Out") {
+      setShowLogout(true);
+    } else {
+      router.push("/screens/income-screen");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("accessToken");
+      await AsyncStorage.removeItem("userInfo");
+      // Nếu có context, hãy gọi hàm setUser(null) ở đây
+
+      setShowLogout(false);
+      router.replace("/screens/auth/Login"); // Điều hướng về màn hình login
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Profile</Text>
@@ -41,13 +68,19 @@ export default function Profile() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => router.push("/screens/income-screen")}
+            onPress={() => handleMenuPress(item)}
           >
             <Ionicons name={item.icon as any} size={20} color="#333" />
             <Text style={styles.menuText}>{item.title}</Text>
             <Ionicons name="chevron-forward-outline" size={20} color="#ccc" />
           </TouchableOpacity>
         )}
+      />
+
+      <ConfirmLogoutModal
+        visible={showLogout}
+        onCancel={() => setShowLogout(false)}
+        onConfirm={handleLogout}
       />
     </View>
   );
@@ -65,14 +98,6 @@ const styles = StyleSheet.create({
 
   profileSection: { alignItems: "center", marginBottom: 20 },
   avatar: { width: 100, height: 100, borderRadius: 50 },
-  editIcon: {
-    position: "absolute",
-    bottom: 10,
-    right: 140,
-    backgroundColor: "#333",
-    padding: 5,
-    borderRadius: 50,
-  },
   name: { fontSize: 18, fontWeight: "bold", marginTop: 10 },
   phone: { fontSize: 14, color: "gray" },
 
