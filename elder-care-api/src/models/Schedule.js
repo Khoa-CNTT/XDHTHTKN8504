@@ -21,6 +21,10 @@ const scheduleSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    serviceName: {
+        type: String,
+        required: true,
+    },
     date: {
         type: Date, // Định dạng Date để dễ dàng truy vấn và so sánh
         required: true,
