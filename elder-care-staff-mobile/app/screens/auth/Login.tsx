@@ -1,4 +1,4 @@
-import API from "@/utils/api";
+import loginApi from "../../api/authApi"; // Đã dùng API riêng
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
 import React, { useState } from "react";
@@ -14,15 +14,12 @@ import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "expo-router";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-import useAuthStore from "../../stores/authStore"; // Dùng Zustand store
-import  LoginResponse  from "@/types/auth"; // Định nghĩa kiểu dữ liệu cho phản hồi đăng nhập
+import useAuthStore from "../../stores/authStore"; // Zustand store
 
-// Định nghĩa dữ liệu form
 type FormData = {
   phone: string;
   password: string;
 };
-
 
 export default function LoginScreen() {
   const {
@@ -31,34 +28,21 @@ export default function LoginScreen() {
     formState: { errors },
   } = useForm<FormData>();
   const router = useRouter();
-  const [secureText, setSecureText] = useState(true); // Ẩn/hiện mật khẩu
+  const [secureText, setSecureText] = useState(true);
 
-  const togglePasswordVisibility = () => {
-    setSecureText(!secureText);
-  };
-
-  // Sử dụng Zustand store để lưu thông tin đăng nhập
+  const togglePasswordVisibility = () => setSecureText(!secureText);
   const setSession = useAuthStore((state) => state.setSession);
 
   const onSubmit = async (data: FormData) => {
     try {
-      // Gọi API đăng nhập
-      const response = await API.post<LoginResponse>("/auth/login", {
-        phone: data.phone,
-        password: data.password,
-      });
-      console.log("API Response:", response);
-      const { token, user } = response.data;
+      const { token, user } = await loginApi(data.phone, data.password);
+
       console.log("Login successful:", token);
 
-      // Lưu thông tin vào AsyncStorage
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("user", JSON.stringify(user));
 
-      // Lưu thông tin đăng nhập vào Zustand store và set phiên làm việc
       setSession(user, token);
-
-      // Chuyển hướng sau khi đăng nhập thành công
       router.replace("/screens/tabs/home");
     } catch (error: any) {
       console.log("Login error:", error);
@@ -75,11 +59,9 @@ export default function LoginScreen() {
         source={require("../../../assets/images/logo.png")}
         style={styles.logo}
       />
-
       <Text style={styles.title}>
         Chào mừng đến với <Text style={styles.highlight}>ElderCare</Text>
       </Text>
-
       <Text style={styles.subtitle}>
         Đăng nhập để sử dụng dịch vụ của chúng tôi!
       </Text>
@@ -187,10 +169,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 10,
   },
-  highlight: {
-    color: "#28A745",
-    fontWeight: "bold",
-  },
+  highlight: { color: "#28A745", fontWeight: "bold" },
   subtitle: {
     textAlign: "center",
     color: "#666",
@@ -214,11 +193,7 @@ const styles = StyleSheet.create({
     width: 60,
     textAlign: "center",
   },
-  phoneInput: {
-    flex: 1,
-    padding: 12,
-    fontSize: 16,
-  },
+  phoneInput: { flex: 1, padding: 12, fontSize: 16 },
   passwordContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -228,14 +203,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     paddingRight: 10,
   },
-  passwordInput: {
-    flex: 1,
-    padding: 12,
-    fontSize: 16,
-  },
-  eyeIcon: {
-    padding: 10,
-  },
+  passwordInput: { flex: 1, padding: 12, fontSize: 16 },
+  eyeIcon: { padding: 10 },
   loginButton: {
     backgroundColor: "#28A745",
     padding: 14,
@@ -243,29 +212,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 20,
   },
-  loginButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  supportContainer: {
-    marginTop: 40,
-    alignItems: "center",
-  },
-  supportText: {
-    color: "#666",
-    fontSize: 14,
-  },
+  loginButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  supportContainer: { marginTop: 40, alignItems: "center" },
+  supportText: { color: "#666", fontSize: 14 },
   supportIcons: {
     flexDirection: "row",
     justifyContent: "center",
     marginTop: 10,
     gap: 40,
   },
-  errorText: {
-    color: "red",
-    fontSize: 13,
-    marginLeft: 4,
-    marginBottom: 4,
-  },
+  errorText: { color: "red", fontSize: 13, marginLeft: 4, marginBottom: 4 },
 });

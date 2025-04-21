@@ -1,26 +1,18 @@
 import { create } from "zustand";
-
-// Định nghĩa kiểu dữ liệu cho lịch làm việc
-interface Schedule {
-  _id: string;
-  patientName: string;
-  date: string; // Ngày làm việc (dạng string hoặc có thể chuyển thành Date tùy ý)
-  timeSlots: { startTime: string; endTime: string }[]; // Thời gian của các ca làm việc
-  status: string; // Trạng thái công việc (ví dụ: "completed", "pending", "cancelled")
-}
+import { Schedule } from "../../types/Schedule";
 
 interface ScheduleStore {
-  schedules: Schedule[]; // Dữ liệu lịch làm việc
-  selectedDay: number; // Ngày được chọn
-  setSchedules: (schedules: Schedule[]) => void; // Cập nhật danh sách lịch làm việc
-  setSelectedDay: (day: number) => void; // Cập nhật ngày đã chọn
+  schedules: Schedule[];
+  selectedDay: Date;
+  setSchedules: (schedules: Schedule[]) => void;
+  setSelectedDay: (day: Date) => void;
 }
 
 const useScheduleStore = create<ScheduleStore>((set) => ({
   schedules: [],
-  selectedDay: new Date().getDate(), // Mặc định là ngày hiện tại
+  selectedDay: new Date(),
   setSchedules: (schedules) => set({ schedules }),
-  setSelectedDay: (day) => set({ selectedDay: day }),
+  setSelectedDay: (date) => set({ selectedDay: date }),
 }));
 
 export default useScheduleStore;
