@@ -56,8 +56,10 @@ app.use("/api/v1/schedules", ScheduleRouter);
 app.use('/api/v1/salaries', SalaryRouter);
 
 const port = process.env.SERVER_PORT || 8080;
-const listener = app.listen(port, () => {
+const listener = app.listen(port, "0.0.0.0", () => {
   console.log(
-    `Server is running on http://localhost:${listener.address().port}`
+    `Server is running on http://${listener.address().address}:${
+      listener.address().port
+    }`
   );
 });
