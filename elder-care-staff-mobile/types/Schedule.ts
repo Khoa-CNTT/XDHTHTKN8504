@@ -6,7 +6,8 @@ export type Schedule = {
   role: string;
   bookingId: string;
   patientName: string;
-  date: Date; 
+  serviceName: string;
+  date: Date;
   timeSlots: TimeSlot[];
   status: string;
   createdAt: Date;

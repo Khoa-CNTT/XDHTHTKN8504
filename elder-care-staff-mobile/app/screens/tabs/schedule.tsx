@@ -11,14 +11,13 @@ import JobDetailModal from "@/app/components/JobDetailModal";
 import ScheduleItem from "@/app/components/ScheduleItem";
 import getSchedules from "../../api/scheduleApi";
 import useScheduleStore from "@/app/stores/scheduleStore";
+import { Schedule } from "@/types/Schedule";
 
-// Kiểu dữ liệu cho ngày
 type Day = {
   day: string;
   date: Date;
 };
 
-// Hàm tạo danh sách 7 ngày trong tuần
 const getWeekDays = (): Day[] => {
   const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
   const today = new Date();
@@ -35,7 +34,6 @@ const getWeekDays = (): Day[] => {
   });
 };
 
-// Component hiển thị danh sách các ngày trong tuần
 const DaySelector = ({
   days,
   selectedDay,
@@ -49,7 +47,8 @@ const DaySelector = ({
     <View style={styles.daySelector}>
       {days.map((item, index) => {
         const isSelected =
-          selectedDay && item.date.toDateString() === selectedDay.toDateString();
+          selectedDay &&
+          item.date.toDateString() === selectedDay.toDateString();
         return (
           <TouchableOpacity
             key={index}
@@ -73,7 +72,6 @@ const DaySelector = ({
   );
 };
 
-// Màn hình chính
 export default function ScheduleScreen() {
   const [loading, setLoading] = useState(false);
   const schedules = useScheduleStore((state) => state.schedules);
@@ -82,7 +80,7 @@ export default function ScheduleScreen() {
   const setSelectedDay = useScheduleStore((state) => state.setSelectedDay);
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [selectedJob, setSelectedJob] = useState<Schedule | null>(null);
 
   useEffect(() => {
     if (!schedules || schedules.length === 0) {
@@ -105,15 +103,14 @@ export default function ScheduleScreen() {
     }
   }, [schedules, setSchedules]);
 
-  // Lọc lịch làm việc theo ngày đã chọn
   const filteredSchedules = Array.isArray(schedules)
     ? schedules.filter(
         (schedule) =>
-          new Date(schedule.date).getTime() === selectedDay.getTime()
+          new Date(schedule.date).toDateString() === selectedDay.toDateString()
       )
     : [];
 
-  const handleSelectJob = (job: any) => {
+  const handleSelectJob = (job: Schedule) => {
     setSelectedJob(job);
     setModalVisible(true);
   };
@@ -133,7 +130,7 @@ export default function ScheduleScreen() {
       ) : (
         <FlatList
           data={filteredSchedules}
-          keyExtractor={(item) => item._id || item.date.toString()}
+          keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
             <ScheduleItem
               schedule={item}
@@ -148,11 +145,11 @@ export default function ScheduleScreen() {
         />
       )}
 
-      <JobDetailModal
+      {/* <JobDetailModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         job={selectedJob || {}}
-      />
+      /> */}
     </View>
   );
 }
@@ -187,4 +184,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 10,
   },
- 
+  dayItemSelected: {
+    backgroundColor: "#28A745",
+  },
+  dayLabel: {
+    fontSize: 14,
+    color: "#6c757d",
+  },
+  dayLabelSelected: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  dateLabel: {
+    fontSize: 16,
+    color: "#333",
+  },
+  dateLabelSelected: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+});
