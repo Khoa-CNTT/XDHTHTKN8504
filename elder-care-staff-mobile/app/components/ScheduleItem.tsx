@@ -21,7 +21,7 @@ interface ScheduleItemProps {
 }
 
 const ScheduleItem: React.FC<ScheduleItemProps> = ({ schedule, onPress }) => {
-  const { patientName, timeSlots, status, serviceName } = schedule;
+  const { _id, patientName, timeSlots, status, serviceName } = schedule;
 
   const time = timeSlots
     .map((slot) => {

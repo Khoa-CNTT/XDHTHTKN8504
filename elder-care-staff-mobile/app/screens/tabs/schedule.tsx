@@ -12,6 +12,7 @@ import ScheduleItem from "@/app/components/ScheduleItem";
 import getSchedules from "../../api/scheduleApi";
 import useScheduleStore from "@/app/stores/scheduleStore";
 import { Schedule } from "@/types/Schedule";
+import { router } from "expo-router";
 
 type Day = {
   day: string;
@@ -111,8 +112,8 @@ export default function ScheduleScreen() {
     : [];
 
   const handleSelectJob = (job: Schedule) => {
-    setSelectedJob(job);
-    setModalVisible(true);
+    router.push(`/screens/schedule-detail/${job._id}`);
+    console.log("Navigating to", `/screens/schedule-detail/${job._id}`);
   };
 
   return (
