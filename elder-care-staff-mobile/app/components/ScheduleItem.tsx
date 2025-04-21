@@ -1,12 +1,26 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { format } from "date-fns";
+import { Schedule } from "@/types/Schedule";
 
-export interface Schedule {
-  _id: string;
-  patientName: string;
-  date: string;
-  timeSlots: { startTime: string; endTime: string }[];
-  status: string;
-}
+// Hàm chuyển đổi thời gian từ UTC sang giờ Việt Nam
+const toVietnamDate = (isoString: string): Date => {
+  const date = new Date(isoString);
+  const utc = date.getTime() + date.getTimezoneOffset() * 60000;
+  return new Date(utc + 7 * 60 * 60000); // Thêm 7 giờ để chuyển sang múi giờ Việt Nam
+};
+
+// Hàm xử lý trạng thái
+const getStatusLabel = (status: string) => {
+  const statusMap: Record<string, string> = {
+    "scheduled": "Đang lên lịch",
+    "pending": "Đang lên lịch",
+    "waiting": "Đang lên lịch",
+    "in-progress": "Đang thực hiện",
+    "started": "Đang thực hiện",
+    "default": "Không thực hiện",
+  };
+  return statusMap[status] || statusMap["default"];
+};
 
 interface ScheduleItemProps {
   schedule: Schedule;
@@ -18,10 +32,14 @@ const ScheduleItem: React.FC<ScheduleItemProps> = ({ schedule, onPress }) => {
 
   // Ghép các khung giờ thành chuỗi: "08:00 - 10:00, 13:00 - 15:00"
   const time = timeSlots
-    .map((slot) => `${slot.startTime} - ${slot.endTime}`)
+    .map((slot) => `${format(toVietnamDate(slot.startTime), "HH:mm")} - ${format(toVietnamDate(slot.endTime), "HH:mm")}`)
     .join(", ");
 
-  const formattedDate = new Date(date).toLocaleDateString("vi-VN");
+  // Dùng date-fns để format ngày thành định dạng "dd/MM/yyyy"
+  const formattedDate = format(toVietnamDate(date), "dd/MM/yyyy");
+
+  // Lấy nhãn trạng thái
+  const statusLabel = getStatusLabel(status);
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
@@ -32,13 +50,7 @@ const ScheduleItem: React.FC<ScheduleItemProps> = ({ schedule, onPress }) => {
         <Text
           style={[styles.status, statusStyles[status] || styles.defaultStatus]}
         >
-          {status === "completed"
-            ? "Hoàn thành"
-            : status === "pending"
-            ? "Đang chờ"
-            : status === "cancelled"
-            ? "Đã hủy"
-            : status}
+          {statusLabel}
         </Text>
       </View>
     </TouchableOpacity>
@@ -91,7 +103,8 @@ const styles = StyleSheet.create({
 
 // Màu tương ứng theo trạng thái
 const statusStyles: Record<string, any> = {
-  completed: { color: "#28A745" },
-  pending: { color: "#FFC107" },
-  cancelled: { color: "#DC3545" },
+  "in-progress": { color: "#28A745" }, // Đang thực hiện
+  scheduled: { color: "#FFC107" }, // Đang lên lịch
+  pending: { color: "#FFC107" }, // Đang lên lịch
+  waiting: { color: "#FFC107" }, // Đang lên lịch
 };
