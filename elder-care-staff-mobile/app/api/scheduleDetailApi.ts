@@ -1,34 +1,35 @@
-import { ScheduleResponse } from "@/types/ScheduleDetailResponse";
+import { PatientProfile } from "../../types/PatientProfile";
 import API from "@/utils/api";
 
 // Hàm fetch thông tin hồ sơ bệnh nhân từ API
 const fetchPatientProfile = async (
   scheduleId: string
-): Promise<ScheduleResponse | null> => {
+): Promise<PatientProfile | null> => {
+  // Trả về PatientProfile thay vì ScheduleResponse
   try {
-    // Dùng cú pháp đúng của generic <>{}
-    const response = await API.get<{ patientProfile: ScheduleResponse }>(
-      `/${scheduleId}/patient-profile`
-    );
+    // Gọi API để lấy thông tin hồ sơ bệnh nhân
+    const response = await API.get<{
+      message: string;
+      patientProfile: PatientProfile;
+    }>(`/schedules/${scheduleId}/patient-profile`);
 
-    // Trả về thông tin hồ sơ bệnh nhân
+    // Trả về chỉ profile của bệnh nhân
     return response.data.patientProfile;
   } catch (error: any) {
-    // Kiểm tra lỗi từ server (có phản hồi nhưng mã lỗi không phải 2xx)
-    if (error.response) {
-      console.error("Lỗi từ server:", error.response.data);
-    }
-    // Kiểm tra lỗi khi không nhận được phản hồi
-    else if (error.request) {
-      console.error("Không nhận được phản hồi từ server:", error.request);
-    }
-    // Xử lý lỗi khác
-    else {
-      console.error("Lỗi khác:", error.message);
-    }
+  if (error.response) {
+    // Lỗi từ server
+    console.error("Lỗi từ server:", error.response.data);
+  } else if (error.request) {
+    // Không có phản hồi từ server
+    console.error("Không nhận được phản hồi từ server:", error.request);
+  } else {
+    // Lỗi khác
+    console.error("Lỗi khác:", error.message);
+  }
 
     // Trả về null nếu có lỗi xảy ra
     return null;
   }
 };
+
 export default fetchPatientProfile;
