@@ -2,38 +2,46 @@ import React, { useState } from "react";
 import { Button, Input } from "../components/Form";
 import { BiLogInCircle } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("family_member");
   const handleLogin = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/api/v1/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password, role }),
-      });
+      console.log("Đăng nhập với:", phone, password); // Kiểm tra xem có dữ liệu không
 
-      const data = await response.json();
+      const response = await axios.post(
+        "http://localhost:5000/api/v1/auth/login",
+        { phone, password },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      if (response.ok) {
-        alert("Đăng nhập thành công!");
-        // Nếu có token hoặc user info thì lưu lại ở localStorage:
-        // localStorage.setItem("token", data.token);
-        navigate("/");
-      } else {
-        alert("Đăng nhập thất bại: " + data.message);
+      const { token, user } = response.data;
+
+      // Kiểm tra role
+      if (user.role !== 'admin') {
+        alert('Chỉ admin mới được phép đăng nhập!');
+        return;
       }
+
+      //Lưu token và cho vào trang admin
+      localStorage.setItem('token', token);
+      navigate("/");
+      console.log("Login response:", response.data);
     } catch (error) {
-      alert("Lỗi kết nối server: " + error.message);
+      console.error("Login error:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Đăng nhập thất bại!");
     }
   };
+
   return (
     <div className="w-full h-screen flex-colo bg-greenok">
       <form className="w-2/5 p-8 rounded-2xl mx-auto bg-white flex-colo">
@@ -44,15 +52,15 @@ function Login() {
         />
         <div className="flex flex-col gap-4 w-full mb-6">
           <Input
-            label="Email"
-            type="email"
+            label="Số điện thoại"
+            type="text"
             color={true}
-            placeholder={"admin@gmail.com"}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            placeholder={"Nhập số điện thoại của bạn"}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
           />
           <Input
-            label="Password"
+            label="Mật khẩu"
             type="password"
             color={true}
             placeholder={"*********"}
@@ -79,7 +87,7 @@ function Login() {
               Quên mật khẩu?
             </span>
           </p>
-          <p className="mt-2">
+          {/* <p className="mt-2">
             Bạn chưa có tài khoản?{" "}
             <span
               className="text-blue-500 cursor-pointer hover:underline"
@@ -87,7 +95,7 @@ function Login() {
             >
               Đăng ký tại đây
             </span>
-          </p>
+          </p> */}
         </div>
       </form>
     </div>

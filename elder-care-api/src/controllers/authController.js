@@ -108,6 +108,7 @@ const authController = {
         token,
         user: userToReturn,
       });
+      console.log(req.body); 
     } catch (error) {
       console.error("Lỗi khi đăng nhập:", error);
       res.status(500).json({

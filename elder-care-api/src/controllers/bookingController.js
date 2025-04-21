@@ -2,6 +2,7 @@ import Booking from "../models/Booking.js";
 import Profile from "../models/Profile.js";
 import Schedule from "../models/Schedule.js";
 import moment from "moment-timezone";
+import Service from "../models/Service.js";
 
 const bookingController = {
     // create new booking
@@ -85,6 +86,12 @@ const bookingController = {
             booking.acceptedBy = staff._id;
             await booking.save();
 
+            // Lấy thông tin service qua booking.serviceId
+            const service = await Service.findById(booking.serviceId);
+            if (!service) {
+                return res.status(404).json({ message: 'Không tìm thấy dịch vụ liên quan' });
+            }
+
             const profile = await Profile.findById(booking.profileId);
             if (!profile) {
                 return res.status(404).json({ message: 'Không tìm thấy thông tin bệnh nhân' });
@@ -102,8 +109,6 @@ const bookingController = {
             const timeZone = 'Asia/Ho_Chi_Minh'; // Múi giờ của Việt Nam (GMT+7)
             let currentDate = moment.tz(booking.repeatFrom, timeZone);
 
-            const dateStr = currentDate.clone().format('YYYY-MM-DD'); // lấy ngày dạng "2025-04-19"
-
             while (currentDate <= new Date(booking.repeatTo)) {
                 // Lặp qua các thời gian của mỗi ngày
                 timeSlots.forEach(timeSlot => {
@@ -112,6 +117,7 @@ const bookingController = {
                         role: staff.role,
                         bookingId: booking._id,
                         patientName: patientName,
+                        serviceName: service.name,
                         date: currentDate.clone().toDate(), // Ngày làm việc
                         timeSlots: [
                             {
@@ -134,6 +140,7 @@ const bookingController = {
 
             return res.status(200).json({
                 message: 'Đã chấp nhận lịch hẹn và tạo lịch làm việc thành công',
+                schedule: schedulePromises,
             });
         } catch (error) {
             console.error(error);

@@ -47,7 +47,7 @@ app.use(
 );
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // ✅ fixed here
+app.use(express.urlencoded({ extended: true })); 
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(morgan("common"));
 
