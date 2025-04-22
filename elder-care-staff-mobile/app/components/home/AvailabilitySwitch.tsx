@@ -10,7 +10,7 @@ const AvailabilitySwitch = ({
 }) => {
   return (
     <View style={styles.statusContainer}>
-      <Text style={styles.statusText}>Sẵn sàng nhận ca</Text>
+      <Text style={styles.statusText}>Sẵn sàng nhận đặt lịch</Text>
       <Switch value={isAvailable} onValueChange={setIsAvailable} />
     </View>
   );

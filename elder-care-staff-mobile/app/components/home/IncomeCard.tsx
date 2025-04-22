@@ -22,6 +22,7 @@ const IncomeCard: React.FC<IncomeCardProps> = ({
     <TouchableOpacity onPress={onPress}>
       <Card style={styles.card}>
         <Card.Title
+          titleStyle={{ fontSize: 16, fontWeight: "bold" }}
           title={title}
           left={() => <Ionicons name={icon as any} size={24} color={color} />} // Cast icon
         />

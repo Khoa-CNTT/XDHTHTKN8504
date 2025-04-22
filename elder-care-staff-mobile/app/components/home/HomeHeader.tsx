@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Image, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 const HomeHeader = () => {
   return (
@@ -14,13 +15,15 @@ const HomeHeader = () => {
           name="notifications-outline"
           size={24}
           color="black"
-          onPress={() => alert("Xem thông báo")}
+          onPress={() => 
+            router.push("/screens/notification/Notifications")}
         />
         <Ionicons
           name="chatbubble-outline"
           size={24}
           color="black"
-          onPress={() => alert("Nhắn tin")}
+          onPress={() => 
+            router.push("../chat")}
         />
       </View>
     </View>
