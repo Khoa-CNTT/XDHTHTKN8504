@@ -26,11 +26,11 @@ const Header: React.FC<HeaderProps> = ({ onMessagePress }) => {
   return (
     <View style={styles.container}>
       <View>
-        <Text style={styles.locationLabel}>Location</Text>
+        
         <TouchableOpacity style={styles.locationButton}>
-          <Ionicons name="location" size={20} color="#333" />
-          <Text style={styles.locationText}>Seattle, USA</Text>
-          <Ionicons name="chevron-down" size={20} color="#333" />
+          <Ionicons name="home" size={20} color="#333" />
+          <Text style={styles.locationText}>Sức Khỏe</Text>
+
         </TouchableOpacity>
       </View>
       <View style={styles.iconsContainer}>

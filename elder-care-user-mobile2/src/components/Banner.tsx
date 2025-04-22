@@ -11,6 +11,7 @@ type RootStackParamList = {
   DoctorDetails: { doctor: any };
   BookAppointment: { doctor: any };
   FeaturedService: undefined; // Add FeaturedServiceScreen to the navigation stack
+  Booking: undefined;
   AllDoctors: undefined;
 };
 
@@ -65,7 +66,9 @@ const Banner: React.FC = () => {
 
   const handleBannerPress = () => {
     // navigation.navigate('AllDoctors'); 
-    navigation.navigate('FeaturedService'); // ssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+    // navigation.navigate('FeaturedService');
+    navigation.navigate('Booking');
+    
     
     // Navigate to FeaturedServiceScreen
   };

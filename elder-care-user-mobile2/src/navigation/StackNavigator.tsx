@@ -18,7 +18,12 @@ import Favorites from "../screens/Favorites";
 import Notifications from "../screens/Notifications";
 import MapScreen from "../screens/MapScreen";
 import FeaturedServiceScreen from '../screens/FeaturedServiceScreen';
-import PaymentScreen from '../screens/PaymentScreen';
+import BookingScreen from '../screens/BookingScreen';
+import AddCareRecipientScreen from '../screens/AddCareRecipientScreen';
+import BookVisitScreen from '../screens/BookAVisit.Screen';
+
+import BookingSuccessScreen from '../screens/BookingSuccessScreen';
+
 
 
 
@@ -39,7 +44,10 @@ export type RootStackParamList = {
   Notifications: undefined;
   Map: undefined;
   FeaturedService: undefined;
-  Payment: undefined; // Add Payment screen
+  Booking: undefined;
+  AddCareRecipient: undefined;
+  BookVisit: undefined;
+  BookingSuccess: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -54,11 +62,12 @@ const StackNavigator = (): JSX.Element => {
       id={undefined}
       screenOptions={defaultScreenOptions}
     >
-      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+      {/* <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
-      <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
+      <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} /> */}
+      
       {/* Add other screens here */}
 
       <Stack.Screen name="Home" component={HomeScreen} />
@@ -71,7 +80,19 @@ const StackNavigator = (): JSX.Element => {
       <Stack.Screen name="Notifications" component={Notifications} />
       <Stack.Screen name="Map" component={MapScreen} />
       <Stack.Screen name="FeaturedService" component={FeaturedServiceScreen} />
-      <Stack.Screen name="Payment" component={PaymentScreen} />
+      <Stack.Screen name="Booking" component={BookingScreen} />
+      <Stack.Screen name="AddCareRecipient" component={AddCareRecipientScreen} />
+      <Stack.Screen name="BookVisit" component={BookVisitScreen} />
+      
+      
+
+
+      <Stack.Screen name="BookingSuccess" component={BookingSuccessScreen} />
+
+      {/* Add other screens here */}
+      {/* <Stack.Screen name="AddCareRecipient" component={AddCareRecipientScreen} /> */}
+      {/* Add other screens here */}
+      {/* <Stack.Screen name="AddCareRecipient" component={AddCareRecipientScreen} /> */}
       {/* Add other screens here */}
     </Stack.Navigator>
   );

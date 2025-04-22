@@ -10,7 +10,7 @@ type RootStackParamList = {
   MyBookings: undefined;
   Profile: undefined;
   Map: undefined;
-  Payment: undefined; // Add Payment screen
+  Booking: undefined; // Changed from Payment to Booking
   DoctorDetails: { doctor: any };
   BookAppointment: { doctor: any };
 };
@@ -58,12 +58,12 @@ const Footer: React.FC = () => {
       </TouchableOpacity>
       <TouchableOpacity 
         style={styles.tab}
-        onPress={() => handleNavigation('Payment')} // Navigate to Payment screen
+        onPress={() => handleNavigation('Booking')} // Navigate to Booking screen
       >
         <Ionicons 
-          name="card" // Payment icon
+          name="book" // Changed icon to represent Booking
           size={24} 
-          color={isActiveRoute('Payment') ? '#2E3A59' : '#666'} 
+          color={isActiveRoute('Booking') ? '#2E3A59' : '#666'} 
         />
       </TouchableOpacity>
       <TouchableOpacity 
