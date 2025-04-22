@@ -2,6 +2,8 @@ import dotenv from "dotenv";
 import User from "../models/User.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
+import cloudinary from "../config/cloudinary.js";
+import fs from "fs";
 
 dotenv.config();
 
@@ -108,7 +110,7 @@ const authController = {
         token,
         user: userToReturn,
       });
-      console.log(req.body); 
+      console.log(req.body);
     } catch (error) {
       console.error("Lỗi khi đăng nhập:", error);
       res.status(500).json({
@@ -117,6 +119,38 @@ const authController = {
       });
     }
   },
+
+  uploadAvatar: async (req, res) => {
+    try {
+      const userId = req.user; // Lấy từ token đã xác thực
+      const file = req.file;
+
+      if (!file) return res.status(400).json({ message: "No file uploaded" });
+
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: "elder-care/avatar"
+      });
+
+      fs.unlinkSync(file.path); // Xoá file tạm
+
+      const user = await User.findByIdAndUpdate(
+        userId,
+        { avatar: result.secure_url },
+        { new: true }
+      );
+
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      res.status(200).json({
+        message: "Avatar uploaded successfully",
+        avatarUrl: result.secure_url,
+        user
+      });
+
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  }
 };
 
 export default authController;

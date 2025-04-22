@@ -5,14 +5,14 @@ import moment from "moment";
 import Service from "../models/Service.js";
 
 const scheduleController = {
-// Truy vấn danh sách công việc đã hoàn thành trong 1 tháng
+    // Truy vấn danh sách công việc đã hoàn thành trong 1 tháng
     getComplatedInMonth: async (req, res) => {
         try {
-            const { staffId } = req.params;
+            const { _id: staffId } = req.user;
             const { year, month } = req.query;
 
-            if (!staffId || !year || !month) {
-                return res.status(400).json({ message: 'Cần truyền vào staffId, năm và tháng' });
+            if (!year || !month) {
+                return res.status(400).json({ message: 'Cần truyền vào năm và tháng' });
             }
 
             const startOfMonth = moment(`${year}-${month}-01`).startOf('month').toDate();
@@ -30,26 +30,21 @@ const scheduleController = {
 
             const jobDetails = [];
 
-            // Lấy thông tin chi tiết của từng công việc
             for (let schedule of completedSchedules) {
-                const staff = schedule.staffId;
                 const booking = schedule.bookingId;
 
-                // Nếu không tìm thấy bookingId, bỏ qua
                 if (!booking) continue;
 
-                // Lấy thông tin dịch vụ từ booking
                 const service = await Service.findById(booking.serviceId);
                 const profile = await Profile.findById(booking.profileId);
-                const fullName = `${profile.firstName} ${profile.lastName}`;
 
-                // Truyền thông tin chi tiết công việc, bao gồm tên dịch vụ
                 jobDetails.push({
-                    patientName: profile.firstName + ' ' + profile.lastName,
+                    patientName: profile ? `${profile.firstName} ${profile.lastName}` : 'Không có thông tin bệnh nhân',
                     serviceName: service ? service.name : 'Không tìm thấy dịch vụ',
-                    address: profile.address,
+                    address: profile?.address || '',
                     notes: booking.notes,
                     jobDate: schedule.date,
+                    totalPrice: booking.totalDiscount || 0
                 });
             }
 
@@ -65,7 +60,7 @@ const scheduleController = {
 
     getAllSchedulesByStaffId: async (req, res) => {
         try {
-            const staffId = req.user._id; // Lấy từ middleware auth
+            const staffId = req.user._id;
 
             const schedules = await Schedule.find({ staffId })
                 .sort({ date: 1, "timeSlots.startTime": 1 });

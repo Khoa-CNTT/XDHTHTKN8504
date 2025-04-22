@@ -102,7 +102,7 @@ const bookingController = {
     acceptBooking: async (req, res) => {
         try {
             const { bookingId } = req.params;
-            const staff = req.user; // đã xác thực => có thông tin staff
+            const staff = req.user; 
 
             // Tìm booking theo bookingId
             const booking = await Booking.findById(bookingId);
@@ -193,7 +193,7 @@ const bookingController = {
 
     getBookingById: async (req, res) => {
         try {
-            const { staffId } = req.user;
+            const { staffId } = req.user._id;
             const { bookingId } = req.params;
 
             // Tìm booking theo bookingId
@@ -206,6 +206,8 @@ const bookingController = {
             if (booking.staffId && booking.staffId.toString() !== staffId.toString()) {
                 return res.status(403).json({ message: 'Bạn không có quyền truy cập vào booking này' });
             }
+
+            console.log("Người dùng từ token:", req.user);
 
             // Trả về thông tin booking
             return res.status(200).json({

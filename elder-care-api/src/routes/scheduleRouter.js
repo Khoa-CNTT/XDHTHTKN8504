@@ -6,12 +6,9 @@ import auth from '../middlewares/auth.js';
 const router = express.Router();
 
 router.get(
-  "/:_id/patient-profile",
-  scheduleController.getScheduleByBookingId
-);
-
-router.get(
-  "/:staffId/completed-jobs",
+  "/completed-jobs",
+  auth,
+  authorizeRoles("doctor", "nurse"),
   scheduleController.getComplatedInMonth
 );
 

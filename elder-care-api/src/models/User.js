@@ -9,6 +9,7 @@ const userSchema = new Schema({
         enum: ["family_member", "nurse", "doctor" ,"admin"],
         default: "family_member"
     },
+    avatar: { type: String },
     // Chỉ áp dụng cho family_member
     profiles: [{
         type: Schema.Types.ObjectId,
