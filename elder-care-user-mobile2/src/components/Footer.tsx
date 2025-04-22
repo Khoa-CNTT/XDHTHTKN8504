@@ -10,6 +10,7 @@ type RootStackParamList = {
   MyBookings: undefined;
   Profile: undefined;
   Map: undefined;
+  Booking: undefined; // Changed from Payment to Booking
   DoctorDetails: { doctor: any };
   BookAppointment: { doctor: any };
 };
@@ -22,20 +23,11 @@ const Footer: React.FC = () => {
   const route = useRoute<RouteProps>();
 
   const handleNavigation = (screenName: keyof RootStackParamList) => {
-    console.log(`Attempting to navigate to ${screenName}`);
-    try {
-      if (screenName === 'DoctorDetails' || screenName === 'BookAppointment') {
-        console.log('Cannot navigate directly to this screen');
-        return;
-      }
-      navigation.navigate({
-        name: screenName,
-        params: undefined
-      });
-      console.log(`Successfully navigated to ${screenName}`);
-    } catch (error) {
-      console.error(`Navigation error to ${screenName}:`, error);
+    if (screenName === 'DoctorDetails' || screenName === 'BookAppointment') {
+      console.log('Cannot navigate directly to this screen');
+      return;
     }
+    navigation.navigate(screenName);
   };
 
   const isActiveRoute = (routeName: keyof RootStackParamList) => {
@@ -65,6 +57,16 @@ const Footer: React.FC = () => {
         />
       </TouchableOpacity>
       <TouchableOpacity 
+        style={styles.tab}
+        onPress={() => handleNavigation('Booking')} // Navigate to Booking screen
+      >
+        <Ionicons 
+          name="book" // Changed icon to represent Booking
+          size={24} 
+          color={isActiveRoute('Booking') ? '#2E3A59' : '#666'} 
+        />
+      </TouchableOpacity>
+      <TouchableOpacity 
         style={styles.tab} 
         onPress={() => handleNavigation('MyBookings')}
       >
@@ -90,6 +92,10 @@ const Footer: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
+    position: 'absolute', // Fix the Footer at the bottom
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
@@ -97,7 +103,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: '#eee',
-    paddingBottom: 20,
   },
   tab: {
     alignItems: 'center',
