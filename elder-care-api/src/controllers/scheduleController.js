@@ -5,42 +5,7 @@ import moment from "moment";
 import Service from "../models/Service.js";
 
 const scheduleController = {
-    //Get schedule by bookingId
-    getScheduleByBookingId: async (req, res) => {
-        try {
-            const { _id } = req.params;
-
-            const schedule = await Schedule.findById(_id).populate('bookingId');
-            if (!schedule) {
-                return res.status(404).json({
-                    message: "Lịch hẹn không tồn tại"
-                });
-            }
-
-            const booking = schedule.bookingId;
-            if (!booking) {
-                return res.status(404).json({ message: 'Không tìm thấy đơn đặt lịch' });
-            }
-
-            const profileId = booking.profileId;
-
-            // Truy vấn thông tin Profile của bệnh nhân
-            const patientProfile = await Profile.findById(profileId);
-            if (!patientProfile) {
-                return res.status(404).json({ message: 'Không tìm thấy hồ sơ bệnh nhân' });
-            }
-
-            return res.status(200).json({
-                message: 'Thông tin hồ sơ bệnh nhân',
-                patientProfile
-            });
-        } catch (error) {
-            console.error("Lỗi khi lấy lịch hẹn:", error);
-            res.status(500).json({ message: "Lỗi server" });
-        }
-    },
-
-    // Truy vấn danh sách công việc đã hoàn thành trong 1 tháng
+// Truy vấn danh sách công việc đã hoàn thành trong 1 tháng
     getComplatedInMonth: async (req, res) => {
         try {
             const { staffId } = req.params;

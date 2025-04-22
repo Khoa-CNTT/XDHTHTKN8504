@@ -78,4 +78,11 @@ router.patch(
     bookingController.acceptBooking
 );
 
+router.get(
+    '/get-booking/:bookingId',
+    auth,
+    authorizeRoles("doctor", "nurse"),
+    bookingController.getBookingById
+)
+
 export default router
