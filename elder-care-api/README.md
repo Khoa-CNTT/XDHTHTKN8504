@@ -26,3 +26,12 @@ Get Booking By Id
 METHOD: get
 http://localhost:5000/api/v1/bookings/get-booking/{_id}
 {_id}: là id của booking
+
+Get Booking Completed 
+MEDTHOD: get
+http://localhost:5000/api/v1/bookings/get-bookings-completed?year=2025&month=04
+
+Update Status Schedule
+METHOD: put
+http://localhost:5000/api/v1/schedules/update-schedule/{_id}
+{_id}: id cua schedule

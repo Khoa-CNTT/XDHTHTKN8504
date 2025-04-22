@@ -4,6 +4,28 @@ import Profile from "../models/Profile.js";
 import moment from "moment";
 import Service from "../models/Service.js";
 
+const updateBookingStatus = async (bookingId) => {
+    try {
+        const schedules = await Schedule.find({ bookingId });
+
+        const allCompleted = schedules.every(schedule => schedule.status === 'completed');
+
+        if (allCompleted) {
+            const updatedBooking = await Booking.findByIdAndUpdate(
+                bookingId,
+                { status: 'completed' },
+                { new: true }
+            );
+            return updatedBooking;
+        }
+
+        return null;
+    } catch (error) {
+        console.error("Lỗi khi cập nhật trạng thái booking:", error);
+        return null;
+    }
+};
+
 const scheduleController = {
     // Truy vấn danh sách công việc đã hoàn thành trong 1 tháng
     getComplatedInMonth: async (req, res) => {
@@ -77,6 +99,46 @@ const scheduleController = {
             });
         }
     },
+
+    updateScheduleStatus: async (req, res) => {
+        try {
+            const { _id: staffId } = req.user;
+            const { scheduleId } = req.params;  
+            const { status } = req.body; 
+
+            // Cập nhật trạng thái của schedule
+            const updatedSchedule = await Schedule.findByIdAndUpdate(
+                scheduleId,
+                { status: status },
+                { new: true }  
+            );
+
+            if (!updatedSchedule) {
+                return res.status(404).json({ message: 'Schedule không tồn tại' });
+            }
+
+            // Kiểm tra và cập nhật trạng thái của booking nếu cần
+            const updatedBooking = await updateBookingStatus(updatedSchedule.bookingId);
+
+            if (updatedBooking) {
+                return res.status(200).json({
+                    message: 'Cập nhật trạng thái thành công và booking đã được hoàn thành',
+                    schedule: updatedSchedule,
+                    booking: updatedBooking
+                });
+            }
+
+            // Trả về kết quả cập nhật chỉ cho schedule
+            res.status(200).json({
+                message: 'Cập nhật trạng thái schedule thành công',
+                schedule: updatedSchedule
+            });
+
+        } catch (error) {
+            console.error("Lỗi khi cập nhật trạng thái:", error);
+            return res.status(500).json({ message: 'Lỗi server', error: error.message });
+        }
+    }
 }
 
 export default scheduleController;

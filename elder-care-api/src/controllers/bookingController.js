@@ -102,7 +102,7 @@ const bookingController = {
     acceptBooking: async (req, res) => {
         try {
             const { bookingId } = req.params;
-            const staff = req.user; 
+            const staff = req.user;
 
             // Tìm booking theo bookingId
             const booking = await Booking.findById(bookingId);
@@ -219,6 +219,51 @@ const bookingController = {
                 message: "Internal server error",
                 error: error.message,
             });
+        }
+    },
+
+    getCompletedBookings: async (req, res) => {
+        try {
+            const { _id: staffId } = req.user;
+            const { year, month } = req.query;
+
+            if (!year || !month) {
+                return res.status(400).json({ message: 'Cần truyền vào năm và tháng' });
+            }
+
+            const startOfMonth = moment(`${year}-${month}-01`).startOf('month').toDate();
+            const endOfMonth = moment(`${year}-${month}-01`).endOf('month').toDate();
+
+            // Tìm tất cả các booking đã completed trong tháng này, mà staff đó đã tham gia
+            const bookings = await Booking.find({
+                status: 'completed',
+                'participants.userId': staffId,
+                updatedAt: { $gte: startOfMonth, $lte: endOfMonth },
+            }).populate('profileId serviceId');
+
+            if (!bookings.length) {
+                return res.status(404).json({ message: 'Không có lịch hoàn thành trong tháng này' });
+            }
+
+            const results = bookings.map(booking => ({
+                patientName: booking.profileId?.firstName + ' ' + booking.profileId?.lastName,
+                // serviceName: booking.serviceId?.name,
+                // address: booking.profileId?.address,
+                // notes: booking.notes,
+                // totalPrice: booking.totalPrice,//
+                salary: booking.totalDiscount,
+                // isRecurring: booking.isRecurring,
+                completedAt: booking.updatedAt,
+            }));
+
+            return res.status(200).json({
+                message: 'Danh sách booking đã hoàn thành trong tháng',
+                bookings: results,
+            });
+
+        } catch (error) {
+            console.error("Lỗi khi lấy booking:", error);
+            return res.status(500).json({ message: 'Lỗi server', error: error.message });
         }
     }
 }

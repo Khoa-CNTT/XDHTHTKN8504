@@ -14,7 +14,6 @@ import BookingRouter from "./src/routes/bookingRouter.js";
 import DoctorRouter from "./src/routes/doctorRouter.js";
 import NurseRouter from "./src/routes/nurseRouter.js";
 import ScheduleRouter from './src/routes/scheduleRouter.js';
-import SalaryRouter from './src/routes/salaryRouter.js';
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./src/config/swaggerConfig.js";
 
@@ -41,7 +40,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(
   cors({
     origin: "*",
-    methods: ["POST", "GET", "PUT", "DELETE"],
+    methods: ["POST", "GET", "PUT", "DELETE", "PATCH"],
     credentials: true,
   })
 );
@@ -65,7 +64,6 @@ app.use("/api/v1/bookings", BookingRouter);
 app.use("/api/v1/doctors", DoctorRouter);
 app.use("/api/v1/nurses", NurseRouter);
 app.use("/api/v1/schedules", ScheduleRouter);
-app.use('/api/v1/salaries', SalaryRouter);
 
 const port = process.env.SERVER_PORT || 8080;
 const listener = app.listen(port, () => {
