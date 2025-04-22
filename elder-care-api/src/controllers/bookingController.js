@@ -28,17 +28,44 @@ const bookingController = {
                 return res.status(404).json({ message: "Không tìm thấy hồ sơ (profile)" });
             }
 
+            const service = await Service.findById(serviceId);
+            if (!service) {
+                return res.status(404).json({ message: "Không tìm thấy dịch vụ" });
+            }
+
             // Kiểm tra quyền của family_member
-            if (role === "family_member") {
+            if (role === "family_member" || role === "admin") {
                 if (profile.userId.toString() !== userId.toString()) {
                     return res.status(403).json({ message: "Không có quyền đặt lịch cho profile này" });
                 }
             }
 
             // Kiểm tra thời gian lặp lại
-            if (new Date(repeatFrom) >= new Date(repeatTo)) {
+            const fromDate = new Date(repeatFrom);
+            const toDate = new Date(repeatTo);
+
+            if (fromDate >= toDate) {
                 return res.status(400).json({ message: "Ngày bắt đầu phải nhỏ hơn ngày kết thúc" });
             }
+
+            // Tính số ngày
+            const daysDiff = Math.floor((toDate - fromDate) / (1000 * 60 * 60 * 24)) + 1;
+
+            // Tính số giờ mỗi ngày (có xử lý qua đêm)
+            const getHoursDiff = (start, end) => {
+                const [sh, sm] = start.split(":").map(Number);
+                const [eh, em] = end.split(":").map(Number);
+                const startMin = sh * 60 + sm;
+                const endMin = eh * 60 + em;
+                const diff = endMin >= startMin ? endMin - startMin : 24 * 60 - startMin + endMin;
+                return diff / 60;
+            };
+
+            const hoursPerDay = getHoursDiff(timeSlot.start, timeSlot.end);
+
+            // Tổng tiền
+            const totalPrice = hoursPerDay * daysDiff * service.price;
+            const totalDiscount = totalPrice * service.percentage;
 
             // Xác định nếu là lịch lặp lại
             const isRecurring = new Date(repeatFrom).toDateString() !== new Date(repeatTo).toDateString();
@@ -54,6 +81,8 @@ const bookingController = {
                 repeatFrom,
                 repeatTo,
                 timeSlot,
+                totalPrice,
+                totalDiscount,
                 isRecurring // Xác định giá trị này dựa trên repeatFrom và repeatTo
             });
 
@@ -80,11 +109,6 @@ const bookingController = {
             if (!booking) {
                 return res.status(404).json({ message: 'Đơn đặt lịch không tồn tại' });
             }
-
-            // Cập nhật trạng thái booking
-            booking.status = 'accepted';
-            booking.acceptedBy = staff._id;
-            await booking.save();
 
             // Lấy thông tin service qua booking.serviceId
             const service = await Service.findById(booking.serviceId);
@@ -135,6 +159,25 @@ const bookingController = {
                 currentDate.add(1, 'days');
             }
 
+            // Cập nhật trạng thái booking
+            booking.status = 'accepted';
+            booking.acceptedBy = staff._id;
+
+            // Kiểm tra nếu người staff đã nằm trong participants chưa
+            const alreadyParticipant = booking.participants.some(participant =>
+                participant.userId.toString() === staff._id.toString()
+            );
+
+            if (!alreadyParticipant) {
+                booking.participants.push({
+                    userId: staff._id,
+                    role: staff.role,
+                    acceptedAt: new Date(),
+                });
+            }
+
+            await booking.save();
+
             // Chờ tất cả các lịch làm việc được tạo xong
             await Promise.all(schedulePromises);
 
@@ -147,6 +190,35 @@ const bookingController = {
             return res.status(500).json({ message: 'Lỗi server', error: error.message });
         }
     },
+
+    getBookingById: async (req, res) => {
+        try {
+            const { staffId } = req.user;
+            const { bookingId } = req.params;
+
+            // Tìm booking theo bookingId
+            const booking = await Booking.findById(bookingId).populate("profileId").populate("serviceId");
+            if (!booking) {
+                return res.status(404).json({ message: 'Đơn đặt lịch không tồn tại' });
+            }
+
+            // Kiểm tra quyền truy cập
+            if (booking.staffId && booking.staffId.toString() !== staffId.toString()) {
+                return res.status(403).json({ message: 'Bạn không có quyền truy cập vào booking này' });
+            }
+
+            // Trả về thông tin booking
+            return res.status(200).json({
+                message: 'Lấy thông tin booking thành công',
+                booking: booking,
+            })
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal server error",
+                error: error.message,
+            });
+        }
+    }
 }
 
 export default bookingController;

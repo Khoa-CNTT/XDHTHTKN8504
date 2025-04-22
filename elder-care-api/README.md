@@ -21,3 +21,8 @@ http://localhost:5000/api/v1/schedules/get-schedules
 METHOD: patch
 http://localhost:5000/api/v1/bookings/accept/{_id}
 _id: là id của booking muốn chấp nhận
+
+Get Booking By Id 
+METHOD: get
+http://localhost:5000/api/v1/bookings/get-booking/{_id}
+{_id}: là id của booking
