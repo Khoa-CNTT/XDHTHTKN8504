@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Text, View, ScrollView, StyleSheet, Button } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router"; // Lấy search params và useRouter để back
-import { usePatientStore } from "../../stores/scheduleDetailStore"; // Store bạn tạo
+import usePatientStore from "../../stores/scheduleDetailStore"; // Store bạn tạo
 
 export default function JobDetailScreen() {
   const { scheduleId } = useLocalSearchParams(); // Truy xuất scheduleId từ search params
