@@ -5,12 +5,10 @@ import HomeHeader from "../../components/home/HomeHeader";
 import AvailabilitySwitch from "../../components/home/AvailabilitySwitch";
 import IncomeCard from "../../components/home/IncomeCard";
 import WorkStatsCard from "../../components/home/WorkStatsCard";  
-import AvailableWorkList from "../../components/home/AvailableWorkList"; // Import the AvailableWorkList component
-
+import AvailableWorkList from "../../components/home/AvailableWorkList"; 
 
 const Home = () => {
   const [isAvailable, setIsAvailable] = useState(false);
-  const income = "5,000,000 VNĐ";
   const workHistory = 10;
 
   return (
@@ -25,17 +23,12 @@ const Home = () => {
       <IncomeCard
         title="Thu nhập hiện tại"
         icon="cash-outline"
-        income="10,000,000 VND"
+        income="0 VND"
         color="green"
         onPress={() => alert("Xem chi tiết thu nhập")}
       />
-      <WorkStatsCard workHistory={workHistory} />
-      {/* Công việc đang làm */}
+      <WorkStatsCard />
       <AvailableWorkList />
-
-      <Divider style={styles.divider} />
-
-      {/* Số ca đã làm */}
     </View>
   );
 };

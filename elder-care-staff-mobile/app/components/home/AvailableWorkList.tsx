@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -9,77 +9,21 @@ import {
 } from "react-native";
 import { Card, Divider } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-
-interface Job {
-  id: string;
-  name: string;
-  location: string;
-  time: string;
-  status: string;
-}
-
-const mockData: Job[] = [
-  {
-    id: "1",
-    name: "Chăm sóc ông A",
-    location: "Hà Nội",
-    time: "08:00",
-    status: "Pending_staff",
-  },
-  {
-    id: "2",
-    name: "Hỗ trợ bà B",
-    location: "TP.HCM",
-    time: "10:00",
-    status: "Pending_staff",
-  },
-  {
-    id: "3",
-    name: "Chăm sóc cụ C",
-    location: "Đà Nẵng",
-    time: "14:00",
-    status: "Pending_staff",
-  },
-  {
-    id: "4",
-    name: "Chăm sóc cụ C",
-    location: "Đà Nẵng",
-    time: "14:00",
-    status: "Pending_staff",
-  },
-  {
-    id: "5",
-    name: "Chăm sóc cụ C",
-    location: "Đà Nẵng",
-    time: "14:00",
-    status: "Pending_staff",
-  },
-  {
-    id: "6",
-    name: "Chăm sóc cụ C",
-    location: "Đà Nẵng",
-    time: "14:00",
-    status: "Pending_staff",
-  },
-];
+import useScheduleStore from "../../stores/scheduleStore";
+import { router } from "expo-router";
 
 const AvailableWorkList = () => {
-  const navigation = useNavigation();
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState(true);
+  const schedules = useScheduleStore((state) => state.schedules);
 
-  useEffect(() => {
-    setTimeout(() => {
-      const filteredJobs = mockData.filter(
-        (job) => job.status === "Pending_staff"
-      );
-      setJobs(filteredJobs);
-      setLoading(false);
-    }, 1500);
-  }, []);
+  const today = new Date();
+  const todayStr = today.toDateString();
 
-  if (loading) {
+  const todayJobs = schedules.filter((job) => {
+    const jobDateStr = new Date(job.date).toDateString();
+    return jobDateStr === todayStr;
+  });
+
+  if (!schedules.length) {
     return (
       <ActivityIndicator size="large" color="#007bff" style={styles.loader} />
     );
@@ -89,37 +33,52 @@ const AvailableWorkList = () => {
     <ScrollView>
       <Card style={styles.card}>
         <Card.Title
-          title="Công việc khả dụng"
+          titleStyle={{ fontSize: 16, fontWeight: "bold" }}
+          title="Công việc hôm nay"
           left={() => (
-            <Ionicons name="briefcase-outline" size={24} color="#007bff" />
+            <Ionicons
+              name="calendar-outline"
+              size={24}
+              color="#007bff"
+              style={styles.icon}
+            />
           )}
         />
         <Card.Content>
-          {jobs.length === 0 ? (
-            <Text style={styles.emptyText}>Không có công việc khả dụng</Text>
+          {todayJobs.length === 0 ? (
+            <Text style={styles.emptyText}>
+              Không có công việc trong hôm nay
+            </Text>
           ) : (
-            jobs.map((job, index) => (
-              <View key={job.id}>
+            todayJobs.map((job, index) => (
+              <View key={job._id}>
                 <TouchableOpacity
-                // onPress={() =>
-                //   navigation.navigate("WorkDetail", { workId: job.id })
-                // }
+                  onPress={() =>
+                    router.push(`/screens/schedule-detail/${job._id}`)
+                  }
                 >
                   <View style={styles.jobItem}>
                     <Ionicons
                       name="location-outline"
                       size={20}
                       color="#007bff"
+                      style={styles.icon}
                     />
                     <View style={styles.jobInfo}>
-                      <Text style={styles.jobTitle}>{job.name}</Text>
+                      <Text style={styles.jobTitle}>{job.patientName}</Text>
                       <Text style={styles.jobSubtitle}>
-                        {job.location} - {job.time}
+                        {job.serviceName} -{" "}
+                        {new Date(job.date).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </Text>
                     </View>
                   </View>
                 </TouchableOpacity>
-                {index < jobs.length - 1 && <Divider style={styles.divider} />}
+                {index < todayJobs.length - 1 && (
+                  <Divider style={styles.divider} />
+                )}
               </View>
             ))
           )}
@@ -134,7 +93,7 @@ const styles = StyleSheet.create({
     margin: 10,
     borderRadius: 20,
     backgroundColor: "#fff",
-    elevation: 3, // Hiệu ứng đổ bóng
+    elevation: 3,
   },
   loader: {
     flex: 1,
@@ -151,7 +110,6 @@ const styles = StyleSheet.create({
   },
   jobTitle: {
     fontSize: 16,
-    fontWeight: "bold",
   },
   jobSubtitle: {
     fontSize: 14,
@@ -165,6 +123,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#888",
     marginTop: 10,
+  },
+  icon: {
+    marginRight: 10, // Đảm bảo các icon thẳng hàng với nội dung
   },
 });
 
