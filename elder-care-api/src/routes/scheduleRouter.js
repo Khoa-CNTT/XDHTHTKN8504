@@ -26,4 +26,6 @@ router.put(
   scheduleController.updateScheduleStatus
 );
 
+router.get('/get-schedule-by-profileId/:profileId', scheduleController.getInfoSchedule)
+
 export default router;

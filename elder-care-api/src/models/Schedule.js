@@ -37,7 +37,7 @@ const scheduleSchema = new mongoose.Schema({
     ],
     status: {
         type: String,
-        enum: ['scheduled', 'completed', 'cancelled'],
+        enum: ["scheduled", "waiting_for_nurse", "waiting_for_client", "on_the_way", "check_in" , "in_progress", "check_out", "completed", "canceled"],
         default: 'scheduled',
     },
 }, { timestamps: true });

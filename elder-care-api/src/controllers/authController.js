@@ -150,6 +150,36 @@ const authController = {
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
+  },
+
+  countMembersPerMonth: async (req, res) => {
+    try {
+      // const {_id: userId } = req.user; 
+      const result = await User.aggregate([
+        {
+          $match: { role: "family_member" }
+        },
+        {
+          $group: {
+            _id: { $month: "$createdAt" },
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $sort: { "_id": 1 } 
+        }
+      ]);
+
+      // Tạo mảng 12 tháng, nếu tháng nào không có thì gán 0
+      const counts = Array(12).fill(0);
+      result.forEach((item) => {
+        counts[item._id - 1] = item.count;
+      });
+
+      res.json({ data: counts });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   }
 };
 
