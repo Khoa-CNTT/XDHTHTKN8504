@@ -51,7 +51,7 @@ const ScheduleScreen = () => {
   const renderActionButton = () => {
     if (!schedule) return null;
 
-    const isWithinOneHour = isWithinNextHour(schedule.timeSlots.startTime);
+    const isWithinOneHour = isWithinNextHour(schedule.timeSlots.start);
 
     const buttonStyle = isWithinOneHour
       ? styles.activeButton

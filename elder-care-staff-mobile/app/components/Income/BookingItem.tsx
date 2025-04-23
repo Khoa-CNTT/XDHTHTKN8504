@@ -4,11 +4,12 @@ import { CompletedBooking } from "@/types/CompletedBooking";
 import { formatTime } from "../../../utils/dateHelper"; 
 type BookingItemProps = {
   item: CompletedBooking;
+  onPress?: () => void;
 };
 
-const BookingItem: React.FC<BookingItemProps> = ({ item }) => {
+const BookingItem: React.FC<BookingItemProps> = ({ item, onPress}) => {
   return (
-    <TouchableOpacity style={styles.Item}>
+    <TouchableOpacity style={styles.Item} onPress={onPress}>
       {/* Nếu có avatar, bỏ comment và sử dụng */}
       {/* <Image source={{ uri: item.avatar }} style={styles.avatar} /> */}
       <View style={styles.Details}>
