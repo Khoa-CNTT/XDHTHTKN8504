@@ -1,9 +1,7 @@
 import axios from "axios";
 import Constants from "expo-constants";
 
-const extra = Constants.expoConfig?.extra ?? Constants.manifest2?.extra;
-const apiBaseUrl = extra?.apiBaseUrl;
-
+const apiBaseUrl = Constants.expoConfig?.extra?.API_URL;
 console.log("👉 API BASE URL:", apiBaseUrl);
 
 const API = axios.create({
