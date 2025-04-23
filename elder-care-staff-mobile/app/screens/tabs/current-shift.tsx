@@ -273,10 +273,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#B0B0B0", // Màu nhạt khi isWithinOneHour là false
   },
   activeButtonText: {
-    color: "white", // Text màu trắng khi active
+    color: "white", 
   },
   inactiveButtonText: {
-    color: "#E0E0E0", // Text màu xám nhạt khi inactive
+    color: "#E0E0E0", 
   },
   statusText: {
     textAlign: "center",

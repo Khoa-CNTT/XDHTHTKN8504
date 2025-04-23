@@ -6,18 +6,20 @@ import { Text, Card, Divider, ActivityIndicator } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"; // Sử dụng MaterialCommunityIcons
 import useBookingStore from "../../stores/BookingStore"; // Import store Zustand
 import { Booking } from "@/types/Booking";
+import { useLocalSearchParams } from "expo-router";
 
-interface Props {
-  bookingId: string;
-}
 
-const BookingDetailScreen = ({ bookingId }: Props) => {
+
+const BookingDetailScreen = () => {
+   const { bookingId } = useLocalSearchParams();
   const { booking, loading, error, fetchBooking } = useBookingStore(); 
 
 
   useEffect(() => {
     if (!booking) {
-      fetchBooking(bookingId); 
+      if (typeof bookingId === "string") {
+        fetchBooking(bookingId);
+      }
     }
   }, [booking, bookingId, fetchBooking]);
 
@@ -95,6 +97,7 @@ const BookingDetailScreen = ({ bookingId }: Props) => {
 
   return (
     <ScrollView style={styles.container}>
+      <Text style={styles.headerTitle}>Lịch làm việc</Text>
       {/* 1. Thông tin đặt lịch */}
       <Card style={styles.card}>
         <Card.Title
@@ -157,6 +160,13 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: "#f7f8fa",
+  },
+  headerTitle: {
+    fontSize: 25,
+    fontWeight: "bold",
+    color: "#28A745",
+    textAlign: "center",
+    marginBottom: 15,
   },
   card: {
     marginBottom: 16,
