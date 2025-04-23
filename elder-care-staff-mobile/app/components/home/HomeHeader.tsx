@@ -16,7 +16,7 @@ const HomeHeader = () => {
           size={24}
           color="black"
           onPress={() => 
-            router.push("./screens/notification/Notifications")}
+            router.push("/screens/notification/Notifications")}
         />
         <Ionicons
           name="chatbubble-outline"
