@@ -22,6 +22,7 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({ route, navigation }) =>
     { value: service.experience || 'N/A', label: 'years' },
     { value: service.rating || 'N/A', label: 'rating' },
     { value: service.reviews || 'N/A', label: 'reviews' },
+    //dededede
   ];
 
   return (
