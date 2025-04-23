@@ -12,10 +12,13 @@ import { useState } from "react";
 import ConfirmLogoutModal from "../../components/ConfirmLogoutModal";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
+import useAuthStore from "@/app/stores/authStore";
+
+
 
 const menuItems = [
-  { id: "1", icon: "person-outline", title: "Edit Profile" },
-  { id: "2", icon: "heart-outline", title: "Working" },
+  { id: "1", icon: "person-outline", title: "Edit Password" },
+  { id: "2", icon: "heart-outline", title: "Income" },
   { id: "3", icon: "notifications-outline", title: "Notifications" },
   { id: "4", icon: "settings-outline", title: "Settings" },
   { id: "5", icon: "help-circle-outline", title: "Help and Support" },
@@ -25,7 +28,7 @@ const menuItems = [
 
 export default function Profile() {
   const [showLogout, setShowLogout] = useState(false);
-
+  const userData = useAuthStore((state) => state.user);
   const handleMenuPress = (item: any) => {
     if (item.title === "Log Out") {
       setShowLogout(true);
@@ -38,7 +41,6 @@ export default function Profile() {
     try {
       await AsyncStorage.removeItem("accessToken");
       await AsyncStorage.removeItem("userInfo");
-      // Nếu có context, hãy gọi hàm setUser(null) ở đây
 
       setShowLogout(false);
       router.replace("/screens/auth/Login"); // Điều hướng về màn hình login
@@ -46,19 +48,22 @@ export default function Profile() {
       console.error("Logout failed", error);
     }
   };
-
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Profile</Text>
+      <Text style={styles.header}>Hồ sơ</Text>
 
       {/* Avatar */}
       <View style={styles.profileSection}>
         <Image
-          source={require("../../../assets/images/avatar.jpg")}
+          source={
+            userData?.avatarUrl
+              ? { uri: userData.avatarUrl }
+              : require("../../../assets/images/avatar.jpg")
+          }
           style={styles.avatar}
         />
-        <Text style={styles.name}>Daniel Martinez</Text>
-        <Text style={styles.phone}>+123 856479683</Text>
+        <Text style={styles.name}>{userData?.name || "unknow"}</Text>
+        <Text style={styles.phone}>{userData?.phone || "Unknow"}</Text>
       </View>
 
       {/* Menu List */}
@@ -99,7 +104,7 @@ const styles = StyleSheet.create({
   profileSection: { alignItems: "center", marginBottom: 20 },
   avatar: { width: 100, height: 100, borderRadius: 50 },
   name: { fontSize: 18, fontWeight: "bold", marginTop: 10 },
-  phone: { fontSize: 14, color: "gray" },
+  phone: { fontSize: 14, color: "gray", marginTop: 5 },
 
   menuItem: {
     flexDirection: "row",

@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 interface IncomeCardProps {
   title: string;
   icon: keyof typeof Ionicons.glyphMap; // Đảm bảo chỉ nhận các icon hợp lệ
-  income: string;
+  income: number;
   color?: string;
   onPress?: () => void;
 }
@@ -27,7 +27,7 @@ const IncomeCard: React.FC<IncomeCardProps> = ({
           left={() => <Ionicons name={icon as any} size={24} color={color} />} // Cast icon
         />
         <Card.Content>
-          <Text style={[styles.income, { color }]}>{income}</Text>
+          <Text style={[styles.income, { color }]}>{income} VND</Text>
         </Card.Content>
       </Card>
     </TouchableOpacity>
