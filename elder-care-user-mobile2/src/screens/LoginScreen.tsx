@@ -13,7 +13,9 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import loginApi from "../api/authAPI";
+import useAuthStore from "../stores/authStore";
 
 
 type FormData = {
@@ -29,32 +31,39 @@ type LoginScreenNavigationProp = StackNavigationProp<
   },
   "ForgotPassword" | "Register" | "Home"
 >;
-// ... rest of the code
 
 const LoginScreen: React.FC<{}> = () => {
   const { control, handleSubmit } = useForm<FormData>();
   const navigation = useNavigation<LoginScreenNavigationProp>();
-  const [secureText, setSecureText] = useState(true); // Trạng thái ẩn/hiện mật khẩu
+  const [secureText, setSecureText] = useState(true);
+  const setSession = useAuthStore((state) => state.setSession) // Trạng thái ẩn/hiện mật khẩu
 
   const togglePasswordVisibility = () => {
     setSecureText(!secureText);
   };
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: FormData) => {
     try {
-      const response = await axios.post("http://192.168.100.147:5000/api/v1/auth/login", {
-        phone: data.phone,
-        password: data.password
-      });
+      const { token, user } = await loginApi(data.phone, data.password);
 
-      // ✅ Xử lý kết quả sau khi đăng nhập thành công
-      console.log("Login Success:", response.data);
-      navigation.navigate('Home'); // Corrected line
-    } catch (error) {
-      console.error("Login Error:", error);
-      Alert.alert("Đăng nhập thất bại", "Vui lòng kiểm tra lại thông tin.");
+      console.log("Login successful:", user);
+
+
+      await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("user", JSON.stringify(user));
+
+      setSession(user, token);
+      //router.replace("/screens/tabs/home");
+      navigation.navigate("Home");
+    } catch (error: any) {
+      console.log("Login error:", error);
+      Alert.alert(
+        "Lỗi đăng nhập",
+        error?.response?.data?.message || "Đã xảy ra lỗi"
+      );
     }
   };
+
   // ... rest of the code
 
   return (

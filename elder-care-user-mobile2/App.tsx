@@ -4,6 +4,7 @@ import StackNavigator from "./src/navigation/StackNavigator";
 import { FavoritesProvider } from "./src/context/FavoritesContext";
 import { FavoriteHospitalsProvider } from "./src/context/FavoriteHospitalsContext";
 import { BookingsProvider } from './src/context/BookingsContext';
+import "./src/utils/api";
 
 const App: React.FC = () => {
   return (
