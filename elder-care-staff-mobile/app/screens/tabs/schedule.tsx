@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import JobDetailModal from "@/app/components/JobDetailModal";
 import ScheduleItem from "@/app/components/ScheduleItem";
 import getSchedules from "../../api/scheduleApi";
 import useScheduleStore from "@/app/stores/scheduleStore";
@@ -80,8 +79,6 @@ export default function ScheduleScreen() {
   const setSchedules = useScheduleStore((state) => state.setSchedules);
   const setSelectedDay = useScheduleStore((state) => state.setSelectedDay);
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedJob, setSelectedJob] = useState<Schedule | null>(null);
 
   useEffect(() => {
     if (!schedules || schedules.length === 0) {

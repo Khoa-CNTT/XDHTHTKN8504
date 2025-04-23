@@ -1,4 +1,4 @@
-import { PatientProfile } from "@/types/PatientProfile"; // đúng kiểu dữ liệu
+import { PatientProfile } from "@/types/PatientProfile"; 
 import fetchPatientProfile from "../api/scheduleDetailApi";
 import { create } from "zustand";
 
@@ -9,8 +9,8 @@ interface PatientStore {
   fetchPatientProfile: (scheduleId: string) => Promise<void>;
 }
 
-// Tạo store bằng Zustand
-export const usePatientStore = create<PatientStore>((set) => ({
+
+const usePatientStore = create<PatientStore>((set) => ({
   patientProfile: null,
   setPatientProfile: (profile) => set({ patientProfile: profile }),
   fetchPatientProfile: async (scheduleId) => {
@@ -24,3 +24,4 @@ export const usePatientStore = create<PatientStore>((set) => ({
     }
   },
 }));
+export default usePatientStore;

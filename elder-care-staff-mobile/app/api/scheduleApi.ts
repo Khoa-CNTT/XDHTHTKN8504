@@ -51,7 +51,7 @@ const getSchedules = async (): Promise<Schedule[]> => {
 
     // Sử dụng map để xử lý tất cả các dữ liệu lịch làm việc
     const processed: Schedule[] = rawData.map(processTimeFields);
-    console.log("Processed schedules:", processed);
+
     return processed;
   } catch (error) {
     console.error("Error fetching schedules:", error);
