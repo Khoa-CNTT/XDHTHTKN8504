@@ -108,10 +108,15 @@ export default function ScheduleScreen() {
       )
     : [];
 
-  const handleSelectJob = (job: Schedule) => {
-    router.push(`/screens/schedule-detail/${job.bookingId}`);
-    
-  };
+ const handleSelectJob = (job: Schedule) => {
+   if (job.bookingId) {
+     router.push(`/screens/schedule-detail/${job.bookingId}`);
+   } else {
+     console.warn("bookingId is missing in selected job:", job);
+     // Optionally, show a toast or alert
+   }
+ };
+
 
   return (
     <View style={styles.container}>
