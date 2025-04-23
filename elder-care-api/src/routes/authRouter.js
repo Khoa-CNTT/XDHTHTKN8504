@@ -17,4 +17,10 @@ router.post(
     authController.uploadAvatar
 );
 
+// Đếm số người dùng trong 12 tháng
+router.get(
+    "/count-users-per-month",
+    authController.countMembersPerMonth
+)
+
 export default router;
