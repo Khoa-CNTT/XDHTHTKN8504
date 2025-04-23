@@ -3,6 +3,8 @@ import Booking from "../models/Booking.js";
 import Profile from "../models/Profile.js";
 import moment from "moment";
 import Service from "../models/Service.js";
+import Doctor from "../models/Doctor.js";
+import Nurse from "../models/Nurse.js";
 
 const updateBookingStatus = async (bookingId) => {
     try {
@@ -25,6 +27,23 @@ const updateBookingStatus = async (bookingId) => {
         return null;
     }
 };
+
+// Hàm lấy tên nhân viên dựa vào role ththth
+async function getStaffName(staff) {
+    if (!staff) {
+        return "Chưa phân công";
+    }
+
+    if (staff.role === "doctor") {
+        const doctor = await Doctor.findOne({ userId: staff._id });
+        return doctor ? `${doctor.firstName} ${doctor.lastName}` : "Chưa phân công";
+    } else if (staff.role === "nurse") {
+        const nurse = await Nurse.findOne({ userId: staff._id });
+        return nurse ? `${nurse.firstName} ${nurse.lastName}` : "Chưa phân công";
+    }
+
+    return "Chưa phân công";  // Nếu role không phải doctor hoặc nurse
+}
 
 const scheduleController = {
     // Truy vấn danh sách công việc đã hoàn thành trong 1 tháng
@@ -103,14 +122,14 @@ const scheduleController = {
     updateScheduleStatus: async (req, res) => {
         try {
             const { _id: staffId } = req.user;
-            const { scheduleId } = req.params;  
-            const { status } = req.body; 
+            const { scheduleId } = req.params;
+            const { status } = req.body;
 
             // Cập nhật trạng thái của schedule
             const updatedSchedule = await Schedule.findByIdAndUpdate(
                 scheduleId,
                 { status: status },
-                { new: true }  
+                { new: true }
             );
 
             if (!updatedSchedule) {
@@ -137,6 +156,65 @@ const scheduleController = {
         } catch (error) {
             console.error("Lỗi khi cập nhật trạng thái:", error);
             return res.status(500).json({ message: 'Lỗi server', error: error.message });
+        }
+    },
+
+    getInfoSchedule: async (req, res) => {
+        try {
+            const { profileId } = req.params;
+            if (!profileId) {
+                return res.status(400).json({ success: false, message: "Missing profileId" });
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+
+            const bookings = await Booking.find({ profileId }).select("_id");
+
+            const bookingIds = bookings.map((b) => b._id);
+
+            if (bookingIds.length === 0) {
+                return res.status(200).json({ success: true, data: [] });
+            }
+
+            const schedules = await Schedule.find({
+                bookingId: { $in: bookingIds },
+                date: { $gte: today, $lt: tomorrow }, // Lọc lịch trong ngày hôm nay
+            })
+                .populate({
+                    path: "staffId", 
+                    select: "role", 
+                })
+                .populate({
+                    path: "bookingId",
+                    populate: {
+                        path: "serviceId",
+                        select: "name", 
+                    },
+                })
+
+            // Chuyển đổi dữ liệu thành dạng cần thiết cho response
+            const result = [];
+
+            for (const item of schedules) {
+                const staffName = await getStaffName(item.staffId);  // Lấy tên từ bảng Doctor hoặc Nurse tùy thuộc vào role
+
+                const serviceName = item.bookingId?.serviceId?.name || "Không rõ dịch vụ";  // Nếu không có dịch vụ thì hiển thị "Không rõ dịch vụ"
+
+                const status = item.status || "Chưa có trạng thái";  // Nếu không có trạng thái thì hiển thị "Chưa có trạng thái"
+                result.push({
+                    staffName,
+                    serviceName,
+                    status,
+                });
+            }
+
+            res.status(200).json({ success: true, data: result });
+        } catch (err) {
+            console.error("Error:", err);
+            return res.status(500).json({ success: false, message: "Server error" });
         }
     }
 }

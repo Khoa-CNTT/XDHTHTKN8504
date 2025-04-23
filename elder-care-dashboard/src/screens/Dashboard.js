@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from 'react';
 import Layout from "../Layout";
 import { FaFacebookMessenger } from "react-icons/fa";
 import {
@@ -19,6 +19,7 @@ import {
 import { Transactiontable } from "../components/Tables";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Dashboard() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -30,6 +31,21 @@ function Dashboard() {
   const preview = () => {
     navigate(`/chat`);
   };
+
+  const [dashboardCards, setDashboardCards] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/v1/auth/count-users-per-month');
+        console.log(response.data); 
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+    fetchData();
+  }, []);
+  
   return (
     <Layout>
       {/* {messger} */}

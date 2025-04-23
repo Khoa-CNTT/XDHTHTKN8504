@@ -37,7 +37,8 @@ export default function LoginScreen() {
     try {
       const { token, user } = await loginApi(data.phone, data.password);
 
-      console.log("Login successful:", token);
+      console.log("Login successful:", user);
+
 
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("user", JSON.stringify(user));
