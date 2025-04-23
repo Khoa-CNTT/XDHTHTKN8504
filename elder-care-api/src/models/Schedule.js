@@ -31,8 +31,8 @@ const scheduleSchema = new mongoose.Schema({
     },
     timeSlots: [
         {
-            startTime: { type: Date, required: true },  // Thời gian bắt đầu của ca làm việc
-            endTime: { type: Date, required: true },    // Thời gian kết thúc của ca làm việc
+            start: { type: Date, required: true },  // Thời gian bắt đầu của ca làm việc
+            end: { type: Date, required: true },    // Thời gian kết thúc của ca làm việc
         }
     ],
     status: {
