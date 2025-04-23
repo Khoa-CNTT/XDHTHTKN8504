@@ -68,12 +68,10 @@ const Register: React.FC<{}> = () => {
         Alert.alert("Mật khẩu không khớp", "Vui lòng kiểm tra lại mật khẩu.");
         return;
       }
-      const response = await axios.post("http://192.168.2.34:5000/api/v1/auth/signup", {
-        email: "dfingh@gmail.com",
-        password: data.password,
-        role: "family_member",
+      const response = await axios.post("http://192.168.100.147:5000/api/v1/auth/signup", {
         phone: data.phone,
-        profiles: ""
+        password: data.password,
+        role: "family_member"
       });
 
       // ✅ Xử lý kết quả sau khi đăng nhập thành công
@@ -90,7 +88,7 @@ const Register: React.FC<{}> = () => {
     <View style={styles.container}>
       {/* Logo */}
       <Image
-        source={require("../asset/img/hinh1.png")}
+        source={require("../asset/img/logo-elder-care.jpg")} 
         style={styles.logo}
       />
 

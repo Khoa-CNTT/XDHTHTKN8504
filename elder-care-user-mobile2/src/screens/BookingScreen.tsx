@@ -17,6 +17,7 @@ type RootStackParamList = {
   AddCareRecipient: undefined;
   Profile: undefined;
   BookVisit: undefined;
+  ServiceDetails: { serviceId: string };
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
