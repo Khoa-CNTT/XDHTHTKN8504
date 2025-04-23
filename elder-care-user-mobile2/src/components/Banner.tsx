@@ -18,24 +18,48 @@ type RootStackParamList = {
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 const bannerData = [
+  // {
+  //   id: '1',
+  //   title: 'Looking for\nSpecialist Doctors?',
+  //   subtitle: 'Schedule an appointment with\nour top doctors.',
+  //   image: require('../asset/img/hinh1.png'),
+  //   backgroundColor: '#4B9B9B',
+  // },
+  // {
+  //   id: '2',
+  //   title: 'Expert Medical\nCare For You',
+  //   subtitle: 'Get connected with the best\nmedical specialists.',
+  //   image: require('../asset/img/hinh1.png'),
+  //   backgroundColor: '#5B8CD5',
+  // },
+  // {
+  //   id: '3',
+  //   title: 'Your Health\nOur Priority',
+  //   subtitle: 'Quality healthcare at your\nfingertips.',
+  //   image: require('../asset/img/hinh1.png'),
+  //   backgroundColor: '#7C65B0',
+  // },
   {
     id: '1',
-    title: 'Looking for\nSpecialist Doctors?',
-    subtitle: 'Schedule an appointment with\nour top doctors.',
+    title: "Chăm sóc tại nhà",
+    subtitle:
+      "Dịch vụ chăm sóc tại nhà, bao gồm: đồng hành, chuẩn bị bữa ăn, hỗ trợ vệ sinh cá nhân, chăm sóc vết thương, truyền dịch, thay ống thông và điều dưỡng riêng.",
     image: require('../asset/img/hinh1.png'),
     backgroundColor: '#4B9B9B',
   },
   {
     id: '2',
-    title: 'Expert Medical\nCare For You',
-    subtitle: 'Get connected with the best\nmedical specialists.',
+    title: "Xét nghiệm tại nhà",
+    subtitle:
+      "Dịch vụ xét nghiệm tại nhà giúp theo dõi sức khỏe với các kiểm tra cần thiết, bao gồm xét nghiệm máu, nước tiểu, tầm soát bệnh lý và các xét nghiệm chẩn đoán khác.",
     image: require('../asset/img/hinh1.png'),
     backgroundColor: '#5B8CD5',
   },
   {
     id: '3',
-    title: 'Your Health\nOur Priority',
-    subtitle: 'Quality healthcare at your\nfingertips.',
+    title: "Xét nghiệm gene",
+    subtitle:
+      "Phân tích gen giúp đánh giá nguy cơ mắc bệnh di truyền, đề xuất chế độ dinh dưỡng và chăm sóc sức khỏe cá nhân dựa trên đặc điểm di truyền.",
     image: require('../asset/img/hinh1.png'),
     backgroundColor: '#7C65B0',
   },

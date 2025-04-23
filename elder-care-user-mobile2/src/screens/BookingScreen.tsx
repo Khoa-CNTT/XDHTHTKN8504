@@ -35,7 +35,7 @@ interface CareRecipient {
 // Sample card data
 const cardData: CardData[] = [
   {
-    title: "Home Personal Care & Nursing",
+    title: "Home Personal Care & Nursingzz",
     description:
       "Companionship, Meals, Hygiene & Toileting, Tube Care, IV Drip, Wound Care, Private Nursing",
     image: require('../asset/img/hinh1.png'),
