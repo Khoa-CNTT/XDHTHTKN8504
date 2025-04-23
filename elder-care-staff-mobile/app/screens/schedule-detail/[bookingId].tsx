@@ -1,188 +1,239 @@
-// screens/BookingDetailScreen.tsx
-
 import React, { useEffect } from "react";
-import { View, ScrollView, StyleSheet, Linking } from "react-native";
-import { Text, Card, Divider, ActivityIndicator } from "react-native-paper";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons"; // Sử dụng MaterialCommunityIcons
-import useBookingStore from "../../stores/BookingStore"; // Import store Zustand
-import { Booking } from "@/types/Booking";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { Text } from "react-native-paper";
+import { formatTime } from "../../../utils/dateHelper";
+import useBookingStore from "../../stores/BookingStore";
+import { ActivityIndicator } from "react-native-paper";
+import { Button } from "react-native-paper";
 
+import {
+  CalendarDays,
+  Clock,
+  ClipboardList,
+  User,
+  CheckCircle,
+  DollarSign,
+} from "lucide-react-native";
+import { MotiView } from "moti";
 
+const LabeledText = ({ label, value }: { label: string; value: string }) => (
+  <Text style={styles.text}>
+    <Text style={styles.bold}>{label}: </Text>
+    {value}
+  </Text>
+);
+
+const AnimatedCard = ({
+  icon,
+  title,
+  children,
+  delay = 0,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+  delay?: number;
+}) => (
+  <MotiView
+    from={{ opacity: 0, translateY: 20 }}
+    animate={{ opacity: 1, translateY: 0 }}
+    transition={{ type: "timing", duration: 500, delay }}
+    style={styles.card}
+  >
+    {icon}
+    <View style={styles.cardContent}>
+      <Text style={styles.cardTitle}>{title}</Text>
+      {children}
+    </View>
+  </MotiView>
+);
 
 const BookingDetailScreen = () => {
-   const { bookingId } = useLocalSearchParams();
-  const { booking, loading, error, fetchBooking } = useBookingStore(); 
-
+  const { bookingId } = useLocalSearchParams();
+  const { booking, loading, fetchBooking } = useBookingStore();
 
   useEffect(() => {
-    if (!booking) {
-      if (typeof bookingId === "string") {
-        fetchBooking(bookingId);
-      }
+    if (!booking && typeof bookingId === "string") {
+      fetchBooking(bookingId);
     }
-  }, [booking, bookingId, fetchBooking]);
+  }, [booking, bookingId]);
 
-  // Nếu đang tải dữ liệu, hiển thị loading indicator
   if (loading) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator animating={true} size="large" color="#28A745" />
-        <Text>Đang tải thông tin...</Text>
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#28A745" />
+        <Text style={styles.loadingText}>Đang tải thông tin...</Text>
       </View>
     );
   }
 
-  // Nếu có lỗi khi lấy dữ liệu
-  if (error) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.text}>Lỗi: {error}</Text>
-      </View>
-    );
-  }
-
-  // Nếu không có dữ liệu booking
   if (!booking) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.text}>Thông tin đặt lịch không có sẵn.</Text>
+      <View style={styles.centered}>
+        <Text style={styles.loadingText}>
+          Không tìm thấy thông tin lịch hẹn.
+        </Text>
       </View>
     );
   }
 
-  const profile = booking.profileId;
-  const service = booking.serviceId;
-
-  // Hàm gọi điện thoại
-  const handleCall = (phone: string) => {
-    if (phone) {
-      Linking.openURL(`tel:${phone}`);
-    }
-  };
-
-  // Hàm render tình trạng sức khỏe
-  const renderHealthConditions = () => {
-    return profile?.healthConditions?.map((cond, idx) => (
-      <View key={idx} style={{ marginBottom: 6 }}>
-        <Text style={styles.text}>- {cond.condition}</Text>
-        {cond.notes && (
-          <Text style={[styles.text, styles.note]}>Ghi chú: {cond.notes}</Text>
-        )}
-      </View>
-    ));
-  };
-
-  // Hàm render liên hệ khẩn cấp
-  const renderEmergencyContact = () => {
-    const emergencyContact = profile?.emergencyContact;
-    if (emergencyContact) {
-      return (
-        <>
-          <Text style={styles.text}>- Họ tên: {emergencyContact.name}</Text>
-          <Text style={styles.text}>
-            - SĐT:
-            <Text
-              style={styles.linkText}
-              onPress={() => handleCall(emergencyContact.phone)}
-            >
-              {emergencyContact.phone}
-            </Text>
-          </Text>
-        </>
-      );
-    }
-    return null;
-  };
+  const {
+    timeSlot,
+    totalDiscount,
+    profileId,
+    serviceId,
+    status,
+    notes,
+    repeatFrom,
+    repeatTo,
+  } = booking;
+  console.log("Booking details:", booking);
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.headerTitle}>Lịch làm việc</Text>
-      {/* 1. Thông tin đặt lịch */}
-      <Card style={styles.card}>
-        <Card.Title
-          title="🗓️ Thông tin đặt lịch"
-          left={() => <Icon name="calendar" size={24} color="#28A745" />} // Sử dụng MaterialCommunityIcons
-        />
-        <Card.Content>
-          <Text style={styles.text}>
-            Dịch vụ: {service?.name || "Không có"}
-          </Text>
-          <Text style={styles.text}>
-            Thời gian: {booking.timeSlot.startTime} - {booking.timeSlot.endTime}
-          </Text>
-          <Text style={styles.text}>Trạng thái: {booking.status}</Text>
-          <Text style={styles.text}>
-            Giá: {service?.price?.toLocaleString()} VND
-          </Text>
-          <Text style={styles.text}>
-            Lặp lại: {booking.isRecurring ? "Có" : "Không"}
-          </Text>
-        </Card.Content>
-      </Card>
+      <Text style={styles.title}>Chi tiết lịch hẹn</Text>
 
-      {/* 2. Tình trạng sức khỏe */}
-      <Card style={styles.card}>
-        <Card.Title
-          title="❤️ Tình trạng sức khỏe"
-          left={() => <Icon name="heart" size={24} color="#28A745" />} // Thay đổi icon
+      <AnimatedCard
+        icon={<Clock color="#28A745" size={24} />}
+        title="Thông tin công việc"
+        delay={100}
+      >
+        <LabeledText label="Dịch vụ" value={serviceId.name} />
+        <LabeledText
+          label="Ca"
+          value={`${timeSlot.startTime} - ${timeSlot.endTime}`}
         />
-        <Card.Content>
-          <Text style={styles.text}>
-            Khách hàng: {profile.firstName} {profile.lastName} (
-            {profile.relationship})
-          </Text>
-          <Text style={styles.text}>Địa chỉ: {profile.address}</Text>
-          <Divider style={{ marginVertical: 8 }} />
-          {renderHealthConditions()}
-        </Card.Content>
-      </Card>
+        <LabeledText
+          label="Ngày"
+          value={`${formatTime(repeatFrom, "date")} - ${formatTime(
+            repeatTo,
+            "date"
+          )}`}
+        />
+      </AnimatedCard>
 
-      {/* 3. Lưu ý & liên hệ khẩn cấp */}
-      <Card style={styles.card}>
-        <Card.Title
-          title="📌 Lưu ý & Liên hệ khẩn cấp"
-          left={() => <Icon name="information" size={24} color="#28A745" />} // Thay đổi icon
+      <AnimatedCard
+        icon={<User color="#28A745" size={24} />}
+        title="Thông tin khách hàng"
+        delay={200}
+      >
+        <LabeledText
+          label="Họ tên"
+          value={`${profileId.firstName} ${profileId.lastName}`}
         />
-        <Card.Content>
-          <Text style={styles.text}>Lưu ý: {booking.notes || "Không có"}</Text>
-          <Divider style={{ marginVertical: 8 }} />
-          <Text style={styles.text}>Liên hệ khẩn cấp:</Text>
-          {renderEmergencyContact()}
-        </Card.Content>
-      </Card>
+        <LabeledText label="Địa chỉ" value={profileId.address} />
+      </AnimatedCard>
+
+      <AnimatedCard
+        icon={<ClipboardList color="#28A745" size={24} />}
+        title="Lưu ý & Sức khỏe"
+        delay={300}
+      >
+        <LabeledText label="Ghi chú" value={notes} />
+        <LabeledText
+          label="Sức khỏe"
+          value={profileId.healthConditions
+            .map((h) => `${h.condition} - ${h.notes}`)
+            .join(", ")}
+        />
+        <LabeledText
+          label="Liên hệ khẩn"
+          value={`${profileId.emergencyContact.name} (${profileId.emergencyContact.phone})`}
+        />
+      </AnimatedCard>
+
+      <AnimatedCard
+        icon={<DollarSign color="#28A745" size={24} />}
+        title="Thu nhập"
+        delay={400}
+      >
+        <LabeledText label="Tổng tiền" value={`${totalDiscount} VND`} />
+      </AnimatedCard>
+
+      <AnimatedCard
+        icon={<CheckCircle color="#28A745" size={24} />}
+        title="Trạng thái"
+        delay={500}
+      >
+        <LabeledText label="Tình trạng" value={status} />
+      </AnimatedCard>
+
+      <Button
+        mode="contained"
+        onPress={() => {
+          router.back();
+        }}
+        style={{
+          marginTop: 24,
+          width: "80%",
+          alignSelf: "center",
+          backgroundColor: "#28A745",
+        }}
+        labelStyle={{
+          color: "white",
+          fontWeight: "bold",
+        }}
+      >
+        Quay lại
+      </Button>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 16,
-    backgroundColor: "#f7f8fa",
+    backgroundColor: "#ffffff",
   },
-  headerTitle: {
-    fontSize: 25,
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  title: {
+    fontSize: 24,
     fontWeight: "bold",
     color: "#28A745",
     textAlign: "center",
-    marginBottom: 15,
+    marginBottom: 24,
+  },
+  loadingText: {
+    fontSize: 16,
+    marginTop: 12,
+    color: "#666",
   },
   card: {
-    marginBottom: 16,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    padding: 16,
+    backgroundColor: "#f2fdf4",
     borderRadius: 12,
+    marginBottom: 16,
+    gap: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  cardContent: {
+    flex: 1,
+  },
+  cardTitle: {
+    fontSize:20,
+    fontWeight: "bold",
+    marginBottom: 6,
+    color: "#28A745",
   },
   text: {
-    fontSize: 14,
+    fontSize: 16,
+    marginBottom: 4,
     color: "#333",
   },
-  note: {
-    fontStyle: "italic",
-    color: "#555",
-  },
-  linkText: {
-    color: "#28A745",
-    textDecorationLine: "underline",
+  bold: {
+    fontWeight: "bold",
+    color: "#000",
   },
 });
 
