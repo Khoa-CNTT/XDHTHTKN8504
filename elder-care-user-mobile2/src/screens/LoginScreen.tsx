@@ -42,7 +42,7 @@ const LoginScreen: React.FC<{}> = () => {
 
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post("http://192.168.2.34:5000/api/v1/auth/login", {
+      const response = await axios.post("http://192.168.100.147:5000/api/v1/auth/login", {
         phone: data.phone,
         password: data.password
       });
@@ -61,7 +61,7 @@ const LoginScreen: React.FC<{}> = () => {
     <View style={styles.container}>
       {/* Logo */}
       <Image
-        source={require("../asset/img/hinh1.png")}
+        source={require("../asset/img/logo-elder-care.jpg")} // Đường dẫn đến logo
         style={styles.logo}
       />
 

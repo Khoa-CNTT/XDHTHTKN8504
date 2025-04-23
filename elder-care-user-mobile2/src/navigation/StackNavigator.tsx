@@ -21,8 +21,8 @@ import FeaturedServiceScreen from '../screens/FeaturedServiceScreen';
 import BookingScreen from '../screens/BookingScreen';
 import AddCareRecipientScreen from '../screens/AddCareRecipientScreen';
 import BookVisitScreen from '../screens/BookAVisit.Screen';
-
 import BookingSuccessScreen from '../screens/BookingSuccessScreen';
+import ServiceDetails from '../screens/ServiceDetails';
 
 
 
@@ -48,6 +48,7 @@ export type RootStackParamList = {
   AddCareRecipient: undefined;
   BookVisit: undefined;
   BookingSuccess: undefined;
+  ServiceDetails: { serviceId: string };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -62,13 +63,12 @@ const StackNavigator = (): JSX.Element => {
       id={undefined}
       screenOptions={defaultScreenOptions}
     >
-      {/* <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
 
       <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} /> 
-       */}
 
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="AllDoctors" component={AllDoctors} />
@@ -82,6 +82,7 @@ const StackNavigator = (): JSX.Element => {
       <Stack.Screen name="FeaturedService" component={FeaturedServiceScreen} />
       <Stack.Screen name="Booking" component={BookingScreen} />
       <Stack.Screen name="AddCareRecipient" component={AddCareRecipientScreen} />
+      <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
       <Stack.Screen name="BookVisit" component={BookVisitScreen} />
       
       
