@@ -3,7 +3,6 @@ import { View, Text, FlatList, StyleSheet } from "react-native";
 import BalanceCard from "../components/Income/BalanceCard";
 import BookingItem from "../components/Income/BookingItem";
 import LoadingIndicator from "../components/LoadingIndicator";
-import useBookingStore from "../stores/completedBookingStore";
 import useCompletedBookingStore from "../stores/completedBookingStore";
 
 const IncomeScreen: React.FC = () => {

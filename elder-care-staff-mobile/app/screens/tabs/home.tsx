@@ -6,10 +6,18 @@ import AvailabilitySwitch from "../../components/home/AvailabilitySwitch";
 import IncomeCard from "../../components/home/IncomeCard";
 import WorkStatsCard from "../../components/home/WorkStatsCard";  
 import AvailableWorkList from "../../components/home/AvailableWorkList"; 
+import { router } from "expo-router";
+import useCompletedBookingStore from "@/app/stores/completedBookingStore";
 
 const Home = () => {
   const [isAvailable, setIsAvailable] = useState(false);
-  const workHistory = 10;
+  const completedBookings = useCompletedBookingStore(
+    (state) => state.completedBookings
+  );
+  const totalSalary = completedBookings.reduce(
+    (total, booking) => total + booking.salary,
+    0
+  );
 
   return (
     <View style={styles.container}>
@@ -23,9 +31,9 @@ const Home = () => {
       <IncomeCard
         title="Thu nhập hiện tại"
         icon="cash-outline"
-        income="0 VND"
+        income={totalSalary}
         color="green"
-        onPress={() => alert("Xem chi tiết thu nhập")}
+        onPress={ () => {router.push('/screens/income-screen')} }
       />
       <WorkStatsCard />
       <AvailableWorkList />

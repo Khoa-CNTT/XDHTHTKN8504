@@ -109,7 +109,7 @@ export default function ScheduleScreen() {
     : [];
 
   const handleSelectJob = (job: Schedule) => {
-    router.push(`/screens/schedule-detail/${job._id}`);
+    router.push(`/screens/schedule-detail/${job.bookingId}`);
     
   };
 

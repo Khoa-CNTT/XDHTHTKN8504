@@ -69,7 +69,8 @@ const StackNavigator = (): JSX.Element => {
       <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} /> */}
       
       {/* Add other screens here */}
-
+      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+      <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="AllDoctors" component={AllDoctors} />
       <Stack.Screen name="DoctorDetails" component={DoctorDetails} />
