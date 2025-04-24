@@ -1,6 +1,6 @@
 import API from "@/utils/api";
 import useAuthStore from "../stores/authStore";
-import { Booking } from "../../types/Booking";
+import { Booking } from "../types/Booking";
 
 interface ApiResponse {
   message: string;

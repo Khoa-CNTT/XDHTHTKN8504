@@ -1,145 +1,121 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import MapView from "react-native-maps";
 import { Button } from "react-native-paper";
 import Icon from "react-native-vector-icons/Ionicons";
-
-import updateScheduleStatus from "../../../api/ScheduleStatusApi";
-import { Schedule } from "@/types/Schedule";
+import { router } from "expo-router";
+import TooEarlyModal from "../../../components/TooEarlyModal";
 import useScheduleStore from "../../../stores/scheduleStore";
-import { getNearestSchedule } from "../../../utils/getNearestSchedule";
-import { isWithinNextHour } from "../../../utils/isWithinNextHour";
+import { ScheduleStatus } from "../../../types/ScheduleStatus";
+import { useScheduleSocket } from "../../../hooks/useScheduleSocket";
+import updateScheduleStatus from "../../../api/ScheduleStatusApi";
 
-const ScheduleScreen = () => {
-  const { schedules } = useScheduleStore();
-  const [schedule, setSchedule] = useState<Schedule | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+const ShiftWorkScreen = () => {
+  const [modalVisible, setModalVisible] = useState(false);
 
+  const nearestSchedule = useScheduleStore((state) => state.nearestSchedule);
+  const getNearestSchedule = useScheduleStore(
+    (state) => state.getNearestSchedule
+  );
+  const updateSchedule = useScheduleStore((state) => state.updateSchedule);
+
+  // Lấy lịch gần nhất khi load màn hình
   useEffect(() => {
-    fetchSchedule();
-  }, [schedules]);
+    getNearestSchedule();
+  }, []);
 
-  const fetchSchedule = async () => {
-    const nearestSchedule = getNearestSchedule(schedules);
-    if (nearestSchedule) {
-      setSchedule(nearestSchedule);
-      setLoading(false);
-    }
-  };
+  // Kết nối socket với lịch hiện tại
+  useScheduleSocket(nearestSchedule?._id || "");
 
-  const handleUpdateStatus = async (newStatus: Schedule["status"]) => {
-    if (!schedule) return;
-
+  // Hàm cập nhật trạng thái lịch
+  const handleUpdateStatus = async (newStatus: ScheduleStatus) => {
+    if (!nearestSchedule) return;
     try {
-      setLoading(true);
-      const updated = await updateScheduleStatus(schedule._id, newStatus);
-      setSchedule(updated);
-    } catch (err) {
-      console.error("Cập nhật trạng thái lỗi:", err);
-    } finally {
-      setLoading(false);
+      const updatedSchedule = await updateScheduleStatus(
+        nearestSchedule._id,
+        newStatus
+      );
+      updateSchedule(updatedSchedule); // cập nhật local store
+    } catch (error) {
+      console.error("Không thể cập nhật trạng thái:", error);
     }
   };
 
-  const renderActionButton = () => {
-    if (!schedule) return null;
-
-    const isWithinOneHour = isWithinNextHour(schedule.timeSlots.start);
-
-    const buttonStyle = isWithinOneHour
-      ? styles.activeButton
-      : styles.inactiveButton; // Style khi không trong 1 giờ
-    const buttonTextStyle = isWithinOneHour
-      ? styles.activeButtonText
-      : styles.inactiveButtonText; // Style cho text khi không trong 1 giờ
-
-    switch (schedule.status) {
+  const renderActionButtonByStatus = (status: ScheduleStatus) => {
+    switch (status) {
       case "scheduled":
         return (
-          <Button
-            mode="contained"
+          <TouchableOpacity
+            style={styles.actionButton}
             onPress={() => handleUpdateStatus("waiting_for_client")}
-            style={[styles.actionButton, buttonStyle]}
-            labelStyle={buttonTextStyle}
           >
-            Bắt đầu
-          </Button>
+            <Text style={styles.actionButtonText}>Bắt đầu</Text>
+          </TouchableOpacity>
         );
       case "waiting_for_client":
         return (
-          <Button
-            mode="contained"
-            onPress={() => handleUpdateStatus("waiting_for_nurse")}
-            style={[styles.actionButton, buttonStyle]}
-            labelStyle={buttonTextStyle}
-          >
-            Cả hai bên đã sẵn sàng
-          </Button>
+          <TouchableOpacity style={styles.actionButton}>
+            <Text style={styles.actionButtonText}>Chờ khách hàng xác nhận</Text>
+          </TouchableOpacity>
         );
       case "on_the_way":
         return (
-          <Button
-            mode="contained"
+          <TouchableOpacity
+            style={styles.actionButton}
             onPress={() => handleUpdateStatus("check_in")}
-            style={[styles.actionButton, buttonStyle]}
-            labelStyle={buttonTextStyle}
           >
-            Tôi đã đến nơi
-          </Button>
+            <Text style={styles.actionButtonText}>Đã đến nơi</Text>
+          </TouchableOpacity>
         );
       case "check_in":
         return (
-          <Button
-            mode="contained"
+          <TouchableOpacity
+            style={styles.actionButton}
             onPress={() => handleUpdateStatus("in_progress")}
-            style={[styles.actionButton, buttonStyle]}
-            labelStyle={buttonTextStyle}
           >
-            Bắt đầu chăm sóc
-          </Button>
+            <Text style={styles.actionButtonText}>Bắt đầu chăm sóc</Text>
+          </TouchableOpacity>
         );
       case "in_progress":
         return (
-          <Button
-            mode="contained"
+          <TouchableOpacity
+            style={styles.actionButton}
             onPress={() => handleUpdateStatus("check_out")}
-            style={[styles.actionButton, buttonStyle]}
-            labelStyle={buttonTextStyle}
           >
-            Hoàn tất chăm sóc
-          </Button>
+            <Text style={styles.actionButtonText}>Kết thúc chăm sóc</Text>
+          </TouchableOpacity>
         );
       case "check_out":
         return (
-          <Text style={styles.statusText}>Đang chờ khách xác nhận...</Text>
+          <Text style={styles.actionButtonText}>
+            Chờ khách xác nhận hoàn tất
+          </Text>
         );
       case "completed":
-        return <Text style={styles.statusText}>Đã hoàn tất!</Text>;
       case "cancelled":
-        return <Text style={styles.statusText}>Đã hủy</Text>;
+        return (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push("/screens/tabs/home")}
+          >
+            <Text style={styles.actionButtonText}>Kết thúc chăm sóc</Text>
+          </TouchableOpacity>
+        );
       default:
-        return null;
+        return <Button>Bắt đầu</Button>;
     }
   };
 
-  if (loading || !schedule) {
+  if (!nearestSchedule) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#4CAF50" />
+        <Text>Không có lịch gần nhất.</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {/* Bản đồ */}
       <MapView
         style={styles.map}
         initialRegion={{
@@ -150,33 +126,34 @@ const ScheduleScreen = () => {
         }}
       />
 
-      {/* Nội dung overlay */}
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.showWayBtn}>
           <Icon name="navigate-outline" size={16} color="#000" />
           <Text style={styles.showWayText}>Hiển thị đường đi</Text>
         </TouchableOpacity>
 
-        {/* Thông tin khách hàng */}
         <View style={styles.arrivalInfo}>
           <Text style={styles.expectedLabel}>
             Thời gian dự kiến đến với khách
           </Text>
           <View style={styles.userInfo}>
             <Image
-              source={{ uri: "https://via.placeholder.com/40" }}
+              source={{
+                uri:
+                  // nearestSchedule.patientAvatar ||
+                  "https://via.placeholder.com/40",
+              }}
               style={styles.avatar}
             />
             <View>
               <Text style={styles.userName}>
-                {schedule.patientName || "Tên điều dưỡng"}
+                {nearestSchedule.patientName || "Tên khách hàng"}
               </Text>
-              <Text style={styles.travelInfo}>26 min - 16.3 km</Text>
+              <Text style={styles.travelInfo}>Chưa có thông tin</Text>
             </View>
           </View>
         </View>
 
-        {/* Nút hành động: gọi/chat */}
         <View style={styles.buttonRow}>
           <Button
             mode="outlined"
@@ -196,14 +173,16 @@ const ScheduleScreen = () => {
           </Button>
         </View>
 
-        {/* Nút trạng thái */}
-        {renderActionButton()}
+        <TooEarlyModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+        />
+
+        {renderActionButtonByStatus(nearestSchedule.status)}
       </View>
     </View>
   );
 };
-
-export default ScheduleScreen;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F5F5F5" },
@@ -238,11 +217,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "gray",
   },
-  timeCountdown: {
-    color: "red",
-    fontWeight: "bold",
-    marginTop: 4,
-  },
   userInfo: {
     flexDirection: "row",
     alignItems: "center",
@@ -259,35 +233,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   travelInfo: {
-    fontSize: 12,
+    fontSize: 14,
     color: "gray",
   },
   actionButton: {
     marginTop: 10,
     backgroundColor: "#4CAF50",
+    borderRadius: 20,
   },
-  activeButton: {
-    backgroundColor: "#4CAF50", // Giữ màu xanh khi isWithinOneHour là true
-  },
-  inactiveButton: {
-    backgroundColor: "#B0B0B0", // Màu nhạt khi isWithinOneHour là false
-  },
-  activeButtonText: {
-    color: "white", 
-  },
-  inactiveButtonText: {
-    color: "#E0E0E0", 
-  },
-  statusText: {
+  actionButtonText: {
+    color: "white",
     textAlign: "center",
-    fontSize: 16,
-    marginTop: 10,
-    color: "#888",
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    padding: 15,
+    fontWeight: "bold",
   },
   buttonRow: {
     flexDirection: "row",
@@ -297,16 +255,11 @@ const styles = StyleSheet.create({
   button: {
     flex: 0.48,
   },
-  actionRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginVertical: 10,
-  },
-  iconButton: {
+  centered: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
   },
-  iconText: {
-    color: "#4CAF50",
-    marginTop: 4,
-  },
 });
+
+export default ShiftWorkScreen;

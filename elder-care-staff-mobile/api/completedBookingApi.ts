@@ -1,6 +1,6 @@
 import API from "@/utils/api";
 import useAuthStore from "../stores/authStore";
-import { CompletedBooking } from "../../types/CompletedBooking";
+import { CompletedBooking } from "../types/CompletedBooking";
 
 // Định nghĩa ApiResponse với kiểu dữ liệu rõ ràng
 interface ApiResponse {

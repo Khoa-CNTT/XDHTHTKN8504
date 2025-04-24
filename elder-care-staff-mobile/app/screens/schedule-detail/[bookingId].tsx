@@ -8,7 +8,6 @@ import { ActivityIndicator } from "react-native-paper";
 import { Button } from "react-native-paper";
 
 import {
-  CalendarDays,
   Clock,
   ClipboardList,
   User,
@@ -88,7 +87,6 @@ const BookingDetailScreen = () => {
     repeatFrom,
     repeatTo,
   } = booking;
-  console.log("Booking details:", booking);
 
   return (
     <ScrollView style={styles.container}>
@@ -102,7 +100,7 @@ const BookingDetailScreen = () => {
         <LabeledText label="Dịch vụ" value={serviceId.name} />
         <LabeledText
           label="Ca"
-          value={`${timeSlot.startTime} - ${timeSlot.endTime}`}
+          value={`${timeSlot.start} - ${timeSlot.end}`}
         />
         <LabeledText
           label="Ngày"
