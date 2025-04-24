@@ -1,5 +1,5 @@
 import API from "@/utils/api";
-import LoginResponse from "../../types/auth"; // Định nghĩa kiểu dữ liệu cho phản hồi đăng nhập
+import LoginResponse from "../types/auth"; // Định nghĩa kiểu dữ liệu cho phản hồi đăng nhập
 
  const loginApi = async (
   phone: string,

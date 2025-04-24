@@ -1,6 +1,6 @@
 import API from "@/utils/api";
 import useAuthStore from "../stores/authStore";
-import { Schedule } from "../../types/Schedule";
+import { Schedule } from "../types/Schedule";
 
 interface ApiResponse {
   message: string;

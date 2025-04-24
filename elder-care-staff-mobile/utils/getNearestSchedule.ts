@@ -6,7 +6,7 @@ export const getNearestSchedule = (schedules: Schedule[]) => {
 
   // Lọc các lịch chỉ trong tương lai (sau thời gian hiện tại)
   const futureSchedules = schedules.filter((schedule) => {
-    const scheduleTime = moment(schedule.timeSlots.startTime).tz(
+    const scheduleTime = moment(schedule.timeSlots.start).tz(
       "Asia/Ho_Chi_Minh"
     );
     return scheduleTime.isAfter(now); // Chỉ lấy lịch sau thời gian hiện tại
@@ -20,10 +20,10 @@ export const getNearestSchedule = (schedules: Schedule[]) => {
 
   // Tìm lịch gần nhất (lịch có thời gian bắt đầu gần nhất với hiện tại)
   const nearestSchedule = futureSchedules.reduce((nearest, current) => {
-    const nearestTime = moment(nearest.timeSlots.startTime).tz(
+    const nearestTime = moment(nearest.timeSlots.start).tz(
       "Asia/Ho_Chi_Minh"
     );
-    const currentTime = moment(current.timeSlots.startTime).tz(
+    const currentTime = moment(current.timeSlots.start).tz(
       "Asia/Ho_Chi_Minh"
     );
 

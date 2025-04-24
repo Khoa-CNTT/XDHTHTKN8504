@@ -1,4 +1,4 @@
-import { PatientProfile } from "../../types/PatientProfile";
+import { PatientProfile } from "../types/PatientProfile";
 import API from "@/utils/api";
 
 // Hàm fetch thông tin hồ sơ bệnh nhân từ API
