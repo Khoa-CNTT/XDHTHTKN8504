@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import MapView from "react-native-maps";
 import { Button } from "react-native-paper";
-import Icon from "react-native-vector-icons/Ionicons";
+import { MapPin, Phone, MessageCircle } from "lucide-react-native"; // Importing Lucide icons
 import { router } from "expo-router";
 import TooEarlyModal from "../../../components/TooEarlyModal";
 import useScheduleStore from "../../../stores/scheduleStore";
@@ -128,7 +128,7 @@ const ShiftWorkScreen = () => {
 
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.showWayBtn}>
-          <Icon name="navigate-outline" size={16} color="#000" />
+          <MapPin size={16} color="#000" />
           <Text style={styles.showWayText}>Hiển thị đường đi</Text>
         </TouchableOpacity>
 
@@ -157,7 +157,7 @@ const ShiftWorkScreen = () => {
         <View style={styles.buttonRow}>
           <Button
             mode="outlined"
-            icon="phone"
+            icon={() => <Phone size={20} />}
             style={styles.button}
             onPress={() => {}}
           >
@@ -165,7 +165,7 @@ const ShiftWorkScreen = () => {
           </Button>
           <Button
             mode="outlined"
-            icon="chat"
+            icon={() => <MessageCircle size={20} />}
             style={styles.button}
             onPress={() => {}}
           >

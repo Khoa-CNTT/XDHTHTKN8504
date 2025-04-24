@@ -7,6 +7,7 @@ import WorkStatsCard from "../../../components/home/WorkStatsCard";
 import AvailableWorkList from "../../../components/home/AvailableWorkList"; 
 import { router } from "expo-router";
 import useCompletedBookingStore from "@/stores/completedBookingStore";
+import updateAvailability from "../../../api/updateAvailability";
 
 const Home = () => {
   const [isAvailable, setIsAvailable] = useState(false);
@@ -17,13 +18,23 @@ const Home = () => {
     (total, booking) => total + booking.salary,
     0
   );
-
+  const handleToggleAvailability = async (newValue: boolean) => {
+    try {
+      await updateAvailability(newValue); // Gọi API
+      setIsAvailable(newValue);
+      console.log("trạng thái mới", newValue);
+      // Cập nhật UI sau khi thành công
+    } catch (error) {
+      console.error("Không thể cập nhật trạng thái:", error);
+      // Bạn có thể hiển thị Toast hoặc Alert ở đây nếu muốn
+    }
+  };
   return (
     <View style={styles.container}>
       <HomeHeader />
       <AvailabilitySwitch
         isAvailable={isAvailable}
-        setIsAvailable={setIsAvailable}
+        setIsAvailable={handleToggleAvailability}
       />
 
       {/* Thu nhập */}
@@ -32,7 +43,9 @@ const Home = () => {
         icon="cash-outline"
         income={totalSalary}
         color="green"
-        onPress={ () => {router.push('/screens/income-screen')} }
+        onPress={() => {
+          router.push("/screens/income-screen");
+        }}
       />
       <WorkStatsCard />
       <AvailableWorkList />

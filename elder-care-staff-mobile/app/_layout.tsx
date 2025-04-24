@@ -1,16 +1,48 @@
-
-import { useEnsureSocket } from "@/hooks/useEnsureSocket";
+// app/RootLayout.tsx
+import React, { useState, useEffect } from "react";
+import { Animated, StyleSheet } from "react-native";
 import { Stack } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
-
 export default function RootLayout() {
-  useEnsureSocket();
+  const [fadeAnim] = useState(new Animated.Value(0)); // Khởi tạo giá trị opacity
+  const [slideAnim] = useState(new Animated.Value(-500)); // Khởi tạo giá trị slide (di chuyển từ bên trái)
+
+  useEffect(() => {
+    // Áp dụng đồng thời cả fade và slide animation
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
+
   return (
     <SafeAreaProvider>
-        <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <Animated.View
+          style={[
+            styles.container,
+            { opacity: fadeAnim, transform: [{ translateX: slideAnim }] },
+          ]}
+        >
           <Stack screenOptions={{ headerShown: false }} />
-        </SafeAreaView>
+        </Animated.View>
+      </SafeAreaView>
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#F0F0F0",
+  },
+});

@@ -15,6 +15,7 @@ import DoctorRouter from "./src/routes/doctorRouter.js";
 import NurseRouter from "./src/routes/nurseRouter.js";
 import ScheduleRouter from './src/routes/scheduleRouter.js';
 import ChatRouter from './src/routes/chatRoutes.js';
+import UserRouter from "./src/routes/userRouter.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./src/config/swaggerConfig.js";
 import configureSocket from "./src/config/socketConfig.js";
@@ -72,6 +73,7 @@ app.use("/api/v1/doctors", DoctorRouter);
 app.use("/api/v1/nurses", NurseRouter);
 app.use("/api/v1/schedules", ScheduleRouter);
 app.use("/api/v1/chat", ChatRouter);
+app.use("/api/v1/user", UserRouter); 
 
 const port = process.env.SERVER_PORT || 8080;
 const listener = app.listen(port, () => {
