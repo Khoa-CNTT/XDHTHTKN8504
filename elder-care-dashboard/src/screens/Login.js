@@ -14,13 +14,10 @@ function Login() {
     try {
       console.log("Đăng nhập với:", phone, password); // Kiểm tra xem có dữ liệu không
 
-      const response = await axios.post(
-        "http://localhost:5000/api/v1/auth/login",
-        { phone, password },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
+      const response = await axios.post("http://localhost:5000/api/v1/auth/login",
+        { 
+          phone, 
+          password 
         }
       );
 
@@ -34,6 +31,7 @@ function Login() {
 
       //Lưu token và cho vào trang admin
       localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
       navigate("/");
       console.log("Login response:", response.data);
     } catch (error) {
