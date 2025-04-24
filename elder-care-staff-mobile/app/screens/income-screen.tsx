@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
-import BalanceCard from "../components/Income/BalanceCard";
-import BookingItem from "../components/Income/BookingItem";
-import LoadingIndicator from "../components/LoadingIndicator";
-import useCompletedBookingStore from "../stores/completedBookingStore";
+import BalanceCard from "../../components/Income/BalanceCard";
+import BookingItem from "../../components/Income/BookingItem";
+import LoadingIndicator from "../../components/LoadingIndicator";
+import useCompletedBookingStore from "../../stores/completedBookingStore";
 import {CompletedBooking} from "../../types/CompletedBooking";
 import { router } from "expo-router";
 

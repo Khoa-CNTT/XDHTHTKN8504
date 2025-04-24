@@ -7,9 +7,9 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import ScheduleItem from "@/app/components/ScheduleItem";
-import getSchedules from "../../api/scheduleApi";
-import useScheduleStore from "@/app/stores/scheduleStore";
+import ScheduleItem from "../../../components/ScheduleItem";
+import getSchedules from "../../../api/scheduleApi";
+import useScheduleStore from "@/stores/scheduleStore";
 import { Schedule } from "@/types/Schedule";
 import { router } from "expo-router";
 

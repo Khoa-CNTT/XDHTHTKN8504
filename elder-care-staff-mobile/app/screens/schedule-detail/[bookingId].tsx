@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { formatTime } from "../../../utils/dateHelper";
-import useBookingStore from "../../stores/BookingStore";
+import useBookingStore from "../../../stores/BookingStore";
 import { ActivityIndicator } from "react-native-paper";
 import { Button } from "react-native-paper";
 

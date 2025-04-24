@@ -9,10 +9,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 
-import ConfirmLogoutModal from "../../components/ConfirmLogoutModal";
+import ConfirmLogoutModal from "../../../components/ConfirmLogoutModal";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import useAuthStore from "@/app/stores/authStore";
+import useAuthStore from "@/stores/authStore";
 
 
 

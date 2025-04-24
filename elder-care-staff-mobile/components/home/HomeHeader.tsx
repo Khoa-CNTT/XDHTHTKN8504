@@ -7,7 +7,7 @@ const HomeHeader = () => {
   return (
     <View style={styles.header}>
       <Image
-        source={require("../../../assets/images/logo.jpg")}
+        source={require("../../assets/images/logo.png")}
         style={styles.logo}
       />
       <View style={styles.headerButtons}>

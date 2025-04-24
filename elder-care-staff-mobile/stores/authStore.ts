@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import loginApi from "../api/authApi";
-import type User from "../../types/auth";
+import type User from "../types/auth";
 
 interface AuthState {
   user: User | null;
