@@ -11,9 +11,9 @@ import MapView from "react-native-maps";
 import { Button } from "react-native-paper";
 import Icon from "react-native-vector-icons/Ionicons";
 
-import updateScheduleStatus from "../../api/ScheduleStatusApi";
+import updateScheduleStatus from "../../../api/ScheduleStatusApi";
 import { Schedule } from "@/types/Schedule";
-import useScheduleStore from "../../stores/scheduleStore";
+import useScheduleStore from "../../../stores/scheduleStore";
 import { getNearestSchedule } from "../../../utils/getNearestSchedule";
 import { isWithinNextHour } from "../../../utils/isWithinNextHour";
 

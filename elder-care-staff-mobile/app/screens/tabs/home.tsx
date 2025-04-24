@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { Divider } from "react-native-paper";
-import HomeHeader from "../../components/home/HomeHeader";
-import AvailabilitySwitch from "../../components/home/AvailabilitySwitch";
-import IncomeCard from "../../components/home/IncomeCard";
-import WorkStatsCard from "../../components/home/WorkStatsCard";  
-import AvailableWorkList from "../../components/home/AvailableWorkList"; 
+import HomeHeader from "../../../components/home/HomeHeader";
+import AvailabilitySwitch from "../../../components/home/AvailabilitySwitch";
+import IncomeCard from "../../../components/home/IncomeCard";
+import WorkStatsCard from "../../../components/home/WorkStatsCard";  
+import AvailableWorkList from "../../../components/home/AvailableWorkList"; 
 import { router } from "expo-router";
-import useCompletedBookingStore from "@/app/stores/completedBookingStore";
+import useCompletedBookingStore from "@/stores/completedBookingStore";
 
 const Home = () => {
   const [isAvailable, setIsAvailable] = useState(false);

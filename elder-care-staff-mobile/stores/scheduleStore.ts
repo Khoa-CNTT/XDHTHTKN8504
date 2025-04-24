@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Schedule } from "../../types/Schedule";
+import { Schedule } from "../types/Schedule";
 
 interface ScheduleStore {
   schedules: Schedule[];

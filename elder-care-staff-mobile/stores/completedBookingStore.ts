@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { CompletedBooking } from "../../types/CompletedBooking";
+import { CompletedBooking } from "../types/CompletedBooking";
 import getCompletedBookings from "../api/completedBookingApi"; // Import hàm API
 
 interface BookingStore {

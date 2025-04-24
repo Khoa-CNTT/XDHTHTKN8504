@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { CompletedBooking } from "@/types/CompletedBooking"; 
-import { formatTime } from "../../../utils/dateHelper"; 
+import { formatTime } from "../../utils/dateHelper"; 
 type BookingItemProps = {
   item: CompletedBooking;
   onPress?: () => void;
