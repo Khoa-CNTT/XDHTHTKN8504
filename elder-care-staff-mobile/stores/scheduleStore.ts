@@ -1,27 +1,34 @@
-import { getNearestSchedule as getNearestScheduleUtil } from "@/utils/getNearestSchedule";
 import { create } from "zustand";
+import getSchedules from "@/api/scheduleApi"; // API fetch lịch trình
+import { getNearestSchedule as getNearestScheduleUtil } from "@/utils/getNearestSchedule";
 import { Schedule } from "../types/Schedule";
 
 interface ScheduleStore {
   schedules: Schedule[];
   selectedDay: Date;
-  nearestSchedule: Schedule | null; // Lưu lịch gần nhất vào store
+  nearestSchedule: Schedule | null;
+  loading: boolean;
+  error: string | null;
+
   setSchedules: (schedules: Schedule[]) => void;
   setSelectedDay: (day: Date) => void;
   updateSchedule: (updated: Schedule) => void;
-  addSchedule: (schedule: Schedule) => void; // Thêm một lịch trình mới
-  removeSchedule: (scheduleId: string) => void; // Xóa lịch trình
-  getNearestSchedule: () => void; // Cập nhật lịch gần nhất trong store
+  addSchedule: (schedule: Schedule) => void;
+  removeSchedule: (scheduleId: string) => void;
+  getNearestSchedule: () => void;
+  fetchSchedules: () => Promise<void>;
 }
 
 const useScheduleStore = create<ScheduleStore>((set, get) => ({
-  schedules: [], // Mảng lưu danh sách lịch trình
+  schedules: [],
   selectedDay: new Date(),
-  nearestSchedule: null, // Lịch gần nhất mặc định là null
+  nearestSchedule: null,
+  loading: false,
+  error: null,
+
   setSchedules: (schedules) => set({ schedules }),
   setSelectedDay: (date) => set({ selectedDay: date }),
 
-  // Cập nhật một lịch trình
   updateSchedule: (updated) =>
     set((state) => ({
       schedules: state.schedules.map((s) =>
@@ -29,24 +36,37 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
       ),
     })),
 
-  // Thêm một lịch trình mới
   addSchedule: (schedule) =>
     set((state) => ({
       schedules: [...state.schedules, schedule],
     })),
 
-  // Xóa một lịch trình theo ID
   removeSchedule: (scheduleId) =>
     set((state) => ({
       schedules: state.schedules.filter((s) => s._id !== scheduleId),
     })),
 
-  // Cập nhật lịch gần nhất từ danh sách lịch trình
   getNearestSchedule: () => {
-    const schedules = get().schedules; // Lấy danh sách lịch từ store
-    const nearestSchedule = getNearestScheduleUtil(schedules); // Gọi hàm getNearestSchedule để tìm lịch gần nhất
+    const schedules = get().schedules;
+    const nearestSchedule = getNearestScheduleUtil(schedules);
+    set({ nearestSchedule });
+  },
 
-    set({ nearestSchedule }); // Lưu lịch gần nhất vào store
+  fetchSchedules: async () => {
+    set({ loading: true, error: null });
+    try {
+      const schedules = await getSchedules();
+      set({ schedules, loading: false });
+
+      const nearest = getNearestScheduleUtil(schedules);
+      set({ nearestSchedule: nearest });
+    } catch (error: any) {
+      set({
+        error: error?.message || "Lỗi khi tải lịch trình",
+        loading: false,
+      });
+      console.error("Lỗi fetchSchedules:", error);
+    }
   },
 }));
 

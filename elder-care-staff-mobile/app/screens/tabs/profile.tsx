@@ -17,13 +17,13 @@ import useAuthStore from "@/stores/authStore";
 
 
 const menuItems = [
-  { id: "1", icon: "person-outline", title: "Edit Password" },
-  { id: "2", icon: "heart-outline", title: "Income" },
-  { id: "3", icon: "notifications-outline", title: "Notifications" },
-  { id: "4", icon: "settings-outline", title: "Settings" },
-  { id: "5", icon: "help-circle-outline", title: "Help and Support" },
-  { id: "6", icon: "document-text-outline", title: "Terms and Conditions" },
-  { id: "7", icon: "log-out-outline", title: "Log Out" },
+  { id: "1", icon: "person-outline", title: "Thay đổi mật khẩu" },
+  { id: "2", icon: "heart-outline", title: "Thu nhập" },
+  { id: "3", icon: "notifications-outline", title: "Thông báo" },
+  { id: "4", icon: "settings-outline", title: "Cài đặt" },
+  { id: "5", icon: "help-circle-outline", title: "Hộ trợ khách hàng" },
+  { id: "6", icon: "document-text-outline", title: "Điều khoản sử dụng" },
+  { id: "7", icon: "log-out-outline", title: "Đăng xuất" },
 ];
 
 export default function Profile() {

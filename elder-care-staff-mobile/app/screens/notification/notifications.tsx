@@ -61,7 +61,7 @@ const NotificationIcon: React.FC<{ type: NotificationItem['type'] }> = ({ type }
   );
 };
 
-const Notifications: React.FC = () => {
+const NotificationsScreen: React.FC = () => {
   const navigation = useNavigation();
 
   const handleBack = () => {
@@ -217,4 +217,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default notifications;
+export default NotificationsScreen;
