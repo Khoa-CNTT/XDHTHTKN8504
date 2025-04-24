@@ -53,7 +53,6 @@ const LoginScreen: React.FC<{}> = () => {
       await AsyncStorage.setItem("user", JSON.stringify(user));
 
       setSession(user, token);
-      //router.replace("/screens/tabs/home");
       navigation.navigate("Home");
     } catch (error: any) {
       console.log("Login error:", error);
