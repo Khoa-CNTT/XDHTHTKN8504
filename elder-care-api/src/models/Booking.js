@@ -36,6 +36,11 @@ const bookingSchema = new Schema(
     totalPrice: { type: Number, default: 0 },
     totalDiscount: { type: Number, default: 0 },
     isRecurring: { type: Boolean, default: true },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   { timestamps: true }
 );

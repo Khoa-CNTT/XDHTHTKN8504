@@ -41,7 +41,7 @@ const router = expess.Router();
 router.post(
     '/create',
     auth,
-    authorizeRoles("family_member"),
+    authorizeRoles("admin", "family_member"),
     bookingController.createBooking
 );
 

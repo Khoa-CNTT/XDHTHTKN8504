@@ -22,7 +22,7 @@ router.get(
 router.put(
   "/update-schedule/:scheduleId",
   auth,
-  authorizeRoles("doctor", "nurse"),
+  authorizeRoles("doctor", "nurse", "family_member"),
   scheduleController.updateScheduleStatus
 );
 

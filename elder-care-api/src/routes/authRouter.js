@@ -23,4 +23,12 @@ router.get(
     authController.countMembersPerMonth
 )
 
+// Cập nhập trạng thái hoạt động của bác sĩ và điều dưỡng
+router.patch(
+    "/is-available",
+    auth,
+    authorizeRoles("doctor", "nurse"),
+    authController.updateAvailabilityStatus
+)
+
 export default router;
