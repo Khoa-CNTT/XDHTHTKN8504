@@ -3,6 +3,7 @@ import Profile from "../models/Profile.js";
 import Schedule from "../models/Schedule.js";
 import moment from "moment-timezone";
 import Service from "../models/Service.js";
+import { getIO } from "../config/socketConfig.js";
 
 const bookingController = {
     // create new booking
@@ -83,7 +84,8 @@ const bookingController = {
                 timeSlot,
                 totalPrice,
                 totalDiscount,
-                isRecurring // Xác định giá trị này dựa trên repeatFrom và repeatTo
+                isRecurring,
+                createdBy: userId,
             });
 
             await newBooking.save();
@@ -100,6 +102,7 @@ const bookingController = {
     },
 
     acceptBooking: async (req, res) => {
+        const io = getIO();
         try {
             const { bookingId } = req.params;
             const staff = req.user;
@@ -145,8 +148,8 @@ const bookingController = {
                         date: currentDate.clone().toDate(), // Ngày làm việc
                         timeSlots: [
                             {
-                                startTime: new Date(new Date(`${currentDate.toISOString().split('T')[0]}T${timeSlot.start}:00`).getTime() + 7 * 60 * 60 * 1000),
-                                endTime: new Date(new Date(`${currentDate.toISOString().split('T')[0]}T${timeSlot.end}:00`).getTime() + 7 * 60 * 60 * 1000),
+                                start: new Date(new Date(`${currentDate.toISOString().split('T')[0]}T${timeSlot.start}:00`).getTime() + 7 * 60 * 60 * 1000),
+                                end: new Date(new Date(`${currentDate.toISOString().split('T')[0]}T${timeSlot.end}:00`).getTime() + 7 * 60 * 60 * 1000),
                             }
                         ],
                         status: 'scheduled',
@@ -177,9 +180,28 @@ const bookingController = {
             }
 
             await booking.save();
-
-            // Chờ tất cả các lịch làm việc được tạo xong
             await Promise.all(schedulePromises);
+
+            // Gửi thông báo cho khách hàng
+            const customerId = booking.createdBy.toString();
+            const socketId = io.getUserSocketId(customerId);
+            if (socketId) {
+                io.to(socketId).emit("bookingAccepted", {
+                    bookingId,
+                    message: "Booking của bạn đã được chấp nhận"
+                });
+            }
+
+            // Gửi thông báo tới nhân viên tham gia (doctor/nurse)
+            booking.participants.forEach((p) => {
+                const staffSocketId = io.getUserSocketId(p.userId.toString());
+                if (staffSocketId) {
+                    io.to(staffSocketId).emit("bookingAccepted", {
+                        bookingId,
+                        message: "Bạn đã được phân công vào booking mới"
+                    });
+                }
+            });
 
             return res.status(200).json({
                 message: 'Đã chấp nhận lịch hẹn và tạo lịch làm việc thành công',
@@ -222,52 +244,52 @@ const bookingController = {
         }
     },
 
-   getCompletedBookings: async (req, res) => {
-    try {
-        const { _id: staffId } = req.user;
-        let { year, month } = req.query;
+    getCompletedBookings: async (req, res) => {
+        try {
+            const { _id: staffId } = req.user;
+            let { year, month } = req.query;
 
-        // Nếu không có tham số year và month, mặc định lấy năm và tháng hiện tại
-        if (!year || !month) {
-            const currentDate = moment();  // Lấy thời gian hiện tại
-            year = currentDate.year();     // Lấy năm hiện tại
-            month = currentDate.month() + 1; // Lấy tháng hiện tại (lưu ý moment tháng bắt đầu từ 0, vì vậy cộng thêm 1)
+            // Nếu không có tham số year và month, mặc định lấy năm và tháng hiện tại
+            if (!year || !month) {
+                const currentDate = moment();  // Lấy thời gian hiện tại
+                year = currentDate.year();     // Lấy năm hiện tại
+                month = currentDate.month() + 1; // Lấy tháng hiện tại (lưu ý moment tháng bắt đầu từ 0, vì vậy cộng thêm 1)
+            }
+
+            // Chuyển year, month thành dạng startOf và endOf tháng
+            const startOfMonth = moment(`${year}-${month}-01`).startOf('month').toDate();
+            const endOfMonth = moment(`${year}-${month}-01`).endOf('month').toDate();
+
+            // Tìm tất cả các booking đã completed trong tháng này, mà staff đó đã tham gia
+            const bookings = await Booking.find({
+                status: 'completed',
+                'participants.userId': staffId,
+                updatedAt: { $gte: startOfMonth, $lte: endOfMonth },
+            }).populate('profileId serviceId');
+
+            if (!bookings.length) {
+                return res.status(404).json({ message: 'Không có lịch hoàn thành trong tháng này' });
+            }
+
+            // Chuyển dữ liệu thành cấu trúc trả về cho frontend
+            const results = bookings.map((booking) => ({
+                bookingId: booking._id,
+                patientName: booking.profileId?.firstName + " " + booking.profileId?.lastName,
+                serviceName: booking.serviceId?.name,
+                salary: booking.totalDiscount,
+                completedAt: booking.updatedAt,
+            }));
+
+            return res.status(200).json({
+                message: 'Danh sách booking đã hoàn thành trong tháng',
+                bookings: results,
+            });
+
+        } catch (error) {
+            console.error("Lỗi khi lấy booking:", error);
+            return res.status(500).json({ message: 'Lỗi server', error: error.message });
         }
-
-        // Chuyển year, month thành dạng startOf và endOf tháng
-        const startOfMonth = moment(`${year}-${month}-01`).startOf('month').toDate();
-        const endOfMonth = moment(`${year}-${month}-01`).endOf('month').toDate();
-
-        // Tìm tất cả các booking đã completed trong tháng này, mà staff đó đã tham gia
-        const bookings = await Booking.find({
-            status: 'completed',
-            'participants.userId': staffId,
-            updatedAt: { $gte: startOfMonth, $lte: endOfMonth },
-        }).populate('profileId serviceId');
-
-        if (!bookings.length) {
-            return res.status(404).json({ message: 'Không có lịch hoàn thành trong tháng này' });
-        }
-
-        // Chuyển dữ liệu thành cấu trúc trả về cho frontend
-        const results = bookings.map((booking) => ({
-            bookingId: booking._id,
-            patientName: booking.profileId?.firstName + " " + booking.profileId?.lastName,
-            serviceName: booking.serviceId?.name,
-            salary: booking.totalDiscount,
-            completedAt: booking.updatedAt,
-        }));
-
-        return res.status(200).json({
-            message: 'Danh sách booking đã hoàn thành trong tháng',
-            bookings: results,
-        });
-
-    } catch (error) {
-        console.error("Lỗi khi lấy booking:", error);
-        return res.status(500).json({ message: 'Lỗi server', error: error.message });
     }
-}
 }
 
 export default bookingController;

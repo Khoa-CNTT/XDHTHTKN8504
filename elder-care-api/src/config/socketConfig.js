@@ -1,16 +1,24 @@
-import { Server } from 'socket.io'; 
-import socketController from '../controllers/socketController.js'; 
+import { Server } from 'socket.io';
+import socketController from '../controllers/socketController.js';
+
+let io;
 
 function configureSocket(server) {
-    const io = new Server(server, {  // Sử dụng Server thay vì Socket
+    io = new Server(server, {
         cors: {
-            origin: "*", // Cho phép tất cả các nguồn kết nối
+            origin: "*",
             methods: ["GET", "POST"]
         }
     });
 
-    // Gọi controller xử lý logic socket
-    socketController(io);  // Truyền io vào socketController để xử lý logic
+    socketController(io);
+}
+
+export function getIO() {
+    if (!io) {
+        throw new Error("Socket.IO not initialized!");
+    }
+    return io;
 }
 
 export default configureSocket;

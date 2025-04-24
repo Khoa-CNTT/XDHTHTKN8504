@@ -5,6 +5,7 @@ import moment from "moment";
 import Service from "../models/Service.js";
 import Doctor from "../models/Doctor.js";
 import Nurse from "../models/Nurse.js";
+import { emitScheduleStatus } from "../controllers/socketController.js";
 
 const updateBookingStatus = async (bookingId) => {
     try {
@@ -121,7 +122,7 @@ const scheduleController = {
 
     updateScheduleStatus: async (req, res) => {
         try {
-            const { _id: staffId } = req.user;
+            const { _id } = req.user;
             const { scheduleId } = req.params;
             const { status } = req.body;
 
@@ -147,10 +148,22 @@ const scheduleController = {
                 });
             }
 
-            // Trả về kết quả cập nhật chỉ cho schedule
-            res.status(200).json({
-                message: 'Cập nhật trạng thái schedule thành công',
-                schedule: updatedSchedule
+            // Emit realtime đến user có liên quan (ví dụ family member/customer)
+            const targetUserId = updatedSchedule.userId;
+            emitScheduleStatus(targetUserId, {
+                message: "Lịch hẹn của bạn đã được cập nhật",
+                scheduleId: updatedSchedule._id,
+                newStatus: updatedSchedule.status,
+                bookingId: updatedSchedule.bookingId,
+                bookingStatus: updatedBooking.status
+            });
+
+            return res.status(200).json({
+                message: updatedBooking
+                    ? 'Cập nhật trạng thái thành công và booking đã được hoàn thành'
+                    : 'Cập nhật trạng thái schedule thành công',
+                schedule: updatedSchedule,
+                booking: updatedBooking || null
             });
 
         } catch (error) {
@@ -184,14 +197,14 @@ const scheduleController = {
                 date: { $gte: today, $lt: tomorrow }, // Lọc lịch trong ngày hôm nay
             })
                 .populate({
-                    path: "staffId", 
-                    select: "role", 
+                    path: "staffId",
+                    select: "role",
                 })
                 .populate({
                     path: "bookingId",
                     populate: {
                         path: "serviceId",
-                        select: "name", 
+                        select: "name",
                     },
                 })
 

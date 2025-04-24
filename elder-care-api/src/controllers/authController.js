@@ -1,9 +1,12 @@
 import dotenv from "dotenv";
 import User from "../models/User.js";
+import Doctor from "../models/Doctor.js";
+import Nurse from "../models/Nurse.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import cloudinary from "../config/cloudinary.js";
 import fs from "fs";
+import { getIO } from "../config/socketConfig.js";
 
 dotenv.config();
 
@@ -166,7 +169,7 @@ const authController = {
           },
         },
         {
-          $sort: { "_id": 1 } 
+          $sort: { "_id": 1 }
         }
       ]);
 
@@ -179,6 +182,51 @@ const authController = {
       res.json({ data: counts });
     } catch (err) {
       res.status(500).json({ error: err.message });
+    }
+  },
+
+  // Cập nhập trạng thái hoạt động của bác sĩ và điều dưỡng
+  updateAvailabilityStatus: async (req, res) => {
+    const { status } = req.body;
+    const { _id: userId, role } = req.user;
+
+    try {
+      let updatedUser;
+
+      // Kiểm tra xem người dùng là bác sĩ hay điều dưỡng và cập nhật trạng thái
+      if (role === 'doctor') {
+        updatedUser = await Doctor.findOneAndUpdate(
+          { userId },
+          { isAvailable: status },
+          { new: true }
+        );
+      } else if (role === 'nurse') {
+        updatedUser = await Nurse.findOneAndUpdate(
+          { userId },
+          { isAvailable: status },
+          { new: true }
+        );
+      }
+
+      // Nếu không tìm thấy người dùng, trả về lỗi
+      if (!updatedUser) {
+        return res.status(404).json({ message: `${role.charAt(0).toUpperCase() + role.slice(1)} không tồn tại` });
+      }
+
+      // Emit thông báo realtime cho các client có liên quan (bác sĩ/điều dưỡng)
+      const io = getIO(); // Lấy instance của socket
+      io.to(`${role}_room_${userId}`).emit(`${role}StatusUpdated`, {
+        userId: updatedUser.userId,
+        isAvailable: updatedUser.isAvailable
+      });
+
+      return res.status(200).json({
+        message: `Cập nhật trạng thái ${role} thành công`,
+        user: updatedUser
+      });
+    } catch (error) {
+      console.error(`Lỗi khi cập nhật trạng thái ${role}:`, error);
+      return res.status(500).json({ message: 'Lỗi server', error: error.message });
     }
   }
 };
