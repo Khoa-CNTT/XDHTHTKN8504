@@ -207,8 +207,6 @@ const scheduleController = {
     // Cập nhật trạng thái booking nếu cần
     const updatedBooking = await updateBookingStatus(updatedSchedule.bookingId);
 
-    // Emit realtime vào phòng socket liên quan đến scheduleId
-    const targetUserId = updatedSchedule.userId;
 
     // Thay đổi: Emit vào phòng có tên là `schedule_${scheduleId}`
     emitScheduleStatus(`schedule_${scheduleId}`, {

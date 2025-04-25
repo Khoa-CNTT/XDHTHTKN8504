@@ -1,5 +1,5 @@
 export default interface User {
-    id: string;
+    _id: string;
     avatarUrl?: string;
     name: string;
     phone: string;
