@@ -47,13 +47,13 @@ export const useSocketStore = create<SocketStore>((set) => {
 
     join: (roomId) => {
       if (socket.connected) {
-        socket.emit("joinRoom", roomId);
+        socket.emit("join", roomId);
       }
     },
 
     leave: (roomId) => {
       if (socket.connected) {
-        socket.emit("leaveRoom", roomId);
+        socket.emit("leave", roomId);
       }
     },
   };

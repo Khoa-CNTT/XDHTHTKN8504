@@ -102,7 +102,11 @@ const ShiftWorkScreen = () => {
           </TouchableOpacity>
         );
       default:
-        return <Button>Bắt đầu</Button>;
+        return (
+          <Text style={styles.actionButtonText}>
+            Trở về màn hình chính
+          </Text>
+        );
     }
   };
 

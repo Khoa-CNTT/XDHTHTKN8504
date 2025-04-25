@@ -10,11 +10,18 @@ const socketController = (io) => {
         console.log('A user connected: ', socket.id);
 
         // Khi người dùng login/join, họ tham gia phòng riêng
-        socket.on('join', (userId) => {
-            const room = `chat_room_${userId}`;
-            socket.join(room);
-            console.log(`User ${userId} joined room: ${room}`);
+        socket.on("join", ({ userId, scheduleId }) => {
+          const userRoom = `chat_room_${userId}`;
+          socket.join(userRoom);
+          console.log(`User ${userId} joined room: ${userRoom}`);
+
+          if (scheduleId) {
+            const scheduleRoom = `schedule_${scheduleId}`;
+            socket.join(scheduleRoom);
+            console.log(`User ${userId} joined schedule room: ${scheduleRoom}`);
+          }
         });
+
 
         // Xử lý gửi tin nhắn
         socket.on('sendMessage', async (data) => {
@@ -56,11 +63,12 @@ const socketController = (io) => {
     });
 };
 
-export const emitScheduleStatus = (userId, data) => {
-    if (ioInstance) {
-        ioInstance.to(`chat_room_${userId}`).emit('scheduleStatusUpdated', data);
-    }
+export const emitScheduleStatus = (scheduleId, data) => {
+  if (ioInstance) {
+    ioInstance.to(`schedule_${scheduleId}`).emit("scheduleStatusUpdated", data);
+  }
 };
+
 
 console.log("✅ WebSocket server đang chạy!");
 

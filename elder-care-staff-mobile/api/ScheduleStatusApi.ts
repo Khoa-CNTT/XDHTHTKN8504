@@ -17,7 +17,7 @@ const updateScheduleStatus = async (
       throw new Error("Token không tồn tại");
     }
 
-    const { data } = await API.put<ApiResponse>(
+    const { data } = await API.patch<ApiResponse>(
       `schedules/update-schedule/${scheduleId}`,
       { status },
       {
