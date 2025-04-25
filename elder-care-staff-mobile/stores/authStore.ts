@@ -8,7 +8,7 @@ interface AuthState {
   token: string | null;
   loading: boolean;
   error: string | null;
-  isHydrated: boolean; // Thêm isHydrated để theo dõi trạng thái đã phục hồi hay chưa
+  isHydrated: boolean;
   login: (phone: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   restoreSession: () => Promise<void>;
@@ -20,7 +20,7 @@ const useAuthStore = create<AuthState>((set) => ({
   token: null,
   loading: false,
   error: null,
-  isHydrated: false, // Khởi tạo isHydrated là false
+  isHydrated: false,
 
   login: async (phone, password) => {
     set({ loading: true, error: null });
@@ -72,14 +72,15 @@ const useAuthStore = create<AuthState>((set) => ({
       }
 
       const user: User = JSON.parse(userStr);
-      set({ token, user, loading: false, error: null, isHydrated: true }); // Cập nhật isHydrated
+
+      set({ token, user, loading: false, error: null, isHydrated: true });
     } catch (err: any) {
       set({
         user: null,
         token: null,
         loading: false,
         error: "Lỗi phục hồi phiên",
-        isHydrated: true, // Dù không có user/token, vẫn set isHydrated là true
+        isHydrated: true,
       });
     }
   },

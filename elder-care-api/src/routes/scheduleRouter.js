@@ -19,7 +19,7 @@ router.get(
   scheduleController.getAllSchedulesByStaffId
 );
 
-router.put(
+router.patch(
   "/update-schedule/:scheduleId",
   auth,
   authorizeRoles("doctor", "nurse", "family_member"),
