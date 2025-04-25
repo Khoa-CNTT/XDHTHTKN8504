@@ -3,7 +3,7 @@ export default interface User {
     avatarUrl?: string;
     name: string;
     phone: string;
-  }
+ }
   
   export default interface LoginResponse {
     user: User;
