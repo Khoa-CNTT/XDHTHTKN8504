@@ -307,7 +307,6 @@ const scheduleController = {
             console.error("Error:", err);
             return res.status(500).json({ success: false, message: "Server error" });
         }
-    }
 };
 
 export default scheduleController;
