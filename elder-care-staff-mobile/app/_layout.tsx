@@ -4,12 +4,16 @@ import { Animated, StyleSheet } from "react-native";
 import { Stack } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
-export default function RootLayout() {
-  const [fadeAnim] = useState(new Animated.Value(0)); // Khởi tạo giá trị opacity
-  const [slideAnim] = useState(new Animated.Value(-500)); // Khởi tạo giá trị slide (di chuyển từ bên trái)
 
+import useInitService from "@/hooks/useInitService";
+
+export default function RootLayout() {
+  useInitService();
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [slideAnim] = useState(new Animated.Value(-500));
+
+  
   useEffect(() => {
-    // Áp dụng đồng thời cả fade và slide animation
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,

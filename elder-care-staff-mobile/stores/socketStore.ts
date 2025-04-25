@@ -7,8 +7,8 @@ interface SocketStore {
   isConnected: boolean;
   connect: () => void;
   disconnect: () => void;
-  joinRoom: (roomId: string) => void;
-  leaveRoom: (roomId: string) => void;
+  join: (roomId: string) => void;
+  leave: (roomId: string) => void;
 }
 
 export const useSocketStore = create<SocketStore>((set) => {
@@ -24,7 +24,7 @@ export const useSocketStore = create<SocketStore>((set) => {
   });
 
   socket.on("connect_error", (err) => {
-    console.warn("⚠️ Socket connect error:", err.message);
+    console.warn("⚠️ :", err.message);
   });
 
   return {
@@ -32,11 +32,11 @@ export const useSocketStore = create<SocketStore>((set) => {
     isConnected: false,
 
     connect: () => {
-       if (!socket.connected) {
-         console.log("Đang kết nối socket...");
-         socket.connect();
-         set({ isConnected: true });
-       }
+      if (!socket.connected) {
+        console.log("Đang kết nối socket...");
+        socket.connect();
+        set({ isConnected: true });
+      }
     },
 
     disconnect: () => {
@@ -45,13 +45,13 @@ export const useSocketStore = create<SocketStore>((set) => {
       }
     },
 
-    joinRoom: (roomId) => {
+    join: (roomId) => {
       if (socket.connected) {
         socket.emit("joinRoom", roomId);
       }
     },
 
-    leaveRoom: (roomId) => {
+    leave: (roomId) => {
       if (socket.connected) {
         socket.emit("leaveRoom", roomId);
       }

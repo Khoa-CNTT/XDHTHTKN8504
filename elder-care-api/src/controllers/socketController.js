@@ -62,5 +62,6 @@ export const emitScheduleStatus = (userId, data) => {
     }
 };
 
+console.log("✅ WebSocket server đang chạy!");
 
 export default socketController;

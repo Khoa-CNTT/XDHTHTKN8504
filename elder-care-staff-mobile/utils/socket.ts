@@ -8,9 +8,11 @@ if (!socketBaseUrl) {
   console.error("Socket URL chưa được cấu hình!");
 }
 
-const socket = io("http://192.168.81.102:5000", {
+const socket = io(socketBaseUrl, {
   transports: ["websocket"],
+  path: "/socket.io",
   autoConnect: false,
+  query: { debug: true },
 });
 
 export default socket;

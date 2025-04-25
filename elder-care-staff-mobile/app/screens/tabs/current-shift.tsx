@@ -55,7 +55,7 @@ const ShiftWorkScreen = () => {
       case "waiting_for_client":
         return (
           <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionButtonText}>Chờ khách hàng xác nhận</Text>
+            <Text style={styles.actionButtonText}>Chờ khách hàng sẵn sàng</Text>
           </TouchableOpacity>
         );
       case "on_the_way":

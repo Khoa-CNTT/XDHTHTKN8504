@@ -76,6 +76,6 @@ app.use("/api/v1/chat", ChatRouter);
 app.use("/api/v1/user", UserRouter); 
 
 const port = process.env.SERVER_PORT || 8080;
-const listener = app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${listener.address().port}`);
+const listener = server.listen(port, '0.0.0.0',() => {
+  console.log(`Server is running on http://0.0.0.0:${listener.address().port}`);
 });

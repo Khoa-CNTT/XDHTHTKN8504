@@ -6,8 +6,8 @@ import { Schedule } from "@/types/Schedule";
 
 export function useScheduleSocket(scheduleId: string,) {
   const socket = useSocketStore((state) => state.socket);
-  const joinRoom = useSocketStore((state) => state.joinRoom);
-  const leaveRoom = useSocketStore((state) => state.leaveRoom);
+  const joinRoom = useSocketStore((state) => state.join);
+  const leaveRoom = useSocketStore((state) => state.leave);
   const updateSchedule = useScheduleStore((state) => state.updateSchedule);
 
   useEffect(() => {
