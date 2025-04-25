@@ -27,5 +27,6 @@ router.patch(
 );
 
 router.get('/get-schedule-by-profileId/:profileId', scheduleController.getInfoSchedule)
+rourer.get('/getSchedulesForUserToday', scheduleController.getSchedulesForUserToday)
 
 export default router;
