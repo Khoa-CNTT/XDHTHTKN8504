@@ -4,6 +4,7 @@ import Schedule from "../models/Schedule.js";
 import moment from "moment-timezone";
 import Service from "../models/Service.js";
 import { getIO } from "../config/socketConfig.js";
+import { getUserSocketId } from '../controllers/socketController.js';
 
 const bookingController = {
     // create new booking
@@ -42,8 +43,8 @@ const bookingController = {
             }
 
             // Kiểm tra thời gian lặp lại
-            const fromDate = new Date(repeatFrom);
-            const toDate = new Date(repeatTo);
+            const fromDate = moment.tz(repeatFrom, "Asia/Ho_Chi_Minh").toDate();
+            const toDate = moment.tz(repeatTo, "Asia/Ho_Chi_Minh").toDate();
 
             if (fromDate >= toDate) {
                 return res.status(400).json({ message: "Ngày bắt đầu phải nhỏ hơn ngày kết thúc" });
@@ -79,8 +80,8 @@ const bookingController = {
                 notes,
                 paymentId,
                 participants,
-                repeatFrom,
-                repeatTo,
+                repeatFrom: fromDate,  // Lưu thời gian đã chuyển sang múi giờ đúng
+                repeatTo: toDate,      // Lưu thời gian đã chuyển sang múi giờ đúng
                 timeSlot,
                 totalPrice,
                 totalDiscount,
@@ -139,6 +140,16 @@ const bookingController = {
             while (currentDate <= new Date(booking.repeatTo)) {
                 // Lặp qua các thời gian của mỗi ngày
                 timeSlots.forEach(timeSlot => {
+                    const startDateTime = moment.tz(
+                        `${currentDate.format('YYYY-MM-DD')}T${timeSlot.start}:00`,
+                        timeZone
+                    );
+
+                    const endDateTime = moment.tz(
+                        `${currentDate.format('YYYY-MM-DD')}T${timeSlot.end}:00`,
+                        timeZone
+                    );
+
                     const schedule = new Schedule({
                         staffId: staff._id,
                         role: staff.role,
@@ -148,8 +159,8 @@ const bookingController = {
                         date: currentDate.clone().toDate(), // Ngày làm việc
                         timeSlots: [
                             {
-                                start: new Date(new Date(`${currentDate.toISOString().split('T')[0]}T${timeSlot.start}:00`).getTime() + 7 * 60 * 60 * 1000),
-                                end: new Date(new Date(`${currentDate.toISOString().split('T')[0]}T${timeSlot.end}:00`).getTime() + 7 * 60 * 60 * 1000),
+                                start: startDateTime.toDate(), // Chuyển đổi về Date
+                                end: endDateTime.toDate()      // Chuyển đổi về Date
                             }
                         ],
                         status: 'scheduled',
@@ -184,7 +195,7 @@ const bookingController = {
 
             // Gửi thông báo cho khách hàng
             const customerId = booking.createdBy.toString();
-            const socketId = io.getUserSocketId(customerId);
+            const socketId = getUserSocketId(customerId);
             if (socketId) {
                 io.to(socketId).emit("bookingAccepted", {
                     bookingId,
@@ -194,7 +205,7 @@ const bookingController = {
 
             // Gửi thông báo tới nhân viên tham gia (doctor/nurse)
             booking.participants.forEach((p) => {
-                const staffSocketId = io.getUserSocketId(p.userId.toString());
+                const staffSocketId = getUserSocketId(p.userId.toString());
                 if (staffSocketId) {
                     io.to(staffSocketId).emit("bookingAccepted", {
                         bookingId,

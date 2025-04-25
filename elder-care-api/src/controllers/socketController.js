@@ -11,17 +11,16 @@ const socketController = (io) => {
 
         // Khi người dùng login/join, họ tham gia phòng riêng
         socket.on("join", ({ userId, scheduleId }) => {
-          const userRoom = `chat_room_${userId}`;
-          socket.join(userRoom);
-          console.log(`User ${userId} joined room: ${userRoom}`);
+            const userRoom = `chat_room_${userId}`;
+            socket.join(userRoom);
+            console.log(`User ${userId} joined room: ${userRoom}`);
 
-          if (scheduleId) {
-            const scheduleRoom = `schedule_${scheduleId}`;
-            socket.join(scheduleRoom);
-            console.log(`User ${userId} joined schedule room: ${scheduleRoom}`);
-          }
+            if (scheduleId) {
+                const scheduleRoom = `schedule_${scheduleId}`;
+                socket.join(scheduleRoom);
+                console.log(`User ${userId} joined schedule room: ${scheduleRoom}`);
+            }
         });
-
 
         // Xử lý gửi tin nhắn
         socket.on('sendMessage', async (data) => {
@@ -64,10 +63,16 @@ const socketController = (io) => {
 };
 
 export const emitScheduleStatus = (scheduleId, data) => {
-  if (ioInstance) {
-    ioInstance.to(`schedule_${scheduleId}`).emit("scheduleStatusUpdated", data);
-  }
+    if (ioInstance) {
+        ioInstance.to(`schedule_${scheduleId}`).emit("scheduleStatusUpdated", data);
+    }
 };
+
+export const getUserSocketId = (userId) => {
+    const socket = ioInstance.sockets.sockets.get(userId);  
+    return socket ? socket.id : null;  
+};
+
 
 
 console.log("✅ WebSocket server đang chạy!");
