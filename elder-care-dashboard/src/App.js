@@ -29,6 +29,7 @@ import Login from "./screens/Login";
 import ForgotPassword from "./screens/ForgotPassword";
 import Register from "./screens/Register";
 import Chat from "./screens/Chats/Chat";
+import Booking from "./screens/Booking";
 
 function App() {
   Aos.init();
@@ -69,6 +70,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgotpassword" element={<ForgotPassword />} />
           <Route path="/appointments" element={<Appointments />} />
+          <Route path="/bookings" element={<Booking />} />
           {/* <Route path="/campaigns" element={<Campaings />} /> */}
           <Route path="/chat" element={<Chat />} />
           {/* <Route path="/medicine" element={<Medicine />} /> */}

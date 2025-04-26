@@ -37,6 +37,11 @@ export const MenuDatas = [
     icon: HiOutlineHome,
   },
   {
+    title: "Booking",
+    path: "/bookings",
+    icon: FaRegCalendarAlt,
+  },
+  {
     title: "Customers",
     path: "/customers",
     icon: TbUsers,

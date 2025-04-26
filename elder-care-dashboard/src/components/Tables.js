@@ -511,6 +511,77 @@ export function DoctorsTable({ data, functions, doctor }) {
     </table>
   );
 }
+export function BookingTable({ data, functions, doctor }) {
+  const DropDown1 = [
+    {
+      title: "Xem",
+      icon: FiEye,
+      onClick: (data) => {
+        functions.preview(data);
+      },
+    },
+    {
+      title: "Xóa",
+      icon: RiDeleteBin6Line,
+      onClick: () => {
+        toast.error("Tính năng này chưa được hỗ trợ");
+      },
+    },
+  ];
+  return (
+    <table className="table-auto w-full">
+      <thead className="bg-dry rounded-md overflow-hidden">
+        <tr>
+          <th className={thclass}>#</th>
+          {/* <th className={thclass}>{doctor ? "Điều dưỡng" : "Y Tá"}</th> */}
+          <th className={thclass}>Khách hàng</th>
+          <th className={thclass}>Điều dưỡng</th>
+          <th className={thclass}>Ngày Tạo</th>
+          <th className={thclass}>Dịch vụ</th>
+          <th className={thclass}>Trạng thái</th>
+          <th className={thclass}>Hành Động</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((item, index) => (
+          <tr
+            key={item.id}
+            className="border-b border-border hover:bg-greyed transitions"
+          >
+            <td className={tdclass}>{index + 1}</td>
+            <td className={tdclass}>
+              <div className="flex gap-4 items-center">
+                <span className="w-12">
+                  <img
+                    src={item.user.image}
+                    alt={item.user.title}
+                    className="w-full h-12 rounded-full object-cover border border-border"
+                  />
+                </span>
+                <h4 className="text-sm font-medium">{item.user.title}</h4>
+              </div>
+            </td>
+            <td className={tdclass}>Điều dưỡng</td>
+            <td className={tdclass}>12 Tháng 5, 2021</td>
+            <td className={tdclass}>{item.title}</td>
+            <td className={tdclass}>
+              <span class="py-1 px-4 bg-subMain text-subMain bg-opacity-10 text-xs rounded-xl">
+                Đã thanh toán
+              </span>
+            </td>
+            <td className={tdclass}>
+              <MenuSelect datas={DropDown1} item={item}>
+                <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
+                  <BiDotsHorizontalRounded />
+                </div>
+              </MenuSelect>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
 
 // appointment table
 export function AppointmentTable({ data, functions, doctor }) {
