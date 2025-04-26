@@ -11,9 +11,15 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { Ionicons } from "@expo/vector-icons"; // Correct import
-import axios from "axios";
-import LoginScreen from "./LoginScreen";
+import { Ionicons } from "@expo/vector-icons";
+
+import useRegisterStore from "../stores/useRegisterStore";
+
+type RootStackParamList = {
+  Login: undefined;
+};
+
+type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, "Login">;
 
 type FormData = {
   phone: string;
@@ -21,80 +27,37 @@ type FormData = {
   confirmPassword: string;
 };
 
-// Define the type for the navigation prop
-// ... other imports
-type RegisterScreenNavigationProp = StackNavigationProp<
-  {
-    Login: undefined; // Changed to "Login"
-  },
-  "Login"
->;
-// ... rest of the code
-
-
-const Register: React.FC<{}> = () => {
-  const { control, handleSubmit } = useForm<FormData>();
+const Register: React.FC = () => {
   const navigation = useNavigation<RegisterScreenNavigationProp>();
+  const { control, handleSubmit, reset } = useForm<FormData>();
   const [securePassword, setSecurePassword] = useState(true);
   const [secureConfirmPassword, setSecureConfirmPassword] = useState(true);
 
   const togglePasswordVisibility = () => setSecurePassword(!securePassword);
-  const toggleConfirmPasswordVisibility = () =>
-    setSecureConfirmPassword(!secureConfirmPassword);
+  const toggleConfirmPasswordVisibility = () => setSecureConfirmPassword(!secureConfirmPassword);
 
-  // ... other imports
-  // const onSubmit = (data: FormData) => {
-  //     // Here you would typically make an API call to register the user
-  //     // For this example, we'll just simulate a successful registration
-  //     const { phone, password, confirmPassword } = data;
-  //     if (
-  //       phone === "1234567890" &&
-  //       password === "123456" &&
-  //       password === confirmPassword
-  //     ) {
-  //       // Simulate successful registration
-  //       console.log("Register Data:", data);
-  //       navigation.navigate("Home"); // Corrected line
-  //     } else {
-  //       // Simulate failed registration
-  //       Alert.alert("Registration Failed", "Invalid phone or password.");
-  //     }
-  //   };
-  // ... rest of the code
+  const { register, loading, error } = useRegisterStore();
 
-  const onSubmit = async (data) => {
-    try {
-      if (data.password !== data.confirmPassword) {
-        Alert.alert("Mật khẩu không khớp", "Vui lòng kiểm tra lại mật khẩu.");
-        return;
-      }
-      const response = await axios.post("http://192.168.2.34:5000/api/v1/auth/signup", {
-        email: "dfingh@gmail.com",
-        password: data.password,
-        role: "family_member",
-        phone: data.phone,
-        profiles: ""
-      });
+  const onSubmit = async (data: FormData) => {
+    if (data.password !== data.confirmPassword) {
+      Alert.alert("Mật khẩu không khớp", "Vui lòng kiểm tra lại mật khẩu.");
+      return;
+    }
 
-      // ✅ Xử lý kết quả sau khi đăng nhập thành công
-      console.log("Đăng ký thành công!:", response.data);
-      navigation.navigate('Login'); // Corrected line
-    } catch (error) {
-      console.error("Login Error:", error);
-      Alert.alert("Đăng ký thất bại", "Vui lòng kiểm tra lại thông tin.");
+    await register(data.phone, data.password);
+
+    if (!error) {
+      Alert.alert("Đăng ký thành công!", "Vui lòng đăng nhập.");
+      reset();
+      navigation.navigate("Login");
+    } else {
+      Alert.alert("Đăng ký thất bại", error);
     }
   };
 
-
   return (
     <View style={styles.container}>
-      {/* Logo */}
-      <Image
-        source={require("../asset/img/hinh1.png")}
-        style={styles.logo}
-      />
-
-      {/* Tiêu đề */}
+      <Image source={require("../asset/img/logo-elder-care.jpg")} style={styles.logo} />
       <Text style={styles.title}>
         Chào mừng đến với <Text style={styles.highlight}>ElderCare</Text>
       </Text>
@@ -102,7 +65,7 @@ const Register: React.FC<{}> = () => {
         Vui lòng nhập số điện thoại của bạn để đăng ký tài khoản
       </Text>
 
-      {/* Số điện thoại (cố định +84) */}
+      {/* Số điện thoại */}
       <View style={styles.inputContainer}>
         <Text style={styles.prefix}>+84</Text>
         <Controller
@@ -122,7 +85,7 @@ const Register: React.FC<{}> = () => {
               keyboardType="number-pad"
               value={value}
               onChangeText={onChange}
-              maxLength={10} // Giới hạn số ký tự cho số điện thoại (không tính +84)
+              maxLength={10}
             />
           )}
         />
@@ -144,15 +107,8 @@ const Register: React.FC<{}> = () => {
             />
           )}
         />
-        <TouchableOpacity
-          onPress={togglePasswordVisibility}
-          style={styles.eyeIcon}
-        >
-          <Ionicons
-            name={securePassword ? "eye-off" : "eye"}
-            size={24}
-            color="#666"
-          />
+        <TouchableOpacity onPress={togglePasswordVisibility} style={styles.eyeIcon}>
+          <Ionicons name={securePassword ? "eye-off" : "eye"} size={24} color="#666" />
         </TouchableOpacity>
       </View>
 
@@ -172,15 +128,8 @@ const Register: React.FC<{}> = () => {
             />
           )}
         />
-        <TouchableOpacity
-          onPress={toggleConfirmPasswordVisibility}
-          style={styles.eyeIcon}
-        >
-          <Ionicons
-            name={secureConfirmPassword ? "eye-off" : "eye"}
-            size={24}
-            color="#666"
-          />
+        <TouchableOpacity onPress={toggleConfirmPasswordVisibility} style={styles.eyeIcon}>
+          <Ionicons name={secureConfirmPassword ? "eye-off" : "eye"} size={24} color="#666" />
         </TouchableOpacity>
       </View>
 
@@ -188,8 +137,11 @@ const Register: React.FC<{}> = () => {
       <TouchableOpacity
         style={styles.registerButton}
         onPress={handleSubmit(onSubmit)}
+        disabled={loading}
       >
-        <Text style={styles.registerButtonText}>Đăng ký</Text>
+        <Text style={styles.registerButtonText}>
+          {loading ? "Đang đăng ký..." : "Đăng ký"}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -219,7 +171,6 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    width: "100%",
     backgroundColor: "#F2F2F2",
     paddingHorizontal: 10,
     borderRadius: 8,

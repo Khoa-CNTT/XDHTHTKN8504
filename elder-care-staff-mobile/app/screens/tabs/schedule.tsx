@@ -7,9 +7,9 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import ScheduleItem from "@/app/components/ScheduleItem";
-import getSchedules from "../../api/scheduleApi";
-import useScheduleStore from "@/app/stores/scheduleStore";
+import * as Animatable from "react-native-animatable";
+import ScheduleItem from "../../../components/ScheduleItem";
+import useScheduleStore from "@/stores/scheduleStore";
 import { Schedule } from "@/types/Schedule";
 import { router } from "expo-router";
 
@@ -78,19 +78,14 @@ export default function ScheduleScreen() {
   const selectedDay = useScheduleStore((state) => state.selectedDay);
   const setSchedules = useScheduleStore((state) => state.setSchedules);
   const setSelectedDay = useScheduleStore((state) => state.setSelectedDay);
-
+  const fetchSchedule = useScheduleStore((state) => state.fetchSchedules);
 
   useEffect(() => {
     if (!schedules || schedules.length === 0) {
       const fetchSchedules = async () => {
         setLoading(true);
         try {
-          const data = await getSchedules();
-          if (Array.isArray(data)) {
-            setSchedules(data);
-          } else {
-            throw new Error("Dữ liệu không hợp lệ từ API");
-          }
+          await fetchSchedule(); // dùng từ store
         } catch (error) {
           setSchedules([]);
         } finally {
@@ -99,7 +94,7 @@ export default function ScheduleScreen() {
       };
       fetchSchedules();
     }
-  }, [schedules, setSchedules]);
+  }, []);
 
   const filteredSchedules = Array.isArray(schedules)
     ? schedules.filter(
@@ -109,12 +104,20 @@ export default function ScheduleScreen() {
     : [];
 
   const handleSelectJob = (job: Schedule) => {
-    router.push(`/screens/schedule-detail/${job.bookingId}`);
-    
+    if (job.bookingId) {
+      router.push(`/screens/schedule-detail/${job.bookingId}`);
+    } else {
+      console.warn("bookingId is missing in selected job:", job);
+    }
   };
 
   return (
-    <View style={styles.container}>
+    <Animatable.View
+      style={styles.container}
+      animation="fadeInUp"
+      duration={500}
+      delay={100}
+    >
       <Text style={styles.headerTitle}>Lịch làm việc</Text>
 
       <DaySelector
@@ -129,11 +132,13 @@ export default function ScheduleScreen() {
         <FlatList
           data={filteredSchedules}
           keyExtractor={(item) => item._id}
-          renderItem={({ item }) => (
-            <ScheduleItem
-              schedule={item}
-              onPress={() => handleSelectJob(item)}
-            />
+          renderItem={({ item, index }) => (
+            <Animatable.View animation="fadeInUp" delay={index * 100}>
+              <ScheduleItem
+                schedule={item}
+                onPress={() => handleSelectJob(item)}
+              />
+            </Animatable.View>
           )}
           ListEmptyComponent={
             <Text style={styles.emptyText}>
@@ -142,13 +147,7 @@ export default function ScheduleScreen() {
           }
         />
       )}
-
-      {/* <JobDetailModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        job={selectedJob || {}}
-      /> */}
-    </View>
+    </Animatable.View>
   );
 }
 

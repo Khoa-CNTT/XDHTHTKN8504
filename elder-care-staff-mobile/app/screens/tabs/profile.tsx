@@ -1,3 +1,4 @@
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,35 +8,85 @@ import {
   FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
-
-import ConfirmLogoutModal from "../../components/ConfirmLogoutModal";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import useAuthStore from "@/app/stores/authStore";
+import useAuthStore from "@/stores/authStore";
+import ConfirmLogoutModal from "../../../components/ConfirmLogoutModal";
 
 
 
-const menuItems = [
-  { id: "1", icon: "person-outline", title: "Edit Password" },
-  { id: "2", icon: "heart-outline", title: "Income" },
-  { id: "3", icon: "notifications-outline", title: "Notifications" },
-  { id: "4", icon: "settings-outline", title: "Settings" },
-  { id: "5", icon: "help-circle-outline", title: "Help and Support" },
-  { id: "6", icon: "document-text-outline", title: "Terms and Conditions" },
-  { id: "7", icon: "log-out-outline", title: "Log Out" },
+interface MenuItem {
+  id: string;
+  icon: string;
+  title: string;
+}
+
+const menuItems: MenuItem[] = [
+  {
+    id: "1",
+    icon: "person-outline",
+    title: "Thay đổi mật khẩu",
+
+  },
+  {
+    id: "2",
+    icon: "heart-outline",
+    title: "Thu nhập",
+  },
+  {
+    id: "3",
+    icon: "notifications-outline",
+    title: "Thông báo",
+  },
+  {
+    id: "4",
+    icon: "settings-outline",
+    title: "Cài đặt",
+  },
+  {
+    id: "5",
+    icon: "help-circle-outline",
+    title: "Hỗ trợ khách hàng",
+  },
+  {
+    id: "6",
+    icon: "document-text-outline",
+    title: "Điều khoản sử dụng",
+  },
+  { id: "7", icon: "log-out-outline", title: "Đăng xuất" },
 ];
 
 export default function Profile() {
   const [showLogout, setShowLogout] = useState(false);
   const userData = useAuthStore((state) => state.user);
-  const handleMenuPress = (item: any) => {
-    if (item.title === "Log Out") {
-      setShowLogout(true);
-    } else {
-      router.push("/screens/income-screen");
+
+  const handleMenuPress = useCallback((item: MenuItem) => {
+    switch (item.title) {
+      case "Thay đổi mật khẩu":
+        router.push("/screens/auth/ChangePassword");
+        break;
+      case "Thu nhập":
+        router.push("/screens/income-screen");
+        break;
+      case "Thông báo":
+        router.push("/screens/notification/notifications");
+        break;
+      case "Cài đặt":
+        // router.push("/screens/settings-screen");
+        break;
+      case "Hỗ trợ khách hàng":
+        // router.push("/screens/help-screen");
+        break;
+      case "Điều khoản sử dụng":
+        // router.push("/screens/terms-screen");
+        break;
+      case "Đăng xuất":
+        setShowLogout(true);
+        break;
+      default:
+        break;
     }
-  };
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -43,11 +94,12 @@ export default function Profile() {
       await AsyncStorage.removeItem("userInfo");
 
       setShowLogout(false);
-      router.replace("/screens/auth/Login"); // Điều hướng về màn hình login
+      router.replace("/screens/auth/Login");
     } catch (error) {
       console.error("Logout failed", error);
     }
   };
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Hồ sơ</Text>

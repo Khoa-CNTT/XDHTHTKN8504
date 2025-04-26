@@ -14,10 +14,18 @@ import BookingRouter from "./src/routes/bookingRouter.js";
 import DoctorRouter from "./src/routes/doctorRouter.js";
 import NurseRouter from "./src/routes/nurseRouter.js";
 import ScheduleRouter from './src/routes/scheduleRouter.js';
+import ChatRouter from './src/routes/chatRoutes.js';
+import UserRouter from "./src/routes/userRouter.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./src/config/swaggerConfig.js";
+import configureSocket from "./src/config/socketConfig.js";
+import http from "http";
 
 const app = express();
+const server = http.createServer(app);
+
+// Cấu hình socket.io
+configureSocket(server);
 
 // Connect to database
 connectDB();
@@ -64,8 +72,10 @@ app.use("/api/v1/bookings", BookingRouter);
 app.use("/api/v1/doctors", DoctorRouter);
 app.use("/api/v1/nurses", NurseRouter);
 app.use("/api/v1/schedules", ScheduleRouter);
+app.use("/api/v1/chat", ChatRouter);
+app.use("/api/v1/user", UserRouter); 
 
 const port = process.env.SERVER_PORT || 8080;
-const listener = app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${listener.address().port}`);
+const listener = server.listen(port, '0.0.0.0',() => {
+  console.log(`Server is running on http://0.0.0.0:${listener.address().port}`);
 });

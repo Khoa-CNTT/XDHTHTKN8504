@@ -31,13 +31,13 @@ const scheduleSchema = new mongoose.Schema({
     },
     timeSlots: [
         {
-            startTime: { type: Date, required: true },  // Thời gian bắt đầu của ca làm việc
-            endTime: { type: Date, required: true },    // Thời gian kết thúc của ca làm việc
+            start: { type: Date, required: true },  // Thời gian bắt đầu của ca làm việc
+            end: { type: Date, required: true },    // Thời gian kết thúc của ca làm việc
         }
     ],
     status: {
         type: String,
-        enum: ['scheduled', 'completed', 'cancelled'],
+        enum: ["scheduled", "waiting_for_nurse", "waiting_for_client", "on_the_way", "check_in" , "in_progress", "check_out", "completed", "canceled"],
         default: 'scheduled',
     },
 }, { timestamps: true });

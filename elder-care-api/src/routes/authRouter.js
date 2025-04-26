@@ -17,4 +17,18 @@ router.post(
     authController.uploadAvatar
 );
 
+// Đếm số người dùng trong 12 tháng
+router.get(
+    "/count-users-per-month",
+    authController.countMembersPerMonth
+)
+
+// Cập nhập trạng thái hoạt động của bác sĩ và điều dưỡng
+router.patch(
+    "/is-available",
+    auth,
+    authorizeRoles("doctor", "nurse"),
+    authController.updateAvailabilityStatus
+)
+
 export default router;

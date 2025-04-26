@@ -1,168 +1,269 @@
-import React, { useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Linking,
-} from "react-native";
-import MapView, { Marker } from "react-native-maps";
-import useShiftStore from "../../stores/shiftStore";
+import React, { useEffect, useState } from "react";
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import MapView from "react-native-maps";
+import { Button } from "react-native-paper";
+import { MapPin, Phone, MessageCircle } from "lucide-react-native"; // Importing Lucide icons
+import { router } from "expo-router";
+import TooEarlyModal from "../../../components/TooEarlyModal";
+import useScheduleStore from "../../../stores/scheduleStore";
+import { ScheduleStatus } from "../../../types/ScheduleStatus";
+import { useScheduleSocket } from "../../../hooks/useScheduleSocket";
+import updateScheduleStatus from "../../../api/ScheduleStatusApi";
 
-const STATUS_STEPS = [
-  "Xác nhận nhận việc",
-  "Đang di chuyển",
-  "Đã tới nơi",
-  "Đang chăm sóc",
-  "Hoàn thành công việc",
-  "Báo cáo công việc",
-];
+const ShiftWorkScreen = () => {
+  const [modalVisible, setModalVisible] = useState(false);
 
-interface BriefcaseProps {
-  shiftId: string;
-}
+  const nearestSchedule = useScheduleStore((state) => state.nearestSchedule);
+  const getNearestSchedule = useScheduleStore(
+    (state) => state.getNearestSchedule
+  );
+  const updateSchedule = useScheduleStore((state) => state.updateSchedule);
 
-const Briefcase: React.FC<BriefcaseProps> = ({ shiftId }) => {
-  const { currentShift, fetchShift, updateStatus } = useShiftStore();
-
+  // Lấy lịch gần nhất khi load màn hình
   useEffect(() => {
-    fetchShift(shiftId);
-  }, [shiftId]);
+    getNearestSchedule();
+  }, []);
 
-  if (!currentShift) return <Text style={styles.loading}>Đang tải...</Text>;
+  // Kết nối socket với lịch hiện tại
+  useScheduleSocket(nearestSchedule?._id || "");
 
-  const handleNextStatus = () => {
-    const currentIndex = STATUS_STEPS.indexOf(currentShift.status);
-    if (currentIndex < STATUS_STEPS.length - 1) {
-      updateStatus(STATUS_STEPS[currentIndex + 1]);
+  // Hàm cập nhật trạng thái lịch
+  const handleUpdateStatus = async (newStatus: ScheduleStatus) => {
+    if (!nearestSchedule) return;
+    try {
+      const updatedSchedule = await updateScheduleStatus(
+        nearestSchedule._id,
+        newStatus
+      );
+      updateSchedule(updatedSchedule); // cập nhật local store
+    } catch (error) {
+      console.error("Không thể cập nhật trạng thái:", error);
     }
   };
 
-  const handleCallCustomer = () => {
-    Linking.openURL(`tel:${currentShift.customerPhone}`);
+  const renderActionButtonByStatus = (status: ScheduleStatus) => {
+    switch (status) {
+      case "scheduled":
+        return (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleUpdateStatus("waiting_for_client")}
+          >
+            <Text style={styles.actionButtonText}>Bắt đầu</Text>
+          </TouchableOpacity>
+        );
+      case "waiting_for_client":
+        return (
+          <TouchableOpacity style={styles.actionButton}>
+            <Text style={styles.actionButtonText}>Chờ khách hàng sẵn sàng</Text>
+          </TouchableOpacity>
+        );
+      case "on_the_way":
+        return (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleUpdateStatus("check_in")}
+          >
+            <Text style={styles.actionButtonText}>Đã đến nơi</Text>
+          </TouchableOpacity>
+        );
+      case "check_in":
+        return (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleUpdateStatus("in_progress")}
+          >
+            <Text style={styles.actionButtonText}>Bắt đầu chăm sóc</Text>
+          </TouchableOpacity>
+        );
+      case "in_progress":
+        return (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleUpdateStatus("check_out")}
+          >
+            <Text style={styles.actionButtonText}>Kết thúc chăm sóc</Text>
+          </TouchableOpacity>
+        );
+      case "check_out":
+        return (
+          <Text style={styles.actionButtonText}>
+            Chờ khách xác nhận hoàn tất
+          </Text>
+        );
+      case "completed":
+      case "cancelled":
+        return (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push("/screens/tabs/home")}
+          >
+            <Text style={styles.actionButtonText}>Kết thúc chăm sóc</Text>
+          </TouchableOpacity>
+        );
+      default:
+        return (
+          <Text style={styles.actionButtonText}>
+            Trở về màn hình chính
+          </Text>
+        );
+    }
   };
+
+  if (!nearestSchedule) {
+    return (
+      <View style={styles.centered}>
+        <Text>Không có lịch gần nhất.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {/* Hiển thị bản đồ */}
       <MapView
         style={styles.map}
         initialRegion={{
-          latitude: currentShift.staffLocation.lat,
-          longitude: currentShift.staffLocation.lng,
+          latitude: 31.2001,
+          longitude: 29.9187,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         }}
-      >
-        {/* Vị trí nhân viên */}
-        <Marker
-          coordinate={{
-            latitude: currentShift.staffLocation.lat,
-            longitude: currentShift.staffLocation.lng,
-          }}
-          title="Vị trí của bạn"
-          pinColor="blue"
-        />
+      />
 
-        {/* Vị trí khách hàng */}
-        <Marker
-          coordinate={{
-            latitude: currentShift.location.lat,
-            longitude: currentShift.location.lng,
-          }}
-          title="Khách hàng"
-          pinColor="red"
-        />
-      </MapView>
+      <View style={styles.overlay}>
+        <TouchableOpacity style={styles.showWayBtn}>
+          <MapPin size={16} color="#000" />
+          <Text style={styles.showWayText}>Hiển thị đường đi</Text>
+        </TouchableOpacity>
 
-      {/* Thông tin ca làm việc */}
-      <View style={styles.infoContainer}>
-        <Text style={styles.customerName}>{currentShift.customerName}</Text>
-        <Text style={styles.infoText}>📍 {currentShift.address}</Text>
-        <Text style={styles.infoText}>⏰ {currentShift.time}</Text>
-        <Text style={styles.status}>🔄 {currentShift.status}</Text>
-
-        {/* Button gọi và nhắn tin */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.callButton}
-            onPress={handleCallCustomer}
-          >
-            <Text style={styles.buttonText}>📞 Gọi khách</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.messageButton}>
-            <Text style={styles.buttonText}>💬 Nhắn tin</Text>
-          </TouchableOpacity>
+        <View style={styles.arrivalInfo}>
+          <Text style={styles.expectedLabel}>
+            Thời gian dự kiến đến với khách
+          </Text>
+          <View style={styles.userInfo}>
+            <Image
+              source={{
+                uri:
+                  // nearestSchedule.patientAvatar ||
+                  "https://via.placeholder.com/40",
+              }}
+              style={styles.avatar}
+            />
+            <View>
+              <Text style={styles.userName}>
+                {nearestSchedule.patientName || "Tên khách hàng"}
+              </Text>
+              <Text style={styles.travelInfo}>Chưa có thông tin</Text>
+            </View>
+          </View>
         </View>
 
-        {/* Nút cập nhật trạng thái */}
-        <TouchableOpacity
-          style={styles.nextStatusButton}
-          onPress={handleNextStatus}
-        >
-          <Text style={styles.buttonText}>
-            ➡️{" "}
-            {STATUS_STEPS[STATUS_STEPS.indexOf(currentShift.status) + 1] ||
-              "Hoàn thành"}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.buttonRow}>
+          <Button
+            mode="outlined"
+            icon={() => <Phone size={20} />}
+            style={styles.button}
+            onPress={() => {}}
+          >
+            Call
+          </Button>
+          <Button
+            mode="outlined"
+            icon={() => <MessageCircle size={20} />}
+            style={styles.button}
+            onPress={() => {}}
+          >
+            Chat
+          </Button>
+        </View>
+
+        <TooEarlyModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+        />
+
+        {renderActionButtonByStatus(nearestSchedule.status)}
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f4f4f4" },
-  map: { flex: 1 },
-  infoContainer: {
-    padding: 20,
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    marginTop: -20,
+  container: { flex: 1, backgroundColor: "#F5F5F5" },
+  map: { ...StyleSheet.absoluteFillObject },
+  overlay: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    backgroundColor: "white",
+    padding: 16,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 10,
   },
-  customerName: {
-    fontSize: 22,
+  showWayBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  showWayText: {
+    marginLeft: 6,
+    color: "#000",
     fontWeight: "bold",
-    color: "#28A745",
-    marginBottom: 5,
   },
-  infoText: { fontSize: 16, color: "#444", marginBottom: 3 },
-  status: {
+  arrivalInfo: {
+    marginBottom: 16,
+  },
+  expectedLabel: {
+    fontSize: 12,
+    color: "gray",
+  },
+  userInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  userName: {
+    fontWeight: "bold",
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#E67E22",
-    marginBottom: 10,
   },
-  buttonContainer: {
+  travelInfo: {
+    fontSize: 14,
+    color: "gray",
+  },
+  actionButton: {
+    marginTop: 10,
+    backgroundColor: "#4CAF50",
+    borderRadius: 20,
+  },
+  actionButtonText: {
+    color: "white",
+    textAlign: "center",
+    padding: 15,
+    fontWeight: "bold",
+  },
+  buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 10,
+    marginVertical: 12,
   },
-  callButton: {
+  button: {
+    flex: 0.48,
+  },
+  centered: {
     flex: 1,
-    backgroundColor: "#28A745",
-    padding: 10,
-    marginRight: 5,
-    borderRadius: 8,
+    justifyContent: "center",
     alignItems: "center",
   },
-  messageButton: {
-    flex: 1,
-    backgroundColor: "#17A2B8",
-    padding: 10,
-    marginLeft: 5,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  nextStatusButton: {
-    backgroundColor: "#E67E22",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  buttonText: { fontSize: 16, fontWeight: "bold", color: "#fff" },
-  loading: { textAlign: "center", fontSize: 18, marginTop: 20 },
 });
 
-export default Briefcase;
+export default ShiftWorkScreen;

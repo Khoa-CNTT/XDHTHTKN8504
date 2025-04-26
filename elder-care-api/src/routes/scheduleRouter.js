@@ -19,11 +19,14 @@ router.get(
   scheduleController.getAllSchedulesByStaffId
 );
 
-router.put(
+router.patch(
   "/update-schedule/:scheduleId",
   auth,
-  authorizeRoles("doctor", "nurse"),
+  authorizeRoles("doctor", "nurse", "family_member"),
   scheduleController.updateScheduleStatus
 );
+
+router.get('/get-schedule-by-profileId/:profileId', scheduleController.getInfoSchedule)
+rourer.get('/getSchedulesForUserToday', scheduleController.getSchedulesForUserToday)
 
 export default router;

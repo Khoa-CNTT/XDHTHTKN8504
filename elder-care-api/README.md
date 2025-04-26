@@ -35,3 +35,9 @@ Update Status Schedule
 METHOD: put
 http://localhost:5000/api/v1/schedules/update-schedule/{_id}
 {_id}: id cua schedule
+
+Realtime
+// Bật tắt hoạt động của bác sĩ và điều dưỡng 
+METHOD: patch
+http://localhost:5000/api/v1/auth/is-available
+- nhận status từ client: true/false

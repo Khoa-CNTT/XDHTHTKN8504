@@ -2,29 +2,60 @@ import Schedule from "../models/Schedule.js";
 import Booking from "../models/Booking.js";
 import Profile from "../models/Profile.js";
 import moment from "moment";
+import moment2 from "moment-timezone";
 import Service from "../models/Service.js";
+import Doctor from "../models/Doctor.js";
+import Nurse from "../models/Nurse.js";
+import { emitScheduleStatus } from "../controllers/socketController.js";
 
 const updateBookingStatus = async (bookingId) => {
     try {
+        if (!bookingId) {
+            console.warn("⚠️ bookingId không tồn tại");
+            return null;
+        }
+
+        console.log("🔍 Đang kiểm tra schedules với bookingId:", bookingId);
         const schedules = await Schedule.find({ bookingId });
 
-        const allCompleted = schedules.every(schedule => schedule.status === 'completed');
+        const allCompleted = schedules.every(
+            (schedule) => schedule.status === "completed"
+        );
+        console.log("✅ allCompleted:", allCompleted);
 
         if (allCompleted) {
             const updatedBooking = await Booking.findByIdAndUpdate(
                 bookingId,
-                { status: 'completed' },
+                { status: "completed" },
                 { new: true }
             );
+            console.log("✅ Booking đã cập nhật:", updatedBooking);
             return updatedBooking;
         }
 
         return null;
     } catch (error) {
-        console.error("Lỗi khi cập nhật trạng thái booking:", error);
+        console.error("🔥 Lỗi khi cập nhật trạng thái booking:", error);
         return null;
     }
 };
+
+// Hàm lấy tên nhân viên dựa vào role ththth
+async function getStaffName(staff) {
+    if (!staff) {
+        return "Chưa phân công";
+    }
+
+    if (staff.role === "doctor") {
+        const doctor = await Doctor.findOne({ userId: staff._id });
+        return doctor ? `${doctor.firstName} ${doctor.lastName}` : "Chưa phân công";
+    } else if (staff.role === "nurse") {
+        const nurse = await Nurse.findOne({ userId: staff._id });
+        return nurse ? `${nurse.firstName} ${nurse.lastName}` : "Chưa phân công";
+    }
+
+    return "Chưa phân công";  // Nếu role không phải doctor hoặc nurse
+}
 
 const scheduleController = {
     // Truy vấn danh sách công việc đã hoàn thành trong 1 tháng
@@ -34,20 +65,24 @@ const scheduleController = {
             const { year, month } = req.query;
 
             if (!year || !month) {
-                return res.status(400).json({ message: 'Cần truyền vào năm và tháng' });
+                return res.status(400).json({ message: "Cần truyền vào năm và tháng" });
             }
 
-            const startOfMonth = moment(`${year}-${month}-01`).startOf('month').toDate();
-            const endOfMonth = moment(`${year}-${month}-01`).endOf('month').toDate();
+            const startOfMonth = moment(`${year}-${month}-01`)
+                .startOf("month")
+                .toDate();
+            const endOfMonth = moment(`${year}-${month}-01`).endOf("month").toDate();
 
             const completedSchedules = await Schedule.find({
                 staffId: staffId,
-                status: 'completed',
-                date: { $gte: startOfMonth, $lte: endOfMonth }
-            }).populate('staffId bookingId');
+                status: "completed",
+                date: { $gte: startOfMonth, $lte: endOfMonth },
+            }).populate("staffId bookingId");
 
             if (!completedSchedules || completedSchedules.length === 0) {
-                return res.status(404).json({ message: 'Không có công việc hoàn thành trong tháng này' });
+                return res
+                    .status(404)
+                    .json({ message: "Không có công việc hoàn thành trong tháng này" });
             }
 
             const jobDetails = [];
@@ -61,22 +96,26 @@ const scheduleController = {
                 const profile = await Profile.findById(booking.profileId);
 
                 jobDetails.push({
-                    patientName: profile ? `${profile.firstName} ${profile.lastName}` : 'Không có thông tin bệnh nhân',
-                    serviceName: service ? service.name : 'Không tìm thấy dịch vụ',
-                    address: profile?.address || '',
+                    patientName: profile
+                        ? `${profile.firstName} ${profile.lastName}`
+                        : "Không có thông tin bệnh nhân",
+                    serviceName: service ? service.name : "Không tìm thấy dịch vụ",
+                    address: profile?.address || "",
                     notes: booking.notes,
                     jobDate: schedule.date,
-                    totalPrice: booking.totalDiscount || 0
+                    totalPrice: booking.totalDiscount || 0,
                 });
             }
 
             return res.status(200).json({
-                message: 'Danh sách công việc hoàn thành trong tháng',
-                jobDetails
+                message: "Danh sách công việc hoàn thành trong tháng",
+                jobDetails,
             });
         } catch (error) {
             console.error("Lỗi khi lấy công việc hoàn thành:", error);
-            return res.status(500).json({ message: 'Lỗi server', error: error.message });
+            return res
+                .status(500)
+                .json({ message: "Lỗi server", error: error.message });
         }
     },
 
@@ -84,61 +123,284 @@ const scheduleController = {
         try {
             const staffId = req.user._id;
 
-            const schedules = await Schedule.find({ staffId })
-                .sort({ date: 1, "timeSlots.startTime": 1 });
+            const schedules = await Schedule.find({ staffId }).sort({
+                date: 1,
+                "timeSlots.startTime": 1,
+            });
 
             return res.status(200).json({
-                message: 'Lấy toàn bộ lịch làm việc thành công',
-                data: schedules
+                message: "Lấy toàn bộ lịch làm việc thành công",
+                data: schedules,
             });
         } catch (error) {
             console.error(error);
             return res.status(500).json({
-                message: 'Lỗi server',
-                error: error.message
+                message: "Lỗi server",
+                error: error.message,
             });
         }
     },
 
+    // updateScheduleStatus: async (req, res) => {
+    //   try {
+    //     const { _id } = req.user;
+    //     const { scheduleId } = req.params;
+    //     const { status } = req.body;
+
+    //     // Cập nhật trạng thái schedule
+    //     const updatedSchedule = await Schedule.findByIdAndUpdate(
+    //       scheduleId,
+    //       { status: status },
+    //       { new: true }
+    //     );
+
+    //     if (!updatedSchedule) {
+    //       return res.status(404).json({ message: "Schedule không tồn tại" });
+    //     }
+
+    //     // Cập nhật trạng thái booking nếu cần
+    //     const updatedBooking = await updateBookingStatus(
+    //       updatedSchedule.bookingId
+    //     );
+
+    //     // Emit realtime nếu có
+    //     const targetUserId = updatedSchedule.userId;
+
+    //     emitScheduleStatus(targetUserId, {
+    //       message: "Lịch hẹn của bạn đã được cập nhật",
+    //       scheduleId: updatedSchedule._id,
+    //       newStatus: updatedSchedule.status,
+    //       bookingId: updatedSchedule.bookingId,
+    //       bookingStatus: updatedBooking?.status || null, // Dùng optional chaining để tránh lỗi
+    //     });
+
+    //     return res.status(200).json({
+    //       message: updatedBooking
+    //         ? "Cập nhật trạng thái thành công và booking đã được hoàn thành"
+    //         : "Cập nhật trạng thái schedule thành công",
+    //       schedule: updatedSchedule,
+    //       booking: updatedBooking || null,
+    //     });
+    //   } catch (error) {
+    //     console.error("🔥 Lỗi khi cập nhật trạng thái:", error);
+    //     return res
+    //       .status(500)
+    //       .json({ message: "Lỗi server", error: error.message });
+    //   }
+    // },
     updateScheduleStatus: async (req, res) => {
         try {
-            const { _id: staffId } = req.user;
-            const { scheduleId } = req.params;  
-            const { status } = req.body; 
+            const { _id } = req.user;
+            const { scheduleId } = req.params;
+            const { status } = req.body;
 
-            // Cập nhật trạng thái của schedule
+            // Cập nhật trạng thái schedule
             const updatedSchedule = await Schedule.findByIdAndUpdate(
                 scheduleId,
                 { status: status },
-                { new: true }  
+                { new: true }
             );
 
             if (!updatedSchedule) {
-                return res.status(404).json({ message: 'Schedule không tồn tại' });
+                return res.status(404).json({ message: "Schedule không tồn tại" });
             }
 
-            // Kiểm tra và cập nhật trạng thái của booking nếu cần
+            // Cập nhật trạng thái booking nếu cần
             const updatedBooking = await updateBookingStatus(updatedSchedule.bookingId);
 
-            if (updatedBooking) {
-                return res.status(200).json({
-                    message: 'Cập nhật trạng thái thành công và booking đã được hoàn thành',
-                    schedule: updatedSchedule,
-                    booking: updatedBooking
+            // Emit realtime vào phòng socket liên quan đến scheduleId
+            const targetUserId = updatedSchedule.userId;
+
+            // Thay đổi: Emit vào phòng có tên là `schedule_${scheduleId}`
+            emitScheduleStatus(`schedule_${scheduleId}`, {
+                message: "Lịch hẹn của bạn đã được cập nhật",
+                scheduleId: updatedSchedule._id,
+                newStatus: updatedSchedule.status,
+                bookingId: updatedSchedule.bookingId,
+                bookingStatus: updatedBooking?.status || null, // Dùng optional chaining để tránh lỗi
+            });
+
+            return res.status(200).json({
+                message: updatedBooking
+                    ? "Cập nhật trạng thái thành công và booking đã được hoàn thành"
+                    : "Cập nhật trạng thái schedule thành công",
+                schedule: updatedSchedule,
+                booking: updatedBooking || null,
+            });
+        } catch (error) {
+            console.error("🔥 Lỗi khi cập nhật trạng thái:", error);
+            return res
+                .status(500)
+                .json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
+    getInfoSchedule: async (req, res) => {
+        try {
+            const { profileId } = req.params;
+            if (!profileId) {
+                return res
+                    .status(400)
+                    .json({ success: false, message: "Missing profileId" });
+            }
+
+            const today = moment2.tz('Asia/Ho_Chi_Minh').startOf('day');
+            const tomorrow = today.clone().add(1, 'days');
+
+            const bookings = await Booking.find({ profileId }).select("_id");
+            const bookingIds = bookings.map((b) => b._id);
+
+            if (bookingIds.length === 0) {
+                return res.status(200).json({ success: true, data: [] });
+            }
+
+            const schedules = await Schedule.find({
+                bookingId: { $in: bookingIds },
+                date: { $gte: tomorrow.toDate(), $lt: tomorrow.clone().add(1, 'days').toDate() },
+            })
+                .populate({
+                    path: "staffId", // Populate staffId
+                    select: "role userId", // Lấy role và userId từ staffId
+                    populate: {
+                        path: "userId", // Populate userId trong staffId
+                        select: "avatar", // Lấy avatar từ User
+                        strictPopulate: false, // Bỏ qua kiểm tra strictPopulate
+                    },
+                })
+                .populate({
+                    path: "bookingId",
+                    populate: {
+                        path: "serviceId",
+                        select: "name",
+                    },
+                });
+
+            const result = [];
+
+            for (const item of schedules) {
+                const staffName = await getStaffName(item.staffId);
+                const staffAvatar = item.staffId?.userId?.avatar || ""; // Lấy avatarUrl từ userId trong staff
+
+                const serviceName = item.bookingId?.serviceId?.name || "Không rõ dịch vụ";
+
+                const timeSlots = Array.isArray(item.timeSlots)
+                    ? item.timeSlots
+                        .filter(slot => slot.start && slot.end)
+                        .map(slot => ({
+                            start: moment2(slot.start).tz('Asia/Ho_Chi_Minh').toISOString(),
+                            end: moment2(slot.end).tz('Asia/Ho_Chi_Minh').toISOString()
+                        }))
+                    : [];
+
+                const status = item.status || "Chưa có trạng thái";
+                result.push({
+                    staffName,
+                    staffAvatar, // Trả về avatarUrl của staff
+                    serviceName,
+                    status,
+                    timeSlots,
                 });
             }
 
-            // Trả về kết quả cập nhật chỉ cho schedule
-            res.status(200).json({
-                message: 'Cập nhật trạng thái schedule thành công',
-                schedule: updatedSchedule
+            res.status(200).json({ success: true, data: result });
+        } catch (err) {
+            console.error("Error:", err);
+            return res.status(500).json({ success: false, message: "Server error" });
+        }
+},
+    getSchedulesForUserToday: async (req, res) => {
+    try {
+        const { _id: userId } = req.user; 
+
+        // Kiểm tra nếu userId không có
+        if (!userId) {
+            return res.status(400).json({ success: false, message: "Missing userId" });
+        }
+
+        // Tìm user và lấy các profileIds
+        const user = await User.findById(userId).select("profiles");
+        if (!user) {
+            return res.status(400).json({ success: false, message: "User not found" });
+        }
+
+        const profileIds = user.profiles; // Lấy tất cả profileIds của người dùng
+
+        // Kiểm tra nếu không có profileIds
+        if (!Array.isArray(profileIds) || profileIds.length === 0) {
+            return res.status(400).json({ success: false, message: "User does not have any profiles" });
+        }
+
+        // Lấy thời điểm bắt đầu và kết thúc của ngày hôm nay theo múi giờ VN
+        const todayStart = moment.tz('Asia/Ho_Chi_Minh').startOf('day').toDate();
+        const todayEnd = moment.tz('Asia/Ho_Chi_Minh').endOf('day').toDate();
+
+        // Lấy tất cả các booking liên quan đến các profileIds
+        const bookings = await Booking.find({ profileId: { $in: profileIds } }).select("_id");
+        const bookingIds = bookings.map(b => b._id);
+
+        // Kiểm tra nếu không có booking nào
+        if (bookingIds.length === 0) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+
+        // Lấy tất cả schedules của các booking trong ngày hôm nay
+        const schedules = await Schedule.find({
+            bookingId: { $in: bookingIds },
+            date: { $gte: todayStart, $lte: todayEnd }
+        })
+            .populate({
+                path: "staffId", // Lấy thông tin staff từ staffId
+                select: "role userId", // Lấy role và userId từ staffId
+                populate: {
+                    path: "userId", // Lấy thông tin user từ userId
+                    select: "avatar", // Lấy avatar từ user
+                    strictPopulate: false
+                },
+            })
+            .populate({
+                path: "bookingId", // Lấy thông tin bookingId
+                populate: {
+                    path: "serviceId", // Lấy thông tin service từ serviceId
+                    select: "name",
+                },
             });
 
-        } catch (error) {
-            console.error("Lỗi khi cập nhật trạng thái:", error);
-            return res.status(500).json({ message: 'Lỗi server', error: error.message });
+        // Chuẩn hóa kết quả trả về
+        const result = [];
+
+        for (const item of schedules) {
+            const staffName = await getStaffName(item.staffId); // Giả sử bạn có hàm getStaffName để lấy tên staff
+            const staffAvatar = item.staffId?.userId?.avatar || ""; // Lấy avatar từ userId của staff
+            const serviceName = item.bookingId?.serviceId?.name || "Không rõ dịch vụ";
+
+            // Chuyển đổi thời gian của các slots vào đúng múi giờ VN
+            const timeSlots = Array.isArray(item.timeSlots)
+                ? item.timeSlots
+                      .filter(slot => slot.start && slot.end)
+                      .map(slot => ({
+                          start: moment(slot.start).tz('Asia/Ho_Chi_Minh').toISOString(),
+                          end: moment(slot.end).tz('Asia/Ho_Chi_Minh').toISOString()
+                      }))
+                : [];
+
+            const status = item.status || "Chưa có trạng thái";
+
+            result.push({
+                staffName,
+                staffAvatar,
+                serviceName,
+                status,
+                timeSlots,
+            });
         }
+
+        return res.status(200).json({ success: true, data: result });
+
+    } catch (err) {
+        console.error("Error:", err);
+        return res.status(500).json({ success: false, message: "Server error" });
     }
 }
+};
 
 export default scheduleController;

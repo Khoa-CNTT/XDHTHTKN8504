@@ -1,9 +1,11 @@
 import React, { useEffect } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
-import BalanceCard from "../components/Income/BalanceCard";
-import BookingItem from "../components/Income/BookingItem";
-import LoadingIndicator from "../components/LoadingIndicator";
-import useCompletedBookingStore from "../stores/completedBookingStore";
+import BalanceCard from "../../components/Income/BalanceCard";
+import BookingItem from "../../components/Income/BookingItem";
+import LoadingIndicator from "../../components/LoadingIndicator";
+import useCompletedBookingStore from "../../stores/completedBookingStore";
+import {CompletedBooking} from "../../types/CompletedBooking";
+import { router } from "expo-router";
 
 const IncomeScreen: React.FC = () => {
     const completedBookings = useCompletedBookingStore((state) => state.completedBookings);
@@ -21,7 +23,14 @@ const IncomeScreen: React.FC = () => {
       fetchCompletedBookings(currentYear, currentMonth);
     }
   }, [fetchCompletedBookings, completedBookings.length]); // Chỉ gọi lại nếu completedBookings chưa có dữ liệu
-
+  const handleSelectJob = (job: CompletedBooking) => {
+       if (job.bookingId) {
+         router.push(`/screens/schedule-detail/${job.bookingId}`);
+       } else {
+         console.warn("bookingId is missing in selected job:", job);
+         // Optionally, show a toast or alert
+       }
+     };
   if (loading) {
     return <LoadingIndicator />;
   }
@@ -35,7 +44,11 @@ const IncomeScreen: React.FC = () => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>THU NHẬP</Text>
       </View>
-      <BalanceCard salary= {totalSalary} completed={totalCompleted} distance="200 Km" />
+      <BalanceCard
+        salary={totalSalary}
+        completed={totalCompleted}
+        distance="200 Km"
+      />
 
       <Text style={styles.sectionTitle}>Đã hoàn thành</Text>
       {completedBookings.length === 0 ? (
@@ -44,7 +57,11 @@ const IncomeScreen: React.FC = () => {
         <FlatList
           data={completedBookings}
           keyExtractor={(item) => item.bookingId}
-          renderItem={({ item }) => <BookingItem item={item} />}
+          renderItem={({ item }) => (
+            <BookingItem item={item} 
+              onPress={() => handleSelectJob(item)} 
+            />
+          )}
         />
       )}
     </View>

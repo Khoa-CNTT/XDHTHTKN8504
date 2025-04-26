@@ -868,7 +868,7 @@ export const dashboardCards = [
     value: 1600,
     percent: 45.06,
     color: ["bg-subMain", "text-subMain", "#66B5A3"],
-    datas: [92, 80, 45, 15, 49, 77, 70, 51, 110, 20, 90, 60],
+    datas: [],
   },
   {
     id: 2,

@@ -1,4 +1,4 @@
-import loginApi from "../../api/authApi"; // Đã dùng API riêng
+import loginApi from "../../../api/authApi"; // Đã dùng API riêng
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
 import React, { useState } from "react";
@@ -14,7 +14,7 @@ import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "expo-router";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-import useAuthStore from "../../stores/authStore"; // Zustand store
+import useAuthStore from "../../../stores/authStore"; // Zustand store
 
 type FormData = {
   phone: string;

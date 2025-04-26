@@ -10,6 +10,7 @@ type RootStackParamList = {
   Map: undefined;
   DoctorDetails: { doctor: any };
   BookAppointment: { doctor: any };
+  ServiceDetails: { serviceId: string };
   FeaturedService: undefined; // Add FeaturedServiceScreen to the navigation stack
   Booking: undefined;
   AllDoctors: undefined;
@@ -89,12 +90,7 @@ const Banner: React.FC = () => {
   }, [activeIndex]);
 
   const handleBannerPress = () => {
-    // navigation.navigate('AllDoctors'); 
-    // navigation.navigate('FeaturedService');
     navigation.navigate('Booking');
-    
-    
-    // Navigate to FeaturedServiceScreen
   };
 
   const renderItem = ({ item }: { item: typeof bannerData[0] }) => (
