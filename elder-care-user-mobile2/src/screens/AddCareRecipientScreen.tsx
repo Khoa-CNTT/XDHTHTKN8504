@@ -9,13 +9,15 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
-  Modal,
-  TouchableWithoutFeedback,
   Alert,
 } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from "@react-navigation/stack";
+import CareProfilesApi from "../api/careRecipientAPI";
+import useCareRecipientStore from '../stores/careRecipientStore'; // <-- Đảm bảo import đúng
+import AuthStore from '../stores/authStore';
+// TODO: Thay USER_ID_FROM_AUTH bằng userId thực tế từ auth
 
 type RootStackParamList = {
   BookingSuccess: undefined;
@@ -27,161 +29,108 @@ const { width } = Dimensions.get('window');
 const CreateCareProfileScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
-  // Updated state variables
-  const [name, setName] = useState('');
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
-  const [healthStatus, setHealthStatus] = useState('');
-  const [underlyingDiseases, setUnderlyingDiseases] = useState('');
-  const [allergies, setAllergies] = useState('');
-  const [specialCare, setSpecialCare] = useState('');
-  const [showGenderModal, setShowGenderModal] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [relationship, setRelationship] = useState('');
+  const [address, setAddress] = useState('');
+  const [emergencyContact, setEmergencyContact] = useState({ name: '', phone: '' });
+  const [healthConditions, setHealthConditions] = useState([
+    { condition: '', notes: '' }
+  ]);
+  const { user } = AuthStore(); // <-- Lấy user từ store
+  const userId = user?._id; // <-- userId lấy từ user.id
+  // const userId = '6808ad4cdc447092c07e7ddc'; // <-- Thay bằng ID thực
 
-  // Validation
-  const isAgeValid = /^\d+$/.test(age) && age.trim() !== '';
   const isFormValid =
-    name.trim() !== '' &&
-    isAgeValid &&
-    gender.trim() !== '';
+    firstName && lastName && relationship && address &&
+    emergencyContact.name && emergencyContact.phone &&
+    healthConditions[0].condition;
 
-  const handleCreateProfile = () => {
-    if (isFormValid) {
-      console.log('Creating Care Profile with data:', {
-        name,
-        age,
-        gender,
-        healthStatus,
-        underlyingDiseases,
-        allergies,
-        specialCare,
-      });
-      navigation.navigate('BookingSuccess');
+  const handleCreateProfile = async () => {
+    if (!isFormValid) {
+      Alert.alert("Thiếu thông tin", "Vui lòng điền đầy đủ các trường bắt buộc.");
+      return;
+    }
+
+    try {
+      await CareProfilesApi.createProfile(
+        userId,
+        firstName,
+        lastName,
+        relationship,
+        address,
+        emergencyContact,
+        healthConditions
+      );
+
+      // Fetch lại danh sách hồ sơ
+      await useCareRecipientStore.getState().fetchProfiles(userId);
+
+      Alert.alert("Thành công", "Tạo hồ sơ thành công!");
+      navigation.navigate("BookingSuccess");
+    } catch (error: any) {
+      Alert.alert("Lỗi", error?.response?.data?.message || "Không thể tạo hồ sơ.");
     }
   };
 
-  const selectGender = (selectedGender: string) => {
-    setGender(selectedGender);
-    setShowGenderModal(false);
-  };
-
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={{ flex: 1 }}
-    >
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         <View style={styles.container}>
-
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backIcon}>
             <Ionicons name="arrow-back" size={25} color="#2E3A59" />
-             {/* <Text style={styles.title}>Let's create your Care Profile</Text> */}
           </TouchableOpacity>
 
-          {/* Name */}
-          <TextInput
-            style={[styles.input, name.trim() === '' && !isFormValid && styles.errorInput]}
-            placeholder="Full Name"
-            value={name}
-            onChangeText={setName}
-            autoCapitalize="words"
-          />
-          {name.trim() === '' && !isFormValid && (
-            <Text style={styles.errorText}>Name is required</Text>
-          )}
+          <TextInput style={styles.input} placeholder="First Name" value={firstName} onChangeText={setFirstName} />
+          <TextInput style={styles.input} placeholder="Last Name" value={lastName} onChangeText={setLastName} />
+          <TextInput style={styles.input} placeholder="Relationship" value={relationship} onChangeText={setRelationship} />
+          <TextInput style={styles.input} placeholder="Address" value={address} onChangeText={setAddress} />
 
-          {/* Age */}
-          <TextInput
-            style={[styles.input, (!isAgeValid && age.trim() !== '') && !isFormValid && styles.errorInput]}
-            placeholder="Age"
-            value={age}
-            onChangeText={setAge}
-            keyboardType="numeric"
-            maxLength={3}
-          />
-          {(!isAgeValid && age.trim() !== '') && !isFormValid && (
-            <Text style={styles.errorText}>Please enter a valid age</Text>
-          )}
-
-          {/* Gender */}
-          <TouchableOpacity onPress={() => setShowGenderModal(true)}>
-            <TextInput
-              style={[styles.input, gender.trim() === '' && !isFormValid && styles.errorInput]}
-              placeholder="Select Gender"
-              value={gender}
-              editable={false}
-              pointerEvents="none"
-            />
-          </TouchableOpacity>
-          {gender.trim() === '' && !isFormValid && (
-            <Text style={styles.errorText}>Gender is required</Text>
-          )}
-
-          {/* Health Status */}
+          {/* Emergency Contact */}
           <TextInput
             style={styles.input}
-            placeholder="Health Status"
-            value={healthStatus}
-            onChangeText={setHealthStatus}
-            multiline
+            placeholder="Emergency Contact Name"
+            value={emergencyContact.name}
+            onChangeText={(text) =>
+              setEmergencyContact({ ...emergencyContact, name: text })
+            }
           />
-
-          {/* Underlying Diseases */}
           <TextInput
             style={styles.input}
-            placeholder="Underlying Diseases"
-            value={underlyingDiseases}
-            onChangeText={setUnderlyingDiseases}
-            multiline
+            placeholder="Emergency Contact Phone"
+            value={emergencyContact.phone}
+            onChangeText={(text) =>
+              setEmergencyContact({ ...emergencyContact, phone: text })
+            }
+            keyboardType="phone-pad"
           />
 
-          {/* Allergies */}
+          {/* Health Condition */}
           <TextInput
             style={styles.input}
-            placeholder="Allergies"
-            value={allergies}
-            onChangeText={setAllergies}
-            multiline
+            placeholder="Health Condition"
+            value={healthConditions[0].condition}
+            onChangeText={(text) =>
+              setHealthConditions([{ ...healthConditions[0], condition: text }])
+            }
           />
-
-          {/* Special Care Requirements */}
           <TextInput
             style={styles.input}
-            placeholder="Special Care Requirements"
-            value={specialCare}
-            onChangeText={setSpecialCare}
-            multiline
+            placeholder="Health Notes"
+            value={healthConditions[0].notes}
+            onChangeText={(text) =>
+              setHealthConditions([{ ...healthConditions[0], notes: text }])
+            }
           />
 
-          {/* Create button */}
           <TouchableOpacity
             style={[styles.createButton, isFormValid ? styles.createButtonEnabled : styles.createButtonDisabled]}
             onPress={handleCreateProfile}
-            disabled={!isFormValid}
           >
             <Text style={styles.createButtonText}>Create profile</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
-
-      {/* Gender Modal */}
-      <Modal
-        visible={showGenderModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowGenderModal(false)}
-      >
-        <TouchableWithoutFeedback onPress={() => setShowGenderModal(false)}>
-          <View style={styles.modalOverlay} />
-        </TouchableWithoutFeedback>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Select Gender</Text>
-          {['Male', 'Female', 'Other', 'Prefer not to say'].map(option => (
-            <TouchableOpacity key={option} style={styles.genderOption} onPress={() => selectGender(option)}>
-              <Text>{option}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </Modal>
     </KeyboardAvoidingView>
   );
 };
@@ -189,18 +138,12 @@ const CreateCareProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   scrollContainer: {
     paddingBottom: 50,
-
   },
   container: {
     flex: 1,
     backgroundColor: '#fff',
     padding: width * 0.05,
     paddingTop: width * 0.1,
-  },
-  title: {
-    fontSize: width * 0.05,
-    fontWeight: 'bold',
-    marginBottom: 20,
   },
   input: {
     borderWidth: 1,
@@ -210,17 +153,8 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   backIcon: {
-    marginBottom: 10, // Space below the icon
+    marginBottom: 10,
     alignSelf: 'flex-start',
-  },
-  errorInput: {
-    borderColor: 'red',
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 12,
-    marginTop: -10,
-    marginBottom: 15,
   },
   createButton: {
     padding: 15,
@@ -237,27 +171,6 @@ const styles = StyleSheet.create({
   createButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  modalContent: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  genderOption: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
 });
 
