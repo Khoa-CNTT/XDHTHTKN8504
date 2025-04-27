@@ -33,7 +33,23 @@ const serviceController = {
                 error: error.message,
             })
         }
+    },
+
+    getService: async (req, res) => {
+        try {
+            const services = await Service.find({}).select("-__v"); // (optional) bỏ __v cho sạch
+
+            return res.status(200).json({
+                success: true,
+                service: services,
+            });
+            
+        } catch (error) {
+            console.error("Error in getService:", error);
+            return res.status(500).json({ success: false, message: "Server error" });
+        }
     }
+
 }
 
 export default serviceController;
