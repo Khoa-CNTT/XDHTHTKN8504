@@ -13,7 +13,7 @@ const verifyToken = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
-        req.user = decoded; // chứa _id, role, ...
+        req.user = decoded;
         next();
     } catch (error) {
         return res.status(401).json({ message: 'Token không hợp lệ', error: error.message });

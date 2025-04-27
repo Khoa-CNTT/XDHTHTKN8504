@@ -9,7 +9,7 @@ const profileController = {
 
             // Check if the userId is provided
             const existingUser = await User.findById(userId)
-            if(!existingUser) {
+            if (!existingUser) {
                 return res.status(400).json({
                     message: "Tài khoản không tồn tại!",
                 })
@@ -37,7 +37,25 @@ const profileController = {
                 error: error.message
             })
         }
-    }
+    },
+
+    getUserProfiles: async (req, res) => {
+        try {
+            console.log("req.user:", req.user);
+            const userId = req.user._id;
+
+            const profiles = await Profiles.find({ userId: userId }).select("-__v"); // (optional) bỏ __v cho sạch
+
+            return res.status(200).json({
+                success: true,
+                profile: profiles,
+            });
+
+        } catch (error) {
+            console.error("Error in getUserProfiles:", error);
+            return res.status(500).json({ success: false, message: "Server error" });
+        }
+    },
 };
 
 export default profileController;
