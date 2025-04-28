@@ -14,7 +14,7 @@ import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "expo-router";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-import useAuthStore from "../../../stores/authStore"; // Zustand store
+import useAuthStore from "../../../stores/authStore"; 
 
 type FormData = {
   phone: string;
@@ -35,15 +35,16 @@ export default function LoginScreen() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const { token, user } = await loginApi(data.phone, data.password);
+      const { token, user, extraInfo } = await loginApi(data.phone, data.password);
 
       console.log("Login successful:", user);
 
 
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("user", JSON.stringify(user));
+      await AsyncStorage.setItem("extraInfo", JSON.stringify(extraInfo)); // Lưu extraInfo
 
-      setSession(user, token);
+      setSession(user, token, extraInfo);
       router.replace("/screens/tabs/home");
     } catch (error: any) {
       console.log("Login error:", error);
