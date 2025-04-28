@@ -56,6 +56,7 @@ const menuItems: MenuItem[] = [
 export default function Profile() {
   const [showLogout, setShowLogout] = useState(false);
   const userData = useAuthStore((state) => state.user);
+  const extraInfo = useAuthStore((state) => state.extraInfo);
   const logout = useAuthStore((state) => state.logout);
   const disconnectSocket = useSocketStore((state) => state.disconnect);
 
@@ -112,7 +113,7 @@ export default function Profile() {
           }
           style={styles.avatar}
         />
-        <Text style={styles.name}>{userData?.name || "unknow"}</Text>
+        <Text style={styles.name}>{`${extraInfo?.firstName} ${extraInfo?.lastName}` || "unknow"}</Text>
         <Text style={styles.phone}>{userData?.phone || "Unknow"}</Text>
       </View>
 
