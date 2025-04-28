@@ -8,12 +8,10 @@ import {
   FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import useAuthStore from "@/stores/authStore";
 import ConfirmLogoutModal from "../../../components/ConfirmLogoutModal";
-
-
+import { useSocketStore } from "@/stores/socketStore";
 
 interface MenuItem {
   id: string;
@@ -26,7 +24,6 @@ const menuItems: MenuItem[] = [
     id: "1",
     icon: "person-outline",
     title: "Thay đổi mật khẩu",
-
   },
   {
     id: "2",
@@ -59,6 +56,8 @@ const menuItems: MenuItem[] = [
 export default function Profile() {
   const [showLogout, setShowLogout] = useState(false);
   const userData = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const disconnectSocket = useSocketStore((state) => state.disconnect);
 
   const handleMenuPress = useCallback((item: MenuItem) => {
     switch (item.title) {
@@ -90,9 +89,8 @@ export default function Profile() {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem("accessToken");
-      await AsyncStorage.removeItem("userInfo");
-
+      logout();
+      disconnectSocket();
       setShowLogout(false);
       router.replace("/screens/auth/Login");
     } catch (error) {
