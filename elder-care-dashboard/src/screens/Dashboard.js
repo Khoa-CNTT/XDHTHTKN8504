@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import Layout from "../Layout";
 import { FaFacebookMessenger } from "react-icons/fa";
 import {
@@ -18,44 +18,27 @@ import {
 } from "../components/Datas";
 import { Transactiontable } from "../components/Tables";
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
 function Dashboard() {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const navigate = useNavigate();
-
-  const onCloseModal = () => {
-    setIsOpen(false);
-  };
-  const preview = () => {
-    navigate(`/chat`);
-  };
-
-  const [dashboardCards, setDashboardCards] = useState([]);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/v1/auth/count-users-per-month');
-        console.log(response.data); 
+        const response = await axios.get(
+          "http://localhost:5000/api/v1/auth/count-users-per-month"
+        );
+        console.log(response.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-    }
+    };
     fetchData();
   }, []);
-  
+
   return (
     <Layout>
       {/* {messger} */}
-      <button
-        onClick={() => {
-          setIsOpen(true);
-          preview();
-        }}
-        className="w-16 animate-bounce h-16 border border-border z-50 bg-subMain text-white rounded-full flex-colo fixed bottom-8 right-12 button-fb"
-      >
+      <button className="w-16 animate-bounce h-16 border border-border z-50 bg-subMain text-white rounded-full flex-colo fixed bottom-8 right-12 button-fb">
         <FaFacebookMessenger className="text-2xl" />
       </button>
 
@@ -104,7 +87,7 @@ function Dashboard() {
         <div className="xl:col-span-6  w-full">
           <div className="bg-white rounded-xl border-[1px] border-border p-5">
             <div className="flex-btn gap-2">
-              <h2 className="text-sm font-medium">Báo cáo thu nhập</h2>
+              <h2 className="text-sm font-medium">Earning Reports</h2>
               <p className="flex gap-4 text-sm items-center">
                 5.44%{" "}
                 <span className="py-1 px-2 bg-subMain text-white text-xs rounded-xl">
@@ -112,7 +95,7 @@ function Dashboard() {
                 </span>
               </p>
             </div>
-            {/* Báo cáo thu nhập */}
+            {/* Earning Reports */}
             <div className="mt-4">
               <DashboardBigChart />
             </div>
@@ -120,9 +103,9 @@ function Dashboard() {
           {/* transaction */}
           <div className="mt-6 bg-white rounded-xl border-[1px] border-border p-5">
             <div className="flex-btn gap-2">
-              <h2 className="text-sm font-medium">Giao dịch gần đây</h2>
+              <h2 className="text-sm font-medium">Recent Transaction</h2>
               <p className="flex gap-4 text-sm items-center">
-                Hôm nay{" "}
+                Today{" "}
                 <span className="py-1 px-2 bg-subMain text-white text-xs rounded-xl">
                   27000$
                 </span>
@@ -145,12 +128,12 @@ function Dashboard() {
           data-aos-offset="200"
           className="xl:col-span-2 xl:block grid sm:grid-cols-2 gap-6"
         >
-          {/* Bệnh nhân gần đây */}
+          {/* recent patients */}
           <div className="bg-white rounded-xl border-[1px] border-border p-5">
-            <h2 className="text-sm font-medium">Bệnh nhân gần đây</h2>
+            <h2 className="text-sm font-medium">Recent Patients</h2>
             {memberData.slice(3, 8).map((member, index) => (
               <Link
-                to={`/customers/preview/${member.id}`}
+                to={`/patients/preview/${member.id}`}
                 key={index}
                 className="flex-btn gap-4 mt-6 border-b pb-4 border-border"
               >
@@ -171,7 +154,7 @@ function Dashboard() {
           </div>
           {/* today apointments */}
           {/* <div className="bg-white rounded-xl border-[1px] border-border p-5 xl:mt-6">
-            <h2 className="text-sm mb-4 font-medium">Cuộc hẹn hôm nay</h2>
+            <h2 className="text-sm mb-4 font-medium">Today Appointments</h2>
             {appointmentsData.map((appointment, index) => (
               <div
                 key={appointment.id}
