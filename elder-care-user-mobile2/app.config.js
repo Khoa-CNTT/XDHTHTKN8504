@@ -4,6 +4,7 @@ export default {
   expo: {
     name: "learn-react-native-nguyen",
     slug: "learn-react-native-nguyen",
+    newArchEnabled: true,
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",

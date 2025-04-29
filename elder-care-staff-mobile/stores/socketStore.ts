@@ -24,8 +24,13 @@ export const useSocketStore = create<SocketStore>((set) => {
   });
 
   socket.on("connect_error", (err) => {
-    console.warn("⚠️ :", err.message);
+    console.warn("⚠️ from socketStore :", err.message);
   });
+  
+ socket.on("new_booking", (booking) => {
+   console.log("Nhận được booking mới:", booking);
+ });
+
 
   return {
     socket,

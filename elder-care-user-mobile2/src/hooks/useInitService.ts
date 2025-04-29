@@ -1,36 +1,60 @@
 import { useEffect } from "react";
 import useAuthStore from "../stores/authStore";
 import { useSocketStore } from "../stores/socketStore";
-import initData from "../utils/initData"; // Hàm khởi tạo dịch vụ
+import initData from "../utils/initData";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "../navigation/StackNavigator";
+
+type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 const useInitService = () => {
   const { restoreSession } = useAuthStore.getState();
-  const {   connect, join } = useSocketStore.getState();
+  const { connect, join } = useSocketStore.getState();
   const token = useAuthStore((state) => state.token);
   const user = useAuthStore((state) => state.user);
 
+  const navigation = useNavigation<NavigationProp>(); 
+  // Phục hồi session ngay khi app khởi chạy
   useEffect(() => {
-    const init = async () => {
-      // Phục hồi phiên đăng nhập
-      await restoreSession();
+    restoreSession();
+  }, [restoreSession]);
 
-      // Nếu đã có token, kết nối socket
+  // Khi có token rồi mới connect + init data
+  useEffect(() => {
+    const afterLoginInit = async () => {
       if (token) {
-        connect();
-        if (user?._id) {
-          console.log(`User ID: ${user._id} - đang tham gia phòng`);
-          join(user._id);
-        } else {
-          console.error("Không tìm thấy user ID");
+        try {
+          // Connect socket
+          connect();
+
+          // Kiểm tra và tham gia phòng nếu có user._id
+          if (user?._id) {
+            console.log(`User ID: ${user._id} - đang tham gia phòng`);
+            join(user._id);
+          } else {
+            console.error("Không tìm thấy user ID");
+          }
+
+          // Khởi tạo dữ liệu sau khi đăng nhập
+          await initData();
+
+          // Điều hướng đến màn hình "Home" và loại bỏ tất cả màn hình trước đó
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "Home" }], 
+          });
+        } catch (error) {
+          console.error("Có lỗi khi khởi tạo dịch vụ:", error);
         }
       }
-
-      // Khởi tạo các dịch vụ khác (gọi API ban đầu)
-      await initData();
     };
 
-    init();
-  }, [token]);
+    // Kiểm tra và gọi afterLoginInit khi token hoặc user._id thay đổi
+    if (token && user) {
+      afterLoginInit();
+    }
+  }, [token, user, connect, join, navigation]);
 };
 
 export default useInitService;

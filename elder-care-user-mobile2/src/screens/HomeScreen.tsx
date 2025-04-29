@@ -5,7 +5,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import Header from "../components/Header";
 import SearchBox from "../components/SearchBox";
 import Banner from "../components/Banner";
-import MedicalCenterCard from "../components/MedicalCenterCard";
+// import MedicalCenterCard from "../components/MedicalCenterCard";
 import Footer from "../components/Footer";
 
 type RootStackParamList = {
@@ -63,14 +63,14 @@ const HomeScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <FlatList
+      {/* <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.medicalCentersList}
         data={medicalCenters}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <MedicalCenterCard item={item} />}
-      />
+        renderItem={() => <MedicalCenterCard item={item} />}
+      /> */}
 
       <Footer />
     </View>

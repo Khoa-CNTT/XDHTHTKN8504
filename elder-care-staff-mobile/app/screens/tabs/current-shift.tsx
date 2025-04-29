@@ -171,7 +171,7 @@ const ShiftWorkScreen = () => {
             mode="outlined"
             icon={() => <MessageCircle size={20} />}
             style={styles.button}
-            onPress={() => {}}
+            onPress={() => {router.push("/screens/chat")}}
           >
             Chat
           </Button>

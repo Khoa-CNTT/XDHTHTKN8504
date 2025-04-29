@@ -3,6 +3,7 @@ import express from "express";
 import authorizeRoles from '../middlewares/authorizeRoles.js';
 import auth from '../middlewares/auth.js';
 
+
 const router = express.Router();
 
 router.get(
@@ -27,6 +28,10 @@ router.patch(
 );
 
 router.get('/get-schedule-by-profileId/:profileId', scheduleController.getInfoSchedule)
-router.get('/getSchedulesForUserToday', scheduleController.getSchedulesForUserToday)
+router.get(
+  "/getSchedulesForUserToday",
+  auth,
+  scheduleController.getSchedulesForUserToday
+);
 
 export default router;

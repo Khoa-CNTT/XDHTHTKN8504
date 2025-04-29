@@ -72,56 +72,56 @@ const authController = {
 
   // Đăng nhập
   loginUser: async (req, res) => {
-    try {
-      const { phone, password } = req.body;
+  try {
+    const { phone, password } = req.body;
 
-      if (!phone || !password) {
-        return res
-          .status(400)
-          .json({ message: "Vui lòng nhập đầy đủ phone và password" });
-      }
-
-      // Tìm người dùng
-      const userExists = await User.findOne({ phone });
-      if (!userExists) {
-        return res.status(400).json({
-          message: "Số điện thoại này chưa được đăng ký",
-        });
-      }
-
-      // So sánh mật khẩu
-      const isMatch = await bcryptjs.compare(password, userExists.password);
-      if (!isMatch) {
-        return res.status(401).json({
-          message: "Mật khẩu không đúng",
-        });
-      }
-
-      // Tạo JWT
-      const token = jwt.sign(
-        { _id: userExists._id, role: userExists.role },
-        process.env.SECRET_KEY,
-        { expiresIn: "7d" }
-      );
-
-      // Xóa mật khẩu khỏi dữ liệu trả về
-      const userToReturn = userExists.toObject();
-      delete userToReturn.password;
-
-      res.status(200).json({
-        message: "Đăng nhập thành công",
-        token,
-        user: userToReturn,
-      });
-      console.log(req.body);
-    } catch (error) {
-      console.error("Lỗi khi đăng nhập:", error);
-      res.status(500).json({
-        message: "Lỗi server, vui lòng thử lại",
-        error: error.message,
-      });
+    if (!phone || !password) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng nhập đầy đủ phone và password" });
     }
-  },
+
+    const user = await User.findOne({ phone });
+    if (!user) {
+      return res.status(400).json({ message: "Số điện thoại này chưa được đăng ký" });
+    }
+
+    const isMatch = await bcryptjs.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Mật khẩu không đúng" });
+    }
+
+    const token = jwt.sign(
+      { _id: user._id, role: user.role },
+      process.env.SECRET_KEY,
+      { expiresIn: "7d" }
+    );
+
+    const userToReturn = user.toObject();
+    delete userToReturn.password;
+
+    // ✅ Thêm bước: Lấy thêm thông tin doctor/nurse nếu cần
+    let extraInfo = null;
+
+    if (user.role === "doctor") {
+      extraInfo = await Doctor.findOne({ userId: user._id });
+    } else if (user.role === "nurse") {
+      extraInfo = await Nurse.findOne({ userId: user._id });
+    }
+
+    res.status(200).json({
+      message: "Đăng nhập thành công",
+      token,
+      user: userToReturn,
+      extraInfo, // có thể là doctor hoặc nurse hoặc null
+    });
+  } catch (error) {
+    console.error("Lỗi khi đăng nhập:", error);
+    res.status(500).json({
+      message: "Lỗi server, vui lòng thử lại",
+      error: error.message,
+    });
+  }},
 
   uploadAvatar: async (req, res) => {
     try {
