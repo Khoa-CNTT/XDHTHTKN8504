@@ -9,12 +9,12 @@ import ForgotPassword from '../screens/ForgotPassword';
 import OTPVerificationScreen from '../screens/OTPVerificationScreen';
 
 import HomeScreen from "../screens/HomeScreen";
-import AllDoctors from "../screens/AllDoctors";
+
 import DoctorDetails from "../screens/DoctorDetails";
 import BookAppointment from "../screens/BookAppointment";
 import MyBookings from "../screens/MyBookings";
 import Profile from "../screens/Profile";
-import Favorites from "../screens/Favorites";
+// import Favorites from "../screens/Favorites";
 import Notifications from "../screens/Notifications";
 import MapScreen from "../screens/MapScreen";
 import FeaturedServiceScreen from '../screens/FeaturedServiceScreen';
@@ -36,7 +36,6 @@ export type RootStackParamList = {
   OTPVerification: undefined;
   // Add other screens here
   Home: undefined;
-  AllDoctors: undefined;
   DoctorDetails: { doctor: any };
   BookAppointment: { doctor: any };
   Profile: undefined;
@@ -75,12 +74,11 @@ const StackNavigator = (): JSX.Element => {
         />
 
         <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="AllDoctors" component={AllDoctors} />
         <Stack.Screen name="DoctorDetails" component={DoctorDetails} />
         <Stack.Screen name="BookAppointment" component={BookAppointment} />
         <Stack.Screen name="Profile" component={Profile} />
         <Stack.Screen name="MyBookings" component={MyBookings} />
-        <Stack.Screen name="Favorites" component={Favorites} />
+        {/* <Stack.Screen name="Favorites" component={Favorites} /> */}
         <Stack.Screen name="Notifications" component={Notifications} />
         <Stack.Screen name="Map" component={MapScreen} />
         <Stack.Screen

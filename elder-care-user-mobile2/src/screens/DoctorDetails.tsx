@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/StackNavigator';
-import { useFavorites } from '../context/FavoritesContext';
+// import { useFavorites } from '../context/FavoritesContext';
 
 type DoctorDetailsProps = {
   route: RouteProp<RootStackParamList, 'DoctorDetails'>;
@@ -13,15 +13,15 @@ type DoctorDetailsProps = {
 
 const DoctorDetails: React.FC<DoctorDetailsProps> = ({ route, navigation }) => {
   const { doctor } = route.params;
-  const { isFavorite, addFavorite, removeFavorite } = useFavorites();
+  // const { isFavorite, addFavorite, removeFavorite } = useFavorites();
 
-  const toggleFavorite = () => {
-    if (isFavorite(doctor.id)) {
-      removeFavorite(doctor.id);
-    } else {
-      addFavorite(doctor);
-    }
-  };
+  // const toggleFavorite = () => {
+  //   if (isFavorite(doctor.id)) {
+  //     removeFavorite(doctor.id);
+  //   } else {
+  //     addFavorite(doctor);
+  //   }
+  // };
 
   const stats = [
     { value: '2,000+', label: 'patients' },
@@ -37,13 +37,13 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ route, navigation }) => {
           <Ionicons name="arrow-back" size={24} color="#2E3A59" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Doctor Details</Text>
-        <TouchableOpacity onPress={toggleFavorite}>
+        {/* <TouchableOpacity onPress={toggleFavorite}>
           <Ionicons 
             name={isFavorite(doctor.id) ? "heart" : "heart-outline"} 
             size={24} 
             color={isFavorite(doctor.id) ? "#FF4B4B" : "#2E3A59"} 
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       <View style={styles.doctorProfile}>

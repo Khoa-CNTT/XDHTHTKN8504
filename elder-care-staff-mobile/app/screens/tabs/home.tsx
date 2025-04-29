@@ -8,9 +8,14 @@ import AvailableWorkList from "../../../components/home/AvailableWorkList";
 import { router } from "expo-router";
 import useCompletedBookingStore from "@/stores/completedBookingStore";
 import updateAvailability from "../../../api/updateAvailability";
+import useAuthStore from "@/stores/authStore";
 
 const Home = () => {
-  const [isAvailable, setIsAvailable] = useState(false);
+  const extraInfo = useAuthStore((state) => state.extraInfo);
+  const setExtraInfo = useAuthStore((state) => state.setExtraInfo);
+
+  const isAvailable = extraInfo?.isAvailable ?? false;
+
   const completedBookings = useCompletedBookingStore(
     (state) => state.completedBookings
   );
@@ -21,7 +26,10 @@ const Home = () => {
   const handleToggleAvailability = async (newValue: boolean) => {
     try {
       await updateAvailability(newValue); // Gọi API
-      setIsAvailable(newValue);
+      if (extraInfo) {
+        const updatedExtraInfo = { ...extraInfo, isAvailable: newValue };
+        await setExtraInfo(updatedExtraInfo); // ✅ Gọi hàm này
+      }
       console.log("trạng thái mới", newValue);
       // Cập nhật UI sau khi thành công
     } catch (error) {
