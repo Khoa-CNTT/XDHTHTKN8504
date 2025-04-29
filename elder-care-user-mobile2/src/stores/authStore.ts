@@ -87,7 +87,8 @@ const useAuthStore = create<AuthState>((set) => ({
       if (!token || !userStr) {
         throw new Error("Không tìm thấy phiên đăng nhập");
       }
-
+      console.log("from authStore", token);
+      
       const user: User = JSON.parse(userStr);
       set({ token, user, loading: false, error: null });
     } catch (err: any) {
