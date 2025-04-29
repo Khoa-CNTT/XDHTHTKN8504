@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/StackNavigator';
-import { useBookings } from '../context/BookingsContext';
+// import { useBookings } from '../context/BookingsContext';
 import Footer from '../components/Footer';
 
 type TabType = 'Upcoming' | 'Completed' | 'Canceled';
@@ -12,14 +12,14 @@ type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 const MyBookings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('Upcoming');
-  const { bookings, cancelBooking } = useBookings();
+  // const { bookings, cancelBooking } = useBookings();
   const navigation = useNavigation<NavigationProp>();
 
-  const filteredBookings = bookings.filter(booking => {
-    if (activeTab === 'Upcoming') return booking.status === 'upcoming';
-    if (activeTab === 'Completed') return booking.status === 'completed';
-    return booking.status === 'cancelled';
-  });
+  // const filteredBookings = bookings.filter(booking => {
+  //   if (activeTab === 'Upcoming') return booking.status === 'upcoming';
+  //   if (activeTab === 'Completed') return booking.status === 'completed';
+  //   return booking.status === 'cancelled';
+  // });
 
   const handleReschedule = (booking: any) => {
     navigation.navigate('BookAppointment', {
@@ -54,18 +54,18 @@ const MyBookings: React.FC = () => {
 
       {activeTab === 'Upcoming' && (
         <View style={styles.buttonContainer}>
-          <TouchableOpacity 
+          {/* <TouchableOpacity 
             style={styles.cancelButton}
             onPress={() => cancelBooking(booking.id)}
           >
             <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
+          </TouchableOpacity> */}
+          {/* <TouchableOpacity 
             style={styles.rescheduleButton}
             onPress={() => handleReschedule(booking)}
           >
             <Text style={styles.rescheduleButtonText}>Reschedule</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       )}
 
@@ -117,13 +117,13 @@ const MyBookings: React.FC = () => {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {filteredBookings.length === 0 ? (
+        {/* {filteredBookings.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>No {activeTab.toLowerCase()} appointments</Text>
           </View>
         ) : (
           filteredBookings.map(renderAppointmentCard)
-        )}
+        )} */}
       </ScrollView>
       <Footer />
     </View>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView, Modal, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Footer from '../components/Footer';
-import { useFavorites } from '../context/FavoritesContext';
+// import { useFavorites } from '../context/FavoritesContext';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/StackNavigator';
@@ -55,7 +55,7 @@ const menuItems: MenuItem[] = [
 
 const Profile: React.FC = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const { favorites } = useFavorites();
+  // const { favorites } = useFavorites();
   const navigation = useNavigation<NavigationProp>();
 
   const handleLogout = () => {

@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/StackNavigator';
-import { useBookings } from '../context/BookingsContext';
+// import { useBookings } from '../context/BookingsContext';
 import { Picker } from '@react-native-picker/picker';
 
 type BookAppointmentProps = {
@@ -69,7 +69,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ visible, onDone, appointmen
 
 const BookAppointment: React.FC<BookAppointmentProps> = ({ route, navigation }) => {
   const { doctor } = route.params;
-  const { addBooking } = useBookings();
+  // const { addBooking } = useBookings();
 
   const [bookingMode, setBookingMode] = useState<BookingMode>('single');
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
@@ -128,27 +128,27 @@ const BookAppointment: React.FC<BookAppointmentProps> = ({ route, navigation }) 
     // For series booking, create multiple bookings
     if (bookingMode === 'series' && selectedEndDate) {
       for (let day = selectedDate; day <= selectedEndDate; day++) {
-        addBooking({
-          doctorId: doctor.id,
-          doctorName: doctor.name,
-          doctorSpecialty: doctor.specialty,
-          doctorImage: doctor.image,
-          clinic: doctor.clinic || "Women's Health Clinic",
-          date: formatAppointmentDate(currentYear, currentMonth, day),
-          time: `${startTime} - ${endTime}`,
-        });
+        // addBooking({
+        //   doctorId: doctor.id,
+        //   doctorName: doctor.name,
+        //   doctorSpecialty: doctor.specialty,
+        //   doctorImage: doctor.image,
+        //   clinic: doctor.clinic || "Women's Health Clinic",
+        //   date: formatAppointmentDate(currentYear, currentMonth, day),
+        //   time: `${startTime} - ${endTime}`,
+        // });
       }
     } else {
       // Single booking
-      addBooking({
-        doctorId: doctor.id,
-        doctorName: doctor.name,
-        doctorSpecialty: doctor.specialty,
-        doctorImage: doctor.image,
-        clinic: doctor.clinic || "Women's Health Clinic",
-        date: formattedStartDate,
-        time: `${startTime} - ${endTime}`,
-      });
+      // addBooking({
+      //   doctorId: doctor.id,
+      //   doctorName: doctor.name,
+      //   doctorSpecialty: doctor.specialty,
+      //   doctorImage: doctor.image,
+      //   clinic: doctor.clinic || "Women's Health Clinic",
+      //   date: formattedStartDate,
+      //   time: `${startTime} - ${endTime}`,
+      // });
     }
 
     setShowSuccess(true);
