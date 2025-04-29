@@ -1,0 +1,52 @@
+import API from "../utils/api";
+import useAuthStore from "../stores/authStore";
+import { Profile } from "../types/profile";
+
+interface ApiResponse<T> {
+  success: boolean;
+  profile: Profile[];
+}
+const getAuthHeaders = () => {
+  const token = useAuthStore.getState().token;
+  return { Authorization: `Bearer ${token}` };
+};
+export const getProfiles = async (): Promise<Profile[]> => {
+
+  try {
+    const response = await API.get<ApiResponse<Profile[]>>(
+      "profiles/get-profiles",
+      { headers: getAuthHeaders() }
+    );
+    return response.data.profile;
+  } catch (error) {
+    console.error("Error fetching schedules:", error);
+    return [];
+  }
+};
+
+export const createProfile = async (
+  data: Partial<Profile>
+): Promise<Profile> => {
+  const res = await API.post<{ success: boolean; profile: Profile }>(
+    "profiles",
+    data,
+    { headers: getAuthHeaders() }
+  );
+  return res.data.profile;
+};
+
+export const updateProfile = async (
+  id: string,
+  data: Partial<Profile>
+): Promise<Profile> => {
+  const res = await API.put<{ success: boolean; profile: Profile }>(
+    `profiles/${id}`,
+    data,
+    { headers: getAuthHeaders() }
+  );
+  return res.data.profile;
+};
+
+export const deleteProfile = async (id: string): Promise<void> => {
+  await API.delete(`profiles/${id}`, { headers: getAuthHeaders() });
+};
