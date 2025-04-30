@@ -23,6 +23,7 @@ type RootStackParamList = {
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 interface CardData {
+  id: number;
   title: string;
   description: string;
   image: any;
@@ -36,19 +37,16 @@ interface CareRecipient {
 // Sample card data
 const cardData: CardData[] = [
   {
-    title: "Home Personal Care & Nursingzz",
+    id: 1,
+    title: "Điều Dưỡng Viên",
     description:
-      "Companionship, Meals, Hygiene & Toileting, Tube Care, IV Drip, Wound Care, Private Nursing",
+      "Trông nom, chăm sóc bệnh nhân, cho bệnh nhân ăn uống, vệ sinh bệnh nhân,... ",
     image: require('../asset/img/hinh1.png'),
   },
   {
-    title: "Home Therapy",
-    description: "Physiotherapy, Speech & Occupational Therapy",
-    image: require('../asset/img/hinh1.png'),
-  },
-  {
-    title: "Home Therapy",
-    description: "Physiotherapy, Speech & Occupational Therapy",
+    id: 2,
+    title: "Bác sĩ",
+    description: "Khám sức khỏe tổng quát, tư vấn sức khỏe,...",
     image: require('../asset/img/hinh1.png'),
   },
 ];
@@ -92,7 +90,7 @@ const BookingScreen: React.FC = () => {
         </View>
 
         {/* Modal chọn người nhận */}
-        <CareRecipientModal
+        {/* <CareRecipientModal
           visible={modalVisible}
           onClose={closeModal}
           selectedId={selectedRecipient?.id}
@@ -100,10 +98,10 @@ const BookingScreen: React.FC = () => {
             setSelectedRecipient(recipient);
             console.log('Selected recipient:', JSON.stringify(recipient)); // (NOBRIDGE) LOG
           }}
-        />
+        /> */}
 
         {/* Services Section */}
-        <Text style={styles.sectionTitle}>Homage Services</Text>
+        <Text style={styles.sectionTitle}>Bạn muốn đặt? </Text>
 
         {/* Render cards dynamically */}
         {cardData.map((card, index) => (

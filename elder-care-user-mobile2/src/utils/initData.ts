@@ -12,8 +12,9 @@ const initData = async () => {
       // useUserStore.getState().fetchUserInfo(),
       // useOtherStore.getState().fetchSomething(),
     ]);
-
+    
   } catch (error) {
+
     console.error("Lỗi khi init data:", error);
   }
 };

@@ -18,6 +18,8 @@ const useCareRecipientStore = create<CareRecipientState>((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await CareProfilesApi.getProfilesByUser(userId);
+      console.log("Fetched profiles:", response.profiles);
+      
       set({ profiles: response.profiles, loading: false });
     } catch (error: any) {
       set({
