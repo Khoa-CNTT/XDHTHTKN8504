@@ -18,7 +18,7 @@ import { Profile } from "../types/profile";
 
 type RootStackParamList = {
   AddCareRecipient: undefined;
-  Profile: undefined;
+  ProfileList: undefined;
   BookVisit: undefined;
 };
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -71,7 +71,7 @@ const BookingScreen: React.FC = () => {
             <Ionicons name="menu" size={24} color="#2E3A59" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Đặt dịch vụ</Text>
-          <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
+          <TouchableOpacity onPress={() => navigation.navigate("ProfileList")}>
             <Ionicons name="person-circle-outline" size={24} color="#2E3A59" />
           </TouchableOpacity>
         </View>
