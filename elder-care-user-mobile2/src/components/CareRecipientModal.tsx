@@ -1,104 +1,95 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Modal,
   View,
   Text,
+  Modal,
   TouchableOpacity,
+  FlatList,
   StyleSheet,
-  ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import useProfileStore from "../stores/profileStore";
+import { Profile } from "../types/profile";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import useCareRecipientStore from "../stores/careRecipientStore";
-import type { Profile } from "../types/careRecipient";
+import { Ionicons } from "@expo/vector-icons"; // Import Ionicons
 
+interface Props {
+  visible: boolean;
+  onClose: () => void;
+  onApply: (profile: Profile | undefined) => void;
+}
 type RootStackParamList = {
   AddCareRecipient: undefined;
 };
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
-interface Props {
-  visible: boolean;
-  onClose: () => void;
-  onSelect: (recipient: Profile) => void;
-  selectedId?: string;
-}
-
-const CareRecipientModal: React.FC<Props> = ({
-  visible,
-  onClose,
-  onSelect,
-  selectedId,
-}) => {
+const CareRecipientModal: React.FC<Props> = ({ visible, onClose, onApply }) => {
+  const { profiles, fetchProfiles, isLoading } = useProfileStore();
+  const [selected, setSelected] = useState<Profile | null>(null);
   const navigation = useNavigation<NavigationProp>();
-  const profiles = useCareRecipientStore((state) => state.profiles);
-  const fetchProfiles = useCareRecipientStore(
-    (state) => state.fetchProfiles);
-  console.log("profiles in modal: ", profiles);
-  
-  const [selectedRecipientId, setSelectedRecipientId] = useState<
-    string | undefined
-  >(selectedId);
 
   useEffect(() => {
-    setSelectedRecipientId(selectedId); // sync selected khi mở modal
-  }, [selectedId]);
-
-  const handleApply = () => {
-    const selected = profiles.find((r) => r._id === selectedRecipientId);
-    if (selected) {
-      onSelect(selected); // Truyền về component cha
+    if (visible) {
+      fetchProfiles();
     }
-    onClose();
+  }, [visible]);
+
+  const renderItem = ({ item }: { item: Profile }) => {
+    const isSelected = selected?._id === item._id;
+
+    return (
+      <TouchableOpacity
+        style={[styles.item, isSelected && styles.selectedItem]}
+        onPress={() => setSelected(item)}
+      >
+        {/* Avatar Container */}
+        <View style={styles.avatarContainer}>
+          <Text style={styles.avatarLetter}>
+            {item.firstName.charAt(0).toUpperCase()}
+          </Text>
+        </View>
+        <Text style={styles.name}>
+          {item.firstName} {item.lastName}
+        </Text>
+      </TouchableOpacity>
+    );
   };
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Select Care Recipient</Text>
-          <Text style={styles.modalSubtitle}>Please choose one</Text>
+    <Modal visible={visible} animationType="slide" transparent>
+      <View style={styles.overlay}>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Chọn Người Được Chăm Sóc</Text>
+            <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
+              <Text style={{ fontSize: 35 }}>×</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.subtitle}>Vui lòng chọn một người</Text>
 
-          {profiles.length === 0 ? (
-            <Text>No recipients found</Text>
-          ) : (
-            profiles.map((recipient) => (
-              <TouchableOpacity
-                key={recipient._id}
-                style={[
-                  styles.recipientBox,
-                  selectedRecipientId === recipient._id && {
-                    borderColor: "#007BFF",
-                    backgroundColor: "#e6f0ff",
-                  },
-                ]}
-                onPress={() => setSelectedRecipientId(recipient._id)}
-              >
-                <Ionicons name="person-circle-outline" size={40} color="#ccc" />
-                <Text style={styles.recipientText}>
-                  {recipient.firstName} {recipient.lastName}
-                </Text>
-              </TouchableOpacity>
-            ))
-          )}
-
+          <FlatList
+            data={profiles}
+            keyExtractor={(item) => item._id}
+            renderItem={renderItem}
+          />
           <TouchableOpacity
             onPress={() => {
               onClose();
               navigation.navigate("AddCareRecipient");
             }}
           >
-            <Text style={styles.addRecipientText}>Add Care Recipient</Text>
+            <Text style={styles.addText}>Thêm Người Được Chăm Sóc</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
-            <Text style={styles.applyButtonText}>Apply</Text>
+          <TouchableOpacity
+            style={styles.applyBtn}
+            disabled={!selected}
+            onPress={() => {
+              onApply(selected || undefined);
+              onClose();
+            }}
+          >
+            <Text style={styles.applyText}>Áp dụng</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -107,60 +98,85 @@ const CareRecipientModal: React.FC<Props> = ({
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
+  overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "#00000088",
+    justifyContent: "flex-end",
   },
-  modalContent: {
-    width: "90%",
+  container: {
     backgroundColor: "#fff",
-    borderRadius: 10,
     padding: 20,
-    alignItems: "center",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "80%",
   },
-  modalTitle: {
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10, // Added marginBottom to create space between title and subtitle
+  },
+  title: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "600",
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "gray",
     marginBottom: 10,
   },
-  modalSubtitle: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 20,
-  },
-  recipientBox: {
+  item: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    marginBottom: 10,
-    width: "100%",
-    backgroundColor: "#fff",
+    padding: 12,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 10,
+    marginBottom: 8,
   },
-  recipientText: {
-    marginLeft: 10,
-    fontSize: 14,
-    color: "#333",
+  selectedItem: {
+    backgroundColor: "#ccf1ff",
   },
-  addRecipientText: {
-    color: "#007BFF",
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  applyButton: {
-    backgroundColor: "#FFC107",
-    padding: 10,
-    borderRadius: 8,
-    width: "100%",
+  avatarContainer: {
+    backgroundColor: "#c4a484",
+    color: "white",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    textAlign: "center",
+    lineHeight: 32,
+    marginRight: 10,
+    justifyContent: "center", // Center content
     alignItems: "center",
   },
-  applyButtonText: {
-    color: "#fff",
+  avatarLetter: {
+    fontSize: 18, // Increased font size for better visibility
+    color: "white",
+  },
+  name: {
+    fontSize: 16,
+  },
+  addBtn: {
+    paddingVertical: 10,
+  },
+  addText: {
+    color: "#00A8E8",
+    fontWeight: "500",
+  },
+  applyBtn: {
+    backgroundColor: "#FFC107",
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  applyText: {
     fontWeight: "bold",
+    color: "black",
+  },
+  closeBtn: {
+    position: "absolute",
+    top: 0,
+    right: 0,
   },
 });
 
