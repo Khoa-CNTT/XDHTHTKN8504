@@ -42,11 +42,6 @@ const cardData: CardData[] = [
     description: "Vật lý trị liệu, Ngôn ngữ trị liệu & Phục hồi chức năng",
     image: require('../asset/img/hinh1.png'),
   },
-  {
-    title: "Trị liệu tại nhà",
-    description: "Vật lý trị liệu, Ngôn ngữ trị liệu & Phục hồi chức năng",
-    image: require('../asset/img/hinh1.png'),
-  },
 ];
 
 const BookingScreen: React.FC = () => {
