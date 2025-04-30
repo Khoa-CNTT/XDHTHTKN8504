@@ -15,7 +15,13 @@ export const getProfiles = async (): Promise<Profile[]> => {
   try {
     const response = await API.get<ApiResponse<Profile[]>>(
       "profiles/get-profiles",
-      { headers: getAuthHeaders() }
+      { headers: 
+        {
+        ...getAuthHeaders(),
+        "Cache-Control": "no-cache",
+        }
+       
+      }
     );
     return response.data.profile;
   } catch (error) {

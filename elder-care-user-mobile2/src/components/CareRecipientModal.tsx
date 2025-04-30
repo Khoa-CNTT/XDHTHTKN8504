@@ -9,9 +9,9 @@ import {
 } from "react-native";
 import useProfileStore from "../stores/profileStore";
 import { Profile } from "../types/profile";
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { Ionicons } from '@expo/vector-icons'; // Import Ionicons
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { Ionicons } from "@expo/vector-icons"; // Import Ionicons
 
 interface Props {
   visible: boolean;
@@ -48,11 +48,12 @@ const CareRecipientModal: React.FC<Props> = ({ visible, onClose, onApply }) => {
             {item.firstName.charAt(0).toUpperCase()}
           </Text>
         </View>
-        <Text style={styles.name}>{item.firstName} {item.lastName}</Text>
+        <Text style={styles.name}>
+          {item.firstName} {item.lastName}
+        </Text>
       </TouchableOpacity>
     );
   };
-
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -74,8 +75,9 @@ const CareRecipientModal: React.FC<Props> = ({ visible, onClose, onApply }) => {
           <TouchableOpacity
             onPress={() => {
               onClose();
-              navigation.navigate('AddCareRecipient');
-            }}>
+              navigation.navigate("AddCareRecipient");
+            }}
+          >
             <Text style={styles.addText}>Thêm Người Được Chăm Sóc</Text>
           </TouchableOpacity>
 
@@ -91,10 +93,9 @@ const CareRecipientModal: React.FC<Props> = ({ visible, onClose, onApply }) => {
           </TouchableOpacity>
         </View>
       </View>
-    </Modal >
+    </Modal>
   );
 };
-
 
 const styles = StyleSheet.create({
   overlay: {
@@ -110,9 +111,9 @@ const styles = StyleSheet.create({
     maxHeight: "80%",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 10, // Added marginBottom to create space between title and subtitle
   },
   title: {
@@ -136,20 +137,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#ccf1ff",
   },
   avatarContainer: {
-    backgroundColor: '#c4a484',
-    color: 'white',
+    backgroundColor: "#c4a484",
+    color: "white",
     width: 32,
     height: 32,
     borderRadius: 16,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 32,
     marginRight: 10,
-    justifyContent: 'center', // Center content
-    alignItems: 'center',
+    justifyContent: "center", // Center content
+    alignItems: "center",
   },
   avatarLetter: {
-    fontSize: 18,  // Increased font size for better visibility
-    color: 'white',
+    fontSize: 18, // Increased font size for better visibility
+    color: "white",
   },
   name: {
     fontSize: 16,

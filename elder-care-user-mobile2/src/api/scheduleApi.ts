@@ -21,6 +21,7 @@ const getSchedules = async (): Promise<Schedule[]> => {
       {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Cache-Control": "no-cache",
         },
       }
     );

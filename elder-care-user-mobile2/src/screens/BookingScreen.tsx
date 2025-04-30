@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,14 +6,14 @@ import {
   StyleSheet,
   ScrollView,
   Image,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { Ionicons } from '@expo/vector-icons'; // Import thư viện icon
-import Footer from '../components/Footer';
-import CareRecipientModal from '../components/CareRecipientModal';
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { Ionicons } from "@expo/vector-icons"; // Import thư viện icon
+import Footer from "../components/Footer";
+import CareRecipientModal from "../components/CareRecipientModal";
 import useProfileStore from "../stores/profileStore";
-import { Profile } from '../types/profile';
+import { Profile } from "../types/profile";
 
 type RootStackParamList = {
   AddCareRecipient: undefined;
@@ -22,32 +22,32 @@ type RootStackParamList = {
 };
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
-
 interface CardData {
   title: string;
   description: string;
   image: any;
 }
 
-
 const cardData: CardData[] = [
   {
     title: "Chăm sóc & Điều dưỡng tại nhà",
     description:
       "Bạn đồng hành, Bữa ăn, Vệ sinh & Đi vệ sinh, Chăm sóc ống, Truyền dịch, Chăm sóc vết thương, Điều dưỡng riêng",
-    image: require('../asset/img/hinh1.png'),
+    image: require("../asset/img/hinh1.png"),
   },
   {
     title: "Trị liệu tại nhà",
     description: "Vật lý trị liệu, Ngôn ngữ trị liệu & Phục hồi chức năng",
-    image: require('../asset/img/hinh1.png'),
+    image: require("../asset/img/hinh1.png"),
   },
 ];
 
 const BookingScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedCareRecipient, setSelectedCareRecipient] = useState<Profile | undefined>(undefined);
+  const [selectedCareRecipient, setSelectedCareRecipient] = useState<
+    Profile | undefined
+  >(undefined);
 
   const handleCareRecipientClick = () => {
     setModalVisible(true);
@@ -61,7 +61,6 @@ const BookingScreen: React.FC = () => {
     setSelectedCareRecipient(profile);
   };
 
-
   return (
     <View style={styles.container}>
       <ScrollView style={styles.content}>
@@ -71,14 +70,17 @@ const BookingScreen: React.FC = () => {
             <Ionicons name="menu" size={24} color="#2E3A59" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Đặt dịch vụ</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+          <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
             <Ionicons name="person-circle-outline" size={24} color="#2E3A59" />
           </TouchableOpacity>
         </View>
 
         {/* Care Recipient */}
         <View style={styles.careRecipient}>
-          <TouchableOpacity style={styles.careBox} onPress={handleCareRecipientClick}>
+          <TouchableOpacity
+            style={styles.careBox}
+            onPress={handleCareRecipientClick}
+          >
             <View style={styles.avatarContainer}>
               {selectedCareRecipient ? (
                 <Text style={styles.avatarLetter}>
@@ -89,25 +91,32 @@ const BookingScreen: React.FC = () => {
               )}
             </View>
             <Text style={styles.careText}>
-              {selectedCareRecipient ? `Cho: ${selectedCareRecipient.firstName} ${selectedCareRecipient.lastName || ''}` : 'Chọn người được chăm sóc'}
+              {selectedCareRecipient
+                ? `Cho: ${selectedCareRecipient.firstName} ${
+                    selectedCareRecipient.lastName || ""
+                  }`
+                : "Chọn người được chăm sóc"}
             </Text>
             <Ionicons name="pencil-outline" size={20} color="#666" />
           </TouchableOpacity>
         </View>
 
-
         <Text style={styles.sectionTitle}>Dịch vụ Homage</Text>
-
 
         {cardData.map((card, index) => (
           <TouchableOpacity
             key={index}
             style={styles.card}
-            onPress={() => navigation.navigate('BookVisit')}
+            onPress={() => navigation.navigate("BookVisit")}
           >
             <Image
               source={card.image}
-              style={{ width: 40, height: 40, borderRadius: 8, marginRight: 12 }}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 8,
+                marginRight: 12,
+              }}
               resizeMode="cover"
             />
             <View style={styles.cardContent}>
@@ -133,7 +142,7 @@ const BookingScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   content: {
     flex: 1,
@@ -141,28 +150,28 @@ const styles = StyleSheet.create({
     paddingTop: 45,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 16,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2E3A59',
+    fontWeight: "bold",
+    color: "#2E3A59",
   },
   careRecipient: {
     marginBottom: 24,
   },
   careBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8F8F8', // Lighter background
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8F8F8", // Lighter background
     padding: 12,
     borderRadius: 10,
-    borderColor: '#E0E0E0',  // Light border
+    borderColor: "#E0E0E0", // Light border
     borderWidth: 1,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.05, // Subtle shadow
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
@@ -172,21 +181,21 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2E3A59',
+    fontWeight: "bold",
+    color: "#2E3A59",
     marginBottom: 12,
   },
   card: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
     borderRadius: 12,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
@@ -198,29 +207,29 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 15,
-    fontWeight: 'bold',
-    color: '#2E3A59',
+    fontWeight: "bold",
+    color: "#2E3A59",
     marginBottom: 4,
   },
   cardDescription: {
     fontSize: 13,
-    color: '#666',
+    color: "#666",
   },
   avatarContainer: {
-    backgroundColor: '#c4a484',
-    color: 'white',
+    backgroundColor: "#c4a484",
+    color: "white",
     width: 32,
     height: 32,
     borderRadius: 16,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 32,
     marginRight: 10,
-    justifyContent: 'center', // Center the text vertically
-    alignItems: 'center',
+    justifyContent: "center", // Center the text vertically
+    alignItems: "center",
   },
   avatarLetter: {
     fontSize: 18,
-    color: 'white',
+    color: "white",
   },
 });
 
