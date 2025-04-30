@@ -14,7 +14,9 @@ export interface Profile {
   firstName: string;
   lastName: string;
   relationship: string;
-  address?: string;
-  emergencyContact?: EmergencyContact;
+  address: string;
+  emergencyContact: EmergencyContact;
   healthConditions: HealthCondition[];
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
 }

@@ -24,7 +24,7 @@ export const useSocketStore = create<SocketStore>((set) => {
   });
 
   socket.on("connect_error", (err) => {
-    console.warn("⚠️ :", err.message);
+    console.warn("⚠️ :", err);
   });
 
   return {

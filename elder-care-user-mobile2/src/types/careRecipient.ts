@@ -9,7 +9,7 @@ export interface EmergencyContact {
   }
   
   export interface Profile {
-    id: string;
+    _id: string;
     userId: string;
     firstName: string;
     lastName: string;

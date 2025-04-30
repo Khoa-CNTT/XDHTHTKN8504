@@ -326,28 +326,27 @@ const scheduleController = {
           .json({ success: false, message: "Missing userId" });
       }
 
-      const user = await User.findById(userId).select("profiles");
-      if (!user) {
-        return res
-          .status(400)
-          .json({ success: false, message: "User not found" });
-      }
+      // 🔁 Truy vấn từ Profile thay vì user.profiles
+      const profiles = await Profile.find({ userId }).select("_id");
+      console.log("Profiles:", profiles);
 
-      const profileIds = user.profiles;
-      if (!Array.isArray(profileIds) || profileIds.length === 0) {
+      if (!profiles || profiles.length === 0) {
         return res
           .status(400)
           .json({ success: false, message: "User does not have any profiles" });
       }
 
-      const todayStart = moment.tz("Asia/Ho_Chi_Minh").startOf("day").toDate();
-      const todayEnd = moment.tz("Asia/Ho_Chi_Minh").endOf("day").toDate();
+      const profileIds = profiles.map((p) => p._id);
 
+      const todayStart = moment().startOf("day").toDate();
+      const todayEnd = moment().endOf("day").toDate();
+  
       const bookings = await Booking.find({
         profileId: { $in: profileIds },
       }).select("_id");
-      const bookingIds = bookings.map((b) => b._id);
 
+
+      const bookingIds = bookings.map((b) => b._id);
       if (bookingIds.length === 0) {
         return res.status(200).json({ success: true, data: [] });
       }
@@ -373,6 +372,8 @@ const scheduleController = {
           },
         });
 
+      console.log("Schedules:", schedules);
+
       const result = [];
 
       for (const item of schedules) {
@@ -390,14 +391,17 @@ const scheduleController = {
         const serviceName =
           item.bookingId?.serviceId?.name || "Không rõ dịch vụ";
 
-        const timeSlots = Array.isArray(item.timeSlots)
-          ? item.timeSlots
-              .filter((slot) => slot.start && slot.end)
-              .map((slot) => ({
-                start: moment(slot.start).tz("Asia/Ho_Chi_Minh").toISOString(),
-                end: moment(slot.end).tz("Asia/Ho_Chi_Minh").toISOString(),
-              }))
-          : [];
+       const timeSlots =
+         item.timeSlots && item.timeSlots.start && item.timeSlots.end
+           ? {
+               start: moment(item.timeSlots.start)
+                 .tz("Asia/Ho_Chi_Minh")
+                 .toISOString(),
+               end: moment(item.timeSlots.end)
+                 .tz("Asia/Ho_Chi_Minh")
+                 .toISOString(),
+             }
+           : null;
 
         const status = item.status || "Chưa có trạng thái";
 
@@ -407,6 +411,7 @@ const scheduleController = {
           serviceName,
           status,
           timeSlots,
+          
         });
       }
 

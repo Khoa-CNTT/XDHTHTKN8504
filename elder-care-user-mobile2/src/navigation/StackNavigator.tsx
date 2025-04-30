@@ -20,7 +20,7 @@ import MapScreen from "../screens/MapScreen";
 import FeaturedServiceScreen from '../screens/FeaturedServiceScreen';
 import BookingScreen from '../screens/BookingScreen';
 import AddCareRecipientScreen from '../screens/AddCareRecipientScreen';
-import BookVisitScreen from '../screens/BookAVisit.Screen';
+import BookVisitScreen from '../screens/BookAVisitScreen';
 import BookingSuccessScreen from '../screens/BookingSuccessScreen';
 import ServiceDetails from '../screens/ServiceDetails';
 import { NavigationContainer } from '@react-navigation/native';
