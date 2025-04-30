@@ -34,7 +34,7 @@ export const createProfile = async (
   data: Partial<Profile>
 ): Promise<Profile> => {
   const res = await API.post<{ success: boolean; profile: Profile }>(
-    "profiles",
+    "profiles/create",
     data,
     { headers: getAuthHeaders() }
   );
@@ -46,7 +46,7 @@ export const updateProfile = async (
   data: Partial<Profile>
 ): Promise<Profile> => {
   const res = await API.put<{ success: boolean; profile: Profile }>(
-    `profiles/${id}`,
+    `profiles/update/${id}`,
     data,
     { headers: getAuthHeaders() }
   );
@@ -54,5 +54,5 @@ export const updateProfile = async (
 };
 
 export const deleteProfile = async (id: string): Promise<void> => {
-  await API.delete(`profiles/${id}`, { headers: getAuthHeaders() });
+  await API.delete(`profiles/delete/${id}`, { headers: getAuthHeaders() });
 };
