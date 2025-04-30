@@ -4,7 +4,7 @@ const serviceController = {
     // ceate service
     createService: async (req, res) => {
         try {
-            const { name, description, price, percentage } = req.body;
+            const { name, description, price, percentage, role } = req.body;
 
             // check if service already exists
             const existingService = await Service.findOne({ name });
@@ -19,7 +19,8 @@ const serviceController = {
                 name,
                 description,
                 price,
-                percentage
+                percentage,
+                role
             })
 
             await newService.save();
