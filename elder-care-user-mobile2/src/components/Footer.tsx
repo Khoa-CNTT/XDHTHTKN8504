@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 
+
 type RootStackParamList = {
   Home: undefined;
   MyBookings: undefined;
@@ -41,7 +42,7 @@ const Footer: React.FC = () => {
         onPress={() => handleNavigation('Home')}
       >
         <Ionicons 
-          name="home" 
+          name="home-outline" 
           size={24} 
           color={isActiveRoute('Home') ? '#2E3A59' : '#666'} 
         />
@@ -51,7 +52,7 @@ const Footer: React.FC = () => {
         onPress={() => handleNavigation('Map')}
       >
         <Ionicons 
-          name="location" 
+          name="location-outline" 
           size={24} 
           color={isActiveRoute('Map') ? '#2E3A59' : '#666'} 
         />
@@ -61,7 +62,7 @@ const Footer: React.FC = () => {
         onPress={() => handleNavigation('Booking')} // Navigate to Booking screen
       >
         <Ionicons 
-          name="book" // Changed icon to represent Booking
+          name="book-outline" // Changed icon to represent Booking
           size={24} 
           color={isActiveRoute('Booking') ? '#2E3A59' : '#666'} 
         />
@@ -71,7 +72,7 @@ const Footer: React.FC = () => {
         onPress={() => handleNavigation('MyBookings')}
       >
         <Ionicons 
-          name="calendar" 
+          name="calendar-outline" 
           size={24} 
           color={isActiveRoute('MyBookings') ? '#2E3A59' : '#666'} 
         />
@@ -81,7 +82,7 @@ const Footer: React.FC = () => {
         onPress={() => handleNavigation('Profile')}
       >
         <Ionicons 
-          name="person" 
+          name="settings-outline" 
           size={24} 
           color={isActiveRoute('Profile') ? '#2E3A59' : '#666'} 
         />
