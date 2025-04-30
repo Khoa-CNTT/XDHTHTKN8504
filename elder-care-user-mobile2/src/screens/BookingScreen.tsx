@@ -9,18 +9,19 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons'; // Import thư viện icon
 import Footer from '../components/Footer';
 import CareRecipientModal from '../components/CareRecipientModal';
+import useProfileStore from "../stores/profileStore";
+import { Profile } from '../types/profile';
 
 type RootStackParamList = {
   AddCareRecipient: undefined;
   Profile: undefined;
   BookVisit: undefined;
-  ServiceDetails: { serviceId: string };
 };
-
 type NavigationProp = StackNavigationProp<RootStackParamList>;
+
 
 interface CardData {
   title: string;
@@ -28,27 +29,22 @@ interface CardData {
   image: any;
 }
 
-interface CareRecipient {
-  id: number;
-  name: string;
-}
 
-// Sample card data
 const cardData: CardData[] = [
   {
-    title: "Home Personal Care & Nursingzz",
+    title: "Chăm sóc & Điều dưỡng tại nhà",
     description:
-      "Companionship, Meals, Hygiene & Toileting, Tube Care, IV Drip, Wound Care, Private Nursing",
+      "Bạn đồng hành, Bữa ăn, Vệ sinh & Đi vệ sinh, Chăm sóc ống, Truyền dịch, Chăm sóc vết thương, Điều dưỡng riêng",
     image: require('../asset/img/hinh1.png'),
   },
   {
-    title: "Home Therapy",
-    description: "Physiotherapy, Speech & Occupational Therapy",
+    title: "Trị liệu tại nhà",
+    description: "Vật lý trị liệu, Ngôn ngữ trị liệu & Phục hồi chức năng",
     image: require('../asset/img/hinh1.png'),
   },
   {
-    title: "Home Therapy",
-    description: "Physiotherapy, Speech & Occupational Therapy",
+    title: "Trị liệu tại nhà",
+    description: "Vật lý trị liệu, Ngôn ngữ trị liệu & Phục hồi chức năng",
     image: require('../asset/img/hinh1.png'),
   },
 ];
@@ -56,7 +52,7 @@ const cardData: CardData[] = [
 const BookingScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedRecipient, setSelectedRecipient] = useState<CareRecipient | null>(null);
+  const [selectedCareRecipient, setSelectedCareRecipient] = useState<Profile | undefined>(undefined);
 
   const handleCareRecipientClick = () => {
     setModalVisible(true);
@@ -66,6 +62,11 @@ const BookingScreen: React.FC = () => {
     setModalVisible(false);
   };
 
+  const handleApplyCareRecipient = (profile: Profile | undefined) => {
+    setSelectedCareRecipient(profile);
+  };
+
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.content}>
@@ -74,38 +75,35 @@ const BookingScreen: React.FC = () => {
           <TouchableOpacity>
             <Ionicons name="menu" size={24} color="#2E3A59" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Book a service</Text>
+          <Text style={styles.headerTitle}>Đặt dịch vụ</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
             <Ionicons name="person-circle-outline" size={24} color="#2E3A59" />
           </TouchableOpacity>
         </View>
 
-        {/* Care Recipient Section */}
+        {/* Care Recipient */}
         <View style={styles.careRecipient}>
           <TouchableOpacity style={styles.careBox} onPress={handleCareRecipientClick}>
-            <Ionicons name="person-circle-outline" size={40} color="#ccc" />
+            <View style={styles.avatarContainer}>
+              {selectedCareRecipient ? (
+                <Text style={styles.avatarLetter}>
+                  {selectedCareRecipient.firstName.charAt(0).toUpperCase()}
+                </Text>
+              ) : (
+                <Ionicons name="person-outline" size={20} color="#666" />
+              )}
+            </View>
             <Text style={styles.careText}>
-              {selectedRecipient ? selectedRecipient.name : 'Care Recipient'}
+              {selectedCareRecipient ? `Cho: ${selectedCareRecipient.firstName} ${selectedCareRecipient.lastName || ''}` : 'Chọn người được chăm sóc'}
             </Text>
-            <Ionicons name="pencil" size={20} color="#666" />
+            <Ionicons name="pencil-outline" size={20} color="#666" />
           </TouchableOpacity>
         </View>
 
-        {/* Modal chọn người nhận */}
-        <CareRecipientModal
-          visible={modalVisible}
-          onClose={closeModal}
-          selectedId={selectedRecipient?.id}
-          onSelect={(recipient) => {
-            setSelectedRecipient(recipient);
-            console.log('Selected recipient:', JSON.stringify(recipient)); // (NOBRIDGE) LOG
-          }}
-        />
 
-        {/* Services Section */}
-        <Text style={styles.sectionTitle}>Homage Services</Text>
+        <Text style={styles.sectionTitle}>Dịch vụ Homage</Text>
 
-        {/* Render cards dynamically */}
+
         {cardData.map((card, index) => (
           <TouchableOpacity
             key={index}
@@ -127,11 +125,15 @@ const BookingScreen: React.FC = () => {
 
       {/* Footer */}
       <Footer />
+
+      <CareRecipientModal
+        visible={modalVisible}
+        onClose={closeModal}
+        onApply={handleApplyCareRecipient}
+      />
     </View>
   );
 };
-
-export default BookingScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -160,11 +162,16 @@ const styles = StyleSheet.create({
   careBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#F8F8F8', // Lighter background
     padding: 12,
     borderRadius: 10,
-    borderColor: '#ccc',
+    borderColor: '#E0E0E0',  // Light border
     borderWidth: 1,
+    shadowColor: '#000',
+    shadowOpacity: 0.05, // Subtle shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
   },
   careText: {
     flex: 1,
@@ -204,4 +211,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#666',
   },
+  avatarContainer: {
+    backgroundColor: '#c4a484',
+    color: 'white',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    textAlign: 'center',
+    lineHeight: 32,
+    marginRight: 10,
+    justifyContent: 'center', // Center the text vertically
+    alignItems: 'center',
+  },
+  avatarLetter: {
+    fontSize: 18,
+    color: 'white',
+  },
 });
+
+export default BookingScreen;
