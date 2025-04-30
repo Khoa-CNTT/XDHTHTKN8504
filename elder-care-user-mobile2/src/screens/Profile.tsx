@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView, Modal, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Footer from '../components/Footer';
-// import { useFavorites } from '../context/FavoritesContext';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/StackNavigator';
+import useAuthStore from '../stores/authStore'; // Import useAuthStore
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -17,25 +17,11 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   {
-    id: 'edit',
-    title: 'Edit Profile',
-    icon: 'chevron-forward',
-  },
-  {
-    id: 'favorite',
-    title: 'Favorite',
-    icon: 'chevron-forward',
-  },
-  {
     id: 'notifications',
     title: 'Notifications',
     icon: 'chevron-forward',
   },
-  {
-    id: 'settings',
-    title: 'Settings',
-    icon: 'chevron-forward',
-  },
+
   {
     id: 'help',
     title: 'Help and Support',
@@ -55,12 +41,13 @@ const menuItems: MenuItem[] = [
 
 const Profile: React.FC = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  // const { favorites } = useFavorites();
   const navigation = useNavigation<NavigationProp>();
+  const { logout } = useAuthStore(); // Lấy hàm logout từ store
 
-  const handleLogout = () => {
-    // Handle logout logic here
+  const handleLogout = async () => {
     setShowLogoutModal(false);
+    await logout(); // Gọi hàm logout từ store
+    navigation.replace('Login'); // Điều hướng về trang đăng nhập
   };
 
   const handleMenuPress = (id: string) => {
@@ -75,20 +62,14 @@ const Profile: React.FC = () => {
 
   const renderIcon = (id: string) => {
     switch (id) {
-      case 'edit':
-        return <Ionicons name="person" size={20} color="#8F9BB3" />;
-      case 'favorite':
-        return <Ionicons name="heart" size={20} color="#8F9BB3" />;
       case 'notifications':
-        return <Ionicons name="notifications" size={20} color="#8F9BB3" />;
-      case 'settings':
-        return <Ionicons name="settings" size={20} color="#8F9BB3" />;
+        return <Ionicons name="notifications-outline" size={20} color="#8F9BB3" />;
       case 'help':
-        return <Ionicons name="help-circle" size={20} color="#8F9BB3" />;
+        return <Ionicons name="help-circle-outline" size={20} color="#8F9BB3" />;
       case 'terms':
-        return <Ionicons name="shield" size={20} color="#8F9BB3" />;
+        return <Ionicons name="shield-outline" size={20} color="#8F9BB3" />;
       case 'logout':
-        return <Ionicons name="log-out" size={20} color="#8F9BB3" />;
+        return <Ionicons name="log-out-outline" size={20} color="#8F9BB3" />;
       default:
         return null;
     }
@@ -110,7 +91,7 @@ const Profile: React.FC = () => {
             </View>
           </View>
           <Text style={styles.name}>Daniel Martinez</Text>
-          <Text style={styles.phone}>+123 856479683</Text>
+          <Text style={styles.name}>+84 856479683</Text>
         </View>
 
         <View style={styles.menuContainer}>
