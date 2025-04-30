@@ -56,6 +56,51 @@ const profileController = {
             return res.status(500).json({ success: false, message: "Server error" });
         }
     },
+
+    updateProfile: async (req, res) => {
+        try {
+            const { profileId } = req.params;
+            const updates = req.body;
+
+            const updatedProfile = await Profiles.findByIdAndUpdate(
+                profileId,
+                updates,
+                { new: true, runValidators: true }
+            );
+
+            if (!updatedProfile) {
+                return res.status(404).json({ message: "Hồ sơ không tồn tại!" });
+            }
+
+            return res.status(200).json({
+                message: "Cập nhật hồ sơ thành công!",
+                profile: updatedProfile,
+            });
+        } catch (error) {
+            console.error("Error in updateProfile:", error);
+            return res.status(500).json({ message: "Server error" });
+        }
+    },
+
+    deleteProfile: async (req, res) => {
+        try {
+            const { profileId } = req.params;
+
+            const deletedProfile = await Profiles.findByIdAndDelete(profileId);
+
+            if (!deletedProfile) {
+                return res.status(404).json({ message: "Hồ sơ không tồn tại!" });
+            }
+
+            return res.status(200).json({
+                message: "Xóa hồ sơ thành công!",
+                profile: deletedProfile,
+            });
+        } catch (error) {
+            console.error("Error in deleteProfile:", error);
+            return res.status(500).json({ message: "Server error" });
+        }
+    },
 };
 
 export default profileController;

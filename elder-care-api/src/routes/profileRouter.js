@@ -14,4 +14,14 @@ router.get(
     profileController.getUserProfiles
 )
 
+router.put(
+    '/update/:profileId',
+    profileController.updateProfile
+)
+
+router.delete(
+    '/delete/:profileId',
+    profileController.deleteProfile
+)
+
 export default router;
