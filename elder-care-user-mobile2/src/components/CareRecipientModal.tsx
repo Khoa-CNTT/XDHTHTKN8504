@@ -24,15 +24,15 @@ type RootStackParamList = {
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 const CareRecipientModal: React.FC<Props> = ({ visible, onClose, onApply }) => {
-  const { profiles, fetchProfiles, isLoading } = useProfileStore();
+  const { profiles } = useProfileStore();
   const [selected, setSelected] = useState<Profile | null>(null);
   const navigation = useNavigation<NavigationProp>();
 
-  useEffect(() => {
-    if (visible) {
-      fetchProfiles();
-    }
-  }, [visible]);
+  // useEffect(() => {
+  //   if (visible) {
+  //     fetchProfiles();
+  //   }
+  // }, [visible]);
 
   const renderItem = ({ item }: { item: Profile }) => {
     const isSelected = selected?._id === item._id;
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   selectedItem: {
-    backgroundColor: "#ccf1ff",
+    backgroundColor: "#a3ecc4",
   },
   avatarContainer: {
     backgroundColor: "#c4a484",
@@ -159,19 +159,19 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   addText: {
-    color: "#00A8E8",
+    color: "#1de416",
     fontWeight: "500",
   },
   applyBtn: {
     backgroundColor: "#FFC107",
     padding: 14,
-    borderRadius: 8,
+    borderRadius: 20,
     alignItems: "center",
     marginTop: 10,
   },
   applyText: {
     fontWeight: "bold",
-    color: "black",
+    color: "#fff",
   },
   closeBtn: {
     position: "absolute",

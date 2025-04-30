@@ -43,8 +43,11 @@ const bookingController = {
             }
 
             // Kiểm tra thời gian lặp lại
-            const fromDate = moment.tz(repeatFrom, "Asia/Ho_Chi_Minh").toDate();
-            const toDate = moment.tz(repeatTo, "Asia/Ho_Chi_Minh").toDate();
+            const fromDate = new Date(repeatFrom);
+            const toDate = new Date(repeatTo);
+
+            console.log("From Date:", fromDate);
+            console.log("To Date:", toDate);
 
             if (fromDate >= toDate) {
                 return res.status(400).json({ message: "Ngày bắt đầu phải nhỏ hơn ngày kết thúc" });
@@ -66,8 +69,8 @@ const bookingController = {
             const hoursPerDay = getHoursDiff(timeSlot.start, timeSlot.end);
 
             // Tổng tiền
-            const totalPrice = hoursPerDay * daysDiff * service.price;
-            const totalDiscount = totalPrice * service.percentage;
+            const totalPrice = hoursPerDay * daysDiff * service.price || 0;
+            const totalDiscount = totalPrice * (service.percentage || 0);
 
             // Xác định nếu là lịch lặp lại
             const isRecurring = new Date(repeatFrom).toDateString() !== new Date(repeatTo).toDateString();
