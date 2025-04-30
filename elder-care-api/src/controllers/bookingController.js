@@ -43,8 +43,11 @@ const bookingController = {
             }
 
             // Kiểm tra thời gian lặp lại
-            const fromDate = moment.tz(repeatFrom, "Asia/Ho_Chi_Minh").toDate();
-            const toDate = moment.tz(repeatTo, "Asia/Ho_Chi_Minh").toDate();
+            const fromDate = new Date(repeatFrom);
+            const toDate = new Date(repeatTo);
+
+            console.log("From Date:", fromDate);
+            console.log("To Date:", toDate);
 
             if (fromDate >= toDate) {
                 return res.status(400).json({ message: "Ngày bắt đầu phải nhỏ hơn ngày kết thúc" });
@@ -66,8 +69,8 @@ const bookingController = {
             const hoursPerDay = getHoursDiff(timeSlot.start, timeSlot.end);
 
             // Tổng tiền
-            const totalPrice = hoursPerDay * daysDiff * service.price;
-            const totalDiscount = totalPrice * service.percentage;
+            const totalPrice = hoursPerDay * daysDiff * service.price || 0;
+            const totalDiscount = totalPrice * (service.percentage || 0);
 
             // Xác định nếu là lịch lặp lại
             const isRecurring = new Date(repeatFrom).toDateString() !== new Date(repeatTo).toDateString();
@@ -108,78 +111,68 @@ const bookingController = {
             const { bookingId } = req.params;
             const staff = req.user;
 
-            // Tìm booking theo bookingId
             const booking = await Booking.findById(bookingId);
-            if (!booking) {
-                return res.status(404).json({ message: 'Đơn đặt lịch không tồn tại' });
-            }
+            if (!booking) return res.status(404).json({ message: 'Đơn đặt lịch không tồn tại' });
 
-            // Lấy thông tin service qua booking.serviceId
             const service = await Service.findById(booking.serviceId);
-            if (!service) {
-                return res.status(404).json({ message: 'Không tìm thấy dịch vụ liên quan' });
-            }
+            if (!service) return res.status(404).json({ message: 'Không tìm thấy dịch vụ liên quan' });
 
             const profile = await Profile.findById(booking.profileId);
-            if (!profile) {
-                return res.status(404).json({ message: 'Không tìm thấy thông tin bệnh nhân' });
-            }
+            if (!profile) return res.status(404).json({ message: 'Không tìm thấy thông tin bệnh nhân' });
 
-            // Tạo patientName từ firstName và lastName
             const patientName = `${profile.firstName} ${profile.lastName}`;
-
-            // Kiểm tra kiểu của timeSlot và xử lý tương ứng
             const timeSlots = Array.isArray(booking.timeSlot) ? booking.timeSlot : [booking.timeSlot];
 
-            // Lặp qua các ngày trong thời gian khách hàng đã đặt (repeatFrom và repeatTo)
+            const timeZone = 'Asia/Ho_Chi_Minh';
+            let currentDate = moment.tz(booking.repeatFrom, timeZone);
+            const repeatTo = moment.tz(booking.repeatTo, timeZone);
+
             const schedulePromises = [];
 
-            const timeZone = 'Asia/Ho_Chi_Minh'; // Múi giờ của Việt Nam (GMT+7)
-            let currentDate = moment.tz(booking.repeatFrom, timeZone);
+            while (currentDate <= repeatTo) {
+                for (const timeSlot of timeSlots) {
+                    const startDateTime = moment.tz(`${currentDate.format('YYYY-MM-DD')}T${timeSlot.start}:00`, timeZone);
+                    const endDateTime = moment.tz(`${currentDate.format('YYYY-MM-DD')}T${timeSlot.end}:00`, timeZone);
 
-            while (currentDate <= new Date(booking.repeatTo)) {
-                // Lặp qua các thời gian của mỗi ngày
-                timeSlots.forEach(timeSlot => {
-                    const startDateTime = moment.tz(
-                        `${currentDate.format('YYYY-MM-DD')}T${timeSlot.start}:00`,
-                        timeZone
-                    );
+                    //Kiểm tra trùng lịch
+                    const isConflict = await Schedule.findOne({
+                        staffId: staff._id,
+                        'timeSlots.start': { $lt: endDateTime.toDate() },
+                        'timeSlots.end': { $gt: startDateTime.toDate() },
+                    });
 
-                    const endDateTime = moment.tz(
-                        `${currentDate.format('YYYY-MM-DD')}T${timeSlot.end}:00`,
-                        timeZone
-                    );
+                    if (isConflict) {
+                        return res.status(409).json({
+                            message: `Lịch bị trùng vào ngày ${currentDate.format('DD/MM/YYYY')} từ ${timeSlot.start} đến ${timeSlot.end}`,
+                        });
+                    }
 
+                    // Nếu không trùng thì tạo schedule
                     const schedule = new Schedule({
                         staffId: staff._id,
                         role: staff.role,
                         bookingId: booking._id,
-                        patientName: patientName,
+                        patientName,
                         serviceName: service.name,
-                        date: currentDate.clone().toDate(), // Ngày làm việc
-                        timeSlots: [
-                            {
-                                start: startDateTime.toDate(), // Chuyển đổi về Date
-                                end: endDateTime.toDate()      // Chuyển đổi về Date
-                            }
-                        ],
+                        date: currentDate.clone().toDate(),
+                        timeSlots: [{
+                            start: startDateTime.toDate(),
+                            end: endDateTime.toDate()
+                        }],
                         status: 'scheduled',
                     });
 
                     schedulePromises.push(schedule.save());
-                });
+                }
 
-                // Tiến sang ngày tiếp theo
                 currentDate.add(1, 'days');
             }
 
-            // Cập nhật trạng thái booking
             booking.status = 'accepted';
             booking.acceptedBy = staff._id;
 
-            // Kiểm tra nếu người staff đã nằm trong participants chưa
-            const alreadyParticipant = booking.participants.some(participant =>
-                participant.userId.toString() === staff._id.toString()
+            const alreadyParticipant = booking.participants.some(p =>
+                p.userId.toString() === staff._id.toString()
             );
 
             if (!alreadyParticipant) {
@@ -193,7 +186,7 @@ const bookingController = {
             await booking.save();
             await Promise.all(schedulePromises);
 
-            // Gửi thông báo cho khách hàng
+            // Gửi thông báo qua socket
             const customerId = booking.createdBy.toString();
             const socketId = getUserSocketId(customerId);
             if (socketId) {
@@ -203,8 +196,7 @@ const bookingController = {
                 });
             }
 
-            // Gửi thông báo tới nhân viên tham gia (doctor/nurse)
-            booking.participants.forEach((p) => {
+            booking.participants.forEach(p => {
                 const staffSocketId = getUserSocketId(p.userId.toString());
                 if (staffSocketId) {
                     io.to(staffSocketId).emit("bookingAccepted", {
@@ -296,6 +288,29 @@ const bookingController = {
                 bookings: results,
             });
 
+        } catch (error) {
+            console.error("Lỗi khi lấy booking:", error);
+            return res.status(500).json({ message: 'Lỗi server', error: error.message });
+        }
+    },
+
+    getBookingForStaff: async (req, res) => {
+        try {
+            const user = req.user;
+
+            const bookings = await Booking.find()
+                .populate({
+                    path: 'serviceId',
+                    match: { role: user.role } // chỉ lấy những service đúng vai trò
+                })
+
+            // Lọc bỏ các booking mà serviceId bị null (do không match role)
+            const filteredBookings = bookings.filter(booking => booking.serviceId);
+
+            return res.status(200).json({
+                message: 'Lấy booking theo vai trò thành công!',
+                data: filteredBookings
+            });
         } catch (error) {
             console.error("Lỗi khi lấy booking:", error);
             return res.status(500).json({ message: 'Lỗi server', error: error.message });

@@ -12,8 +12,9 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { Ionicons } from "@expo/vector-icons"; // Import thư viện icon
 import Footer from "../components/Footer";
 import CareRecipientModal from "../components/CareRecipientModal";
-import useProfileStore from "../stores/profileStore";
 import { Profile } from "../types/profile";
+
+
 
 type RootStackParamList = {
   AddCareRecipient: undefined;
