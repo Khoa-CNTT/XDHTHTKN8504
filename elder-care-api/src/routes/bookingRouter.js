@@ -92,4 +92,11 @@ router.get(
     bookingController.getCompletedBookings
 )
 
+router.get(
+    '/get-bookings-for-staff',
+    auth,
+    authorizeRoles("doctor", "nurse", "admin"),
+    bookingController.getBookingForStaff
+)
+
 export default router

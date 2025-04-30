@@ -10,6 +10,10 @@ const serviceSchema = new Schema({
         required: true,
     },
     isActive: { type: Boolean, default: true },
+    role: {
+        type: String,
+        enum: ["doctor", "nurse"],
+    },
 }, { timestamps: true });
 
 const Service = mongoose.model("Service", serviceSchema);
