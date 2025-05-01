@@ -315,6 +315,28 @@ const bookingController = {
             console.error("Lỗi khi lấy booking:", error);
             return res.status(500).json({ message: 'Lỗi server', error: error.message });
         }
+    },
+
+    getBookingForCustomer: async (req, res) => {
+        try {
+            const user = req.user;
+            
+            const bookings = await Booking.find({ createdBy: user._id })
+
+            if(!bookings || bookings.length === 0) {
+                return res.status(404).json({ message: 'Không tìm thấy booking nào' });
+            }
+
+            return res.status(200).json({
+                message: 'Lấy booking cho khách hàng thành công!',
+                data: bookings
+            })
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal server error",
+                error: error.message,
+            })
+        }
     }
 }
 
