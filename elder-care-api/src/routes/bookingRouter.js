@@ -99,4 +99,12 @@ router.get(
     bookingController.getBookingForStaff
 )
 
+// Lấy booking cho khách hàng 
+router.get(
+    '/get-bookings-for-customer',
+    auth,
+    authorizeRoles("family_member"),
+    bookingController.getBookingForCustomer
+)
+
 export default router
