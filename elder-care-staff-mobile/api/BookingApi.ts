@@ -6,10 +6,16 @@ interface ApiResponse {
   message: string;
   booking: Booking;
 }
-const token = useAuthStore.getState().token;
+
 export const acceptBooking = async (bookingId: string) => {
   try {
-    const res = await API.post(
+    const token = useAuthStore.getState().token;
+    console.log("Token:", token);
+    if (!token) {
+      throw new Error("Token không tồn tại");
+    }
+    
+    const res = await API.patch(
       `/bookings/accept/${bookingId}`,
       {},
       {
@@ -27,7 +33,7 @@ export const acceptBooking = async (bookingId: string) => {
 
 const getBookingById = async (bookingId: string): Promise<Booking> => {
   try {
-    
+    const token = useAuthStore.getState().token;
     if (!token) {
       throw new Error("Token không tồn tại");
     }

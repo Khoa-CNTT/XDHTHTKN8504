@@ -13,7 +13,6 @@ const initService = async () => {
       // useUserStore.getState().fetchUserInfo(),
       // useOtherStore.getState().fetchSomething(),
     ]);
-    console.log("token: ", useAuthStore.getState().token);
     
   } catch (error) {
     console.error("Lỗi khi init data:", error);

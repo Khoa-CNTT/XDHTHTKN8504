@@ -42,7 +42,6 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
     try {
       const schedules = await getSchedules();
-      console.log(schedules, "schedules");
       
       const filtered = schedules.filter(
         (s) => s.status !== "completed" && s.status !== "cancelled"

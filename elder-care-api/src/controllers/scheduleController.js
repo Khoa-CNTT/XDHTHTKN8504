@@ -328,7 +328,7 @@ const scheduleController = {
 
       // 🔁 Truy vấn từ Profile thay vì user.profiles
       const profiles = await Profile.find({ userId }).select("_id");
-      console.log("Profiles:", profiles);
+      
 
       if (!profiles || profiles.length === 0) {
         return res
@@ -372,7 +372,6 @@ const scheduleController = {
           },
         });
 
-      console.log("Schedules:", schedules);
 
       const result = [];
 

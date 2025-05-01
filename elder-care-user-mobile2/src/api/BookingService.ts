@@ -5,7 +5,7 @@ import { Booking } from "../types/Booking";
 
 interface ApiResponse<T> {
   message: string;
-  booking: Booking;
+  bookings: Booking[];
 }
 
 const createBooking = async (body: CreateBookingRequest) => {
@@ -32,4 +32,30 @@ const createBooking = async (body: CreateBookingRequest) => {
   }
 };
 
-export default createBooking;
+const getBookings = async (): Promise<Booking[]> => {
+  const token = useAuthStore.getState().token;
+
+  if (!token) {
+    console.warn("No token found");
+    return [];
+  }
+
+  try {
+    const response = await API.get<ApiResponse<Booking[]>>(
+      "bookings/get-bookings-for-customer",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Cache-Control": "no-cache",
+        },
+      }
+    );
+    return response.data.bookings;
+  } catch (error) {
+    console.error("Error fetching schedules:", error);
+    return [];
+  }
+};
+
+
+export default {createBooking, getBookings};
