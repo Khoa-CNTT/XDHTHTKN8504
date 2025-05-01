@@ -10,16 +10,24 @@ const socketController = (io) => {
         console.log('A user connected: ', socket.id);
 
         // Khi người dùng login/join, họ tham gia phòng riêng
-        socket.on("join", ({ userId, scheduleId }) => {
-            const userRoom = `chat_room_${userId}`;
-            socket.join(userRoom);
-            console.log(`User ${userId} joined room: ${userRoom}`);
+        socket.on("join", ({ userId, scheduleId, role }) => {
+             if (userId) {
+               const userRoom = `chat_room_${userId}`;
+               socket.join(userRoom);
+               console.log(`✅ Joined room: ${userRoom}`);
+             }
 
-            if (scheduleId) {
-                const scheduleRoom = `schedule_${scheduleId}`;
-                socket.join(scheduleRoom);
-                console.log(`User ${userId} joined schedule room: ${scheduleRoom}`);
-            }
+             if (role && role.startsWith("staff")) {
+               const roleName = role.split("_")[1]; // staff_nurse → nurse
+               socket.join(`staff_${roleName}`);
+               console.log(`✅ Joined room: staff_${roleName}`);
+             }
+
+             if (scheduleId) {
+               const scheduleRoom = `schedule_${scheduleId}`;
+               socket.join(scheduleRoom);
+               console.log(`✅ Joined room: ${scheduleRoom}`);
+             }
         });
 
         // Xử lý gửi tin nhắn

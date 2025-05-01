@@ -6,10 +6,28 @@ interface ApiResponse {
   message: string;
   booking: Booking;
 }
+const token = useAuthStore.getState().token;
+export const acceptBooking = async (bookingId: string) => {
+  try {
+    const res = await API.post(
+      `/bookings/accept/${bookingId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return res.data; // { message: "...", schedule: [...] }
+  } catch (error: any) {
+    throw error.response?.data || { message: "Lỗi không xác định" };
+  }
+};
 
 const getBookingById = async (bookingId: string): Promise<Booking> => {
   try {
-    const token = useAuthStore.getState().token;
+    
     if (!token) {
       throw new Error("Token không tồn tại");
     }
@@ -38,5 +56,6 @@ const getBookingById = async (bookingId: string): Promise<Booking> => {
     );
   }
 };
+
 
 export default getBookingById;

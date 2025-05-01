@@ -7,6 +7,7 @@ import { getIO } from "../config/socketConfig.js";
 import { getUserSocketId } from '../controllers/socketController.js';
 
 const bookingController = {
+    
     // create new booking
     createBooking: async (req, res) => {
         try {
@@ -91,14 +92,18 @@ const bookingController = {
                 isRecurring,
                 createdBy: userId,
             });
-
             await newBooking.save();
-
-            const populatedBooking = await Booking.findById(newBooking._id).populate('serviceId');
-
+            const io = getIO(); 
+            
+            const populatedBooking = await Booking.findById(newBooking._id).populate('serviceId').populate("profileId");
+            
+            
             const targetRole = populatedBooking?.serviceId?.role;
             if (targetRole) {
-                io.to(`staff_${targetRole}`).emit('newBookingSignal');
+                io.to(`staff_${targetRole}`).emit('newBookingSignal',
+                  populatedBooking
+                );
+               
             }
 
             return res.status(201).json({
@@ -264,7 +269,7 @@ const bookingController = {
             if (!year || !month) {
                 const currentDate = moment();  // Lấy thời gian hiện tại
                 year = currentDate.year();     // Lấy năm hiện tại
-                month = currentDate.month() + 1; // Lấy tháng hiện tại (lưu ý moment tháng bắt đầu từ 0, vì vậy cộng thêm 1)
+                month = currentDate.month() + 1; 
             }
 
             // Chuyển year, month thành dạng startOf và endOf tháng

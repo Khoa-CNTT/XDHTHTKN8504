@@ -18,8 +18,10 @@ const useInitService = () => {
       if (token) {
         connect();
         if (user?._id) {
-          console.log(`User ID: ${user._id} - đang tham gia phòng`);
-          join(user._id); // Tham gia phòng nếu có userId
+          join({
+            userId: user._id,
+            role: user.role,
+          });
         } else {
           console.error("Không tìm thấy user ID");
         }
