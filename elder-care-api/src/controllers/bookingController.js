@@ -75,7 +75,7 @@ const bookingController = {
             // Xác định nếu là lịch lặp lại
             const isRecurring = new Date(repeatFrom).toDateString() !== new Date(repeatTo).toDateString();
 
-            // Tạo booking mới (không có scheduleId vì sẽ tạo sau)
+            // Tạo booking mới 
             const newBooking = new Booking({
                 profileId,
                 serviceId,
@@ -83,8 +83,8 @@ const bookingController = {
                 notes,
                 paymentId,
                 participants,
-                repeatFrom: fromDate,  // Lưu thời gian đã chuyển sang múi giờ đúng
-                repeatTo: toDate,      // Lưu thời gian đã chuyển sang múi giờ đúng
+                repeatFrom: fromDate,
+                repeatTo: toDate,
                 timeSlot,
                 totalPrice,
                 totalDiscount,
@@ -93,6 +93,14 @@ const bookingController = {
             });
 
             await newBooking.save();
+
+            const populatedBooking = await Booking.findById(newBooking._id).populate('serviceId');
+
+            const targetRole = populatedBooking?.serviceId?.role;
+            if (targetRole) {
+                io.to(`staff_${targetRole}`).emit('newBookingSignal');
+            }
+
             return res.status(201).json({
                 message: "Booking created successfully",
                 booking: newBooking,
@@ -320,10 +328,10 @@ const bookingController = {
     getBookingForCustomer: async (req, res) => {
         try {
             const user = req.user;
-            
+
             const bookings = await Booking.find({ createdBy: user._id })
 
-            if(!bookings || bookings.length === 0) {
+            if (!bookings || bookings.length === 0) {
                 return res.status(404).json({ message: 'Không tìm thấy booking nào' });
             }
 
