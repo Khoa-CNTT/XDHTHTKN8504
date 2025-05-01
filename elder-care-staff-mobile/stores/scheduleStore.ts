@@ -55,7 +55,10 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
   fetchSchedules: async () => {
     set({ loading: true, error: null });
     try {
+    ;
+      
       const schedules = await getSchedules();
+      
       set({ schedules, loading: false });
 
       const nearest = getNearestScheduleUtil(schedules);

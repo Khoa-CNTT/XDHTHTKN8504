@@ -126,7 +126,7 @@ const scheduleController = {
 
       const schedules = await Schedule.find({ staffId }).sort({
         date: 1,
-        "timeSlots.startTime": 1,
+        "timeSlots.start": 1,
       });
 
       return res.status(200).json({

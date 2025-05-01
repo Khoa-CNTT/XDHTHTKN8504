@@ -9,18 +9,6 @@ const toVietnamDate = (isoString: string): Date => {
   return new Date(utc + 7 * 60 * 60000); // Thêm 7 giờ để chuyển sang múi giờ Việt Nam
 };
 
-// Hàm xử lý chuyển đổi mảng thời gian cho các trường trong `Schedule`
-const processTimeFields = (item: any) => ({
-  ...item,
-  date: toVietnamDate(item.date),
-  createdAt: toVietnamDate(item.createdAt),
-  updatedAt: toVietnamDate(item.updatedAt),
-  timeSlots: item.timeSlots.map((slot: any) => ({
-    ...slot,
-    startTime: toVietnamDate(slot.startTime),
-    endTime: toVietnamDate(slot.endTime),
-  })),
-});
 
 interface ApiResponse {
   message: string;
@@ -49,14 +37,13 @@ const getSchedules = async (): Promise<Schedule[]> => {
       return [];
     }
 
-    // Sử dụng map để xử lý tất cả các dữ liệu lịch làm việc
-    const processed: Schedule[] = rawData.map(processTimeFields);
-
-    return processed;
+    // Không xử lý thời gian, trả về dữ liệu gốc
+    return rawData;
   } catch (error) {
     console.error("Error fetching schedules:", error);
     return [];
   }
 };
+
 
 export default getSchedules;
