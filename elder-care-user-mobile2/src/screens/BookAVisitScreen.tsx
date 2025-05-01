@@ -137,8 +137,6 @@ const BookVisitScreen: React.FC = () => {
     };
 
     try {
-      console.log("Booking data:", bookingData);
-
       await createBooking(bookingData);
       alert("Đặt lịch thành công!");
       navigation.goBack();

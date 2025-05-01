@@ -2,6 +2,7 @@
 import { create } from "zustand";
 import socket from "../utils/socket";
 import { Booking } from "@/types/Booking";
+import useAuthStore from "./authStore";
 
 type Payload = {
   userId: string;
@@ -20,24 +21,34 @@ interface SocketStore {
 }
 
 export const useSocketStore = create<SocketStore>((set) => {
-  socket.on("connect", () => {
-    console.log("✅ Socket connected:", socket.id);
-    set({ isConnected: true });
-  });
+  const currentUser = useAuthStore.getState().user;
+    const listenToEvents = () => {
+      socket.on("newBookingSignal", (booking) => {
+        console.log("😋: Nhận được booking mới:");
+        set({ newBooking: booking });
+      });
 
-  socket.on("disconnect", () => {
-    console.log("❌ Socket disconnected");
-    set({ isConnected: false });
-  });
+      socket.on("bookingAccepted", (bookingId: string) => {
+        console.log(`😋: Booking được chấp thuận: ${bookingId}`);
+      });
 
-  socket.on("connect_error", (err) => {
-    console.warn("⚠️ from socketStore :", err.message);
-  });
-  
- socket.on("newBookingSignal", (booking) => {
-   console.log("Nhận được booking mới:", booking);
-    set({ newBooking: booking });
- });
+      socket.on("connect", () => {
+        console.log("✅ Socket connected:", socket.id);
+        set({ isConnected: true });
+        const userId = currentUser?._id;
+        socket.emit("join", { userId });
+        listenToEvents(); // Lắng nghe sự kiện sau khi kết nối
+      });
+
+      socket.on("disconnect", () => {
+        console.log("❌ Socket disconnected");
+        set({ isConnected: false });
+      });
+
+      socket.on("connect_error", (err) => {
+        console.warn("⚠️ from socketStore :", err.message);
+      });
+    };
 
 
   return {
@@ -49,6 +60,7 @@ export const useSocketStore = create<SocketStore>((set) => {
       if (!socket.connected) {
         console.log("Đang kết nối socket...");
         socket.connect();
+        listenToEvents();
         set({ isConnected: true });
       }
     },

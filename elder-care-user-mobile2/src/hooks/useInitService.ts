@@ -30,8 +30,7 @@ const useInitService = () => {
 
           // Kiểm tra và tham gia phòng nếu có user._id
           if (user?._id) {
-            console.log(`User ID: ${user._id} - đang tham gia phòng`);
-            join(user._id);
+            join({userId: user._id});
           } else {
             console.error("Không tìm thấy user ID");
           }

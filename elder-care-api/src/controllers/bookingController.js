@@ -99,11 +99,12 @@ const bookingController = {
             
             
             const targetRole = populatedBooking?.serviceId?.role;
-            if (targetRole) {
-                io.to(`staff_${targetRole}`).emit('newBookingSignal',
-                  populatedBooking
-                );
-               
+            
+            if (targetRole === "nurse" || targetRole === "doctor") {
+              io.to(`staff_${targetRole}`).emit(
+                "newBookingSignal",
+                populatedBooking
+              );
             }
 
             return res.status(201).json({
@@ -118,117 +119,224 @@ const bookingController = {
         }
     },
 
+    // acceptBooking: async (req, res) => {
+    //     const io = getIO();
+    //     try {
+    //         const { bookingId } = req.params;
+    //         const staff = req.user;
+
+    //         const booking = await Booking.findById(bookingId);
+    //         if (!booking) return res.status(404).json({ message: 'Đơn đặt lịch không tồn tại' });
+
+    //         const service = await Service.findById(booking.serviceId);
+    //         if (!service) return res.status(404).json({ message: 'Không tìm thấy dịch vụ liên quan' });
+
+    //         const profile = await Profile.findById(booking.profileId);
+    //         if (!profile) return res.status(404).json({ message: 'Không tìm thấy thông tin bệnh nhân' });
+
+    //         const patientName = `${profile.firstName} ${profile.lastName}`;
+    //         const timeSlots = Array.isArray(booking.timeSlot) ? booking.timeSlot : [booking.timeSlot];
+
+    //         const timeZone = 'Asia/Ho_Chi_Minh';
+    //         let currentDate = moment.tz(booking.repeatFrom, timeZone);
+    //         const repeatTo = moment.tz(booking.repeatTo, timeZone);
+
+    //         const schedulePromises = [];
+
+    //         while (currentDate <= repeatTo) {
+    //             for (const timeSlot of timeSlots) {
+    //                 const startDateTime = moment.tz(`${currentDate.format('YYYY-MM-DD')}T${timeSlot.start}:00`, timeZone);
+    //                 const endDateTime = moment.tz(`${currentDate.format('YYYY-MM-DD')}T${timeSlot.end}:00`, timeZone);
+
+    //                 //Kiểm tra trùng lịch
+    //                 const isConflict = await Schedule.findOne({
+    //                     staffId: staff._id,
+    //                     'timeSlots.start': { $lt: endDateTime.toDate() },
+    //                     'timeSlots.end': { $gt: startDateTime.toDate() },
+    //                 });
+
+    //                 if (isConflict) {
+    //                     return res.status(409).json({
+    //                         message: `Lịch bị trùng vào ngày ${currentDate.format('DD/MM/YYYY')} từ ${timeSlot.start} đến ${timeSlot.end}`,
+    //                     });
+    //                 }
+
+    //                 // Nếu không trùng thì tạo schedule
+    //                 const schedule = new Schedule({
+    //                     staffId: staff._id,
+    //                     role: staff.role,
+    //                     bookingId: booking._id,
+    //                     patientName,
+    //                     serviceName: service.name,
+    //                     date: currentDate.clone().toDate(),
+    //                     timeSlots: [{
+    //                         start: startDateTime.toDate(),
+    //                         end: endDateTime.toDate()
+    //                     }],
+    //                     status: 'scheduled',
+    //                 });
+
+    //                 schedulePromises.push(schedule.save());
+    //             }
+
+    //             currentDate.add(1, 'days');
+    //         }
+
+    //         booking.status = 'accepted';
+    //         booking.acceptedBy = staff._id;
+
+    //         const alreadyParticipant = booking.participants.some(p =>
+    //             p.userId.toString() === staff._id.toString()
+    //         );
+
+    //         if (!alreadyParticipant) {
+    //             booking.participants.push({
+    //                 userId: staff._id,
+    //                 role: staff.role,
+    //                 acceptedAt: new Date(),
+    //             });
+    //         }
+
+    //         await booking.save();
+    //         await Promise.all(schedulePromises);
+
+    //         // Gửi thông báo qua socket
+    //         const customerId = booking.createdBy.toString();
+    //         const socketId = getUserSocketId(customerId);
+    //         if (socketId) {
+    //             io.to(socketId).emit("bookingAccepted", {
+    //                 bookingId,
+    //             });
+    //         }
+
+    //         booking.participants.forEach(p => {
+    //             const staffSocketId = getUserSocketId(p.userId.toString());
+    //             if (staffSocketId) {
+    //                 io.to(staffSocketId).emit("bookingAccepted", {
+    //                     bookingId,
+    //                 });
+    //             }
+    //         });
+
+    //         return res.status(200).json({
+    //             message: 'Đã chấp nhận lịch hẹn và tạo lịch làm việc thành công',
+    //             schedule: schedulePromises,
+    //         });
+    //     } catch (error) {
+    //         console.error(error);
+    //         return res.status(500).json({ message: 'Lỗi server', error: error.message });
+    //     }
+    // },
     acceptBooking: async (req, res) => {
-        const io = getIO();
-        try {
-            const { bookingId } = req.params;
-            const staff = req.user;
+    const io = getIO();
 
-            const booking = await Booking.findById(bookingId);
-            if (!booking) return res.status(404).json({ message: 'Đơn đặt lịch không tồn tại' });
+    try {
+        const { bookingId } = req.params;
+        const staff = req.user;
 
-            const service = await Service.findById(booking.serviceId);
-            if (!service) return res.status(404).json({ message: 'Không tìm thấy dịch vụ liên quan' });
+        const booking = await Booking.findById(bookingId);
+        if (!booking) return res.status(404).json({ message: 'Đơn đặt lịch không tồn tại' });
 
-            const profile = await Profile.findById(booking.profileId);
-            if (!profile) return res.status(404).json({ message: 'Không tìm thấy thông tin bệnh nhân' });
+        const service = await Service.findById(booking.serviceId);
+        if (!service) return res.status(404).json({ message: 'Không tìm thấy dịch vụ liên quan' });
 
-            const patientName = `${profile.firstName} ${profile.lastName}`;
-            const timeSlots = Array.isArray(booking.timeSlot) ? booking.timeSlot : [booking.timeSlot];
+        const profile = await Profile.findById(booking.profileId);
+        if (!profile) return res.status(404).json({ message: 'Không tìm thấy thông tin bệnh nhân' });
 
-            const timeZone = 'Asia/Ho_Chi_Minh';
-            let currentDate = moment.tz(booking.repeatFrom, timeZone);
-            const repeatTo = moment.tz(booking.repeatTo, timeZone);
+        const patientName = `${profile.firstName} ${profile.lastName}`;
+        const timeSlots = Array.isArray(booking.timeSlot) ? booking.timeSlot : [booking.timeSlot];
+        const timeZone = 'Asia/Ho_Chi_Minh';
 
-            const schedulePromises = [];
+        let currentDate = moment.tz(booking.repeatFrom, timeZone);
+        const repeatTo = moment.tz(booking.repeatTo, timeZone);
+        const schedules = [];
 
-            while (currentDate <= repeatTo) {
-                for (const timeSlot of timeSlots) {
-                    const startDateTime = moment.tz(`${currentDate.format('YYYY-MM-DD')}T${timeSlot.start}:00`, timeZone);
-                    const endDateTime = moment.tz(`${currentDate.format('YYYY-MM-DD')}T${timeSlot.end}:00`, timeZone);
+        while (currentDate <= repeatTo) {
+            for (const timeSlot of timeSlots) {
+                const startDateTime = moment.tz(`${currentDate.format('YYYY-MM-DD')}T${timeSlot.start}:00`, timeZone);
+                const endDateTime = moment.tz(`${currentDate.format('YYYY-MM-DD')}T${timeSlot.end}:00`, timeZone);
 
-                    //Kiểm tra trùng lịch
-                    const isConflict = await Schedule.findOne({
-                        staffId: staff._id,
-                        'timeSlots.start': { $lt: endDateTime.toDate() },
-                        'timeSlots.end': { $gt: startDateTime.toDate() },
+                // Kiểm tra trùng lịch cùng ngày
+                const isConflict = await Schedule.findOne({
+                    staffId: staff._id,
+                    date: {
+                        $gte: currentDate.clone().startOf('day').toDate(),
+                        $lte: currentDate.clone().endOf('day').toDate()
+                    },
+                    'timeSlots.start': { $lt: endDateTime.toDate() },
+                    'timeSlots.end': { $gt: startDateTime.toDate() },
+                });
+
+                if (isConflict) {
+                    return res.status(409).json({
+                        message: `Lịch bị trùng vào ngày ${currentDate.format('DD/MM/YYYY')} từ ${timeSlot.start} đến ${timeSlot.end}`,
                     });
-
-                    if (isConflict) {
-                        return res.status(409).json({
-                            message: `Lịch bị trùng vào ngày ${currentDate.format('DD/MM/YYYY')} từ ${timeSlot.start} đến ${timeSlot.end}`,
-                        });
-                    }
-
-                    // Nếu không trùng thì tạo schedule
-                    const schedule = new Schedule({
-                        staffId: staff._id,
-                        role: staff.role,
-                        bookingId: booking._id,
-                        patientName,
-                        serviceName: service.name,
-                        date: currentDate.clone().toDate(),
-                        timeSlots: [{
-                            start: startDateTime.toDate(),
-                            end: endDateTime.toDate()
-                        }],
-                        status: 'scheduled',
-                    });
-
-                    schedulePromises.push(schedule.save());
                 }
 
-                currentDate.add(1, 'days');
-            }
-
-            booking.status = 'accepted';
-            booking.acceptedBy = staff._id;
-
-            const alreadyParticipant = booking.participants.some(p =>
-                p.userId.toString() === staff._id.toString()
-            );
-
-            if (!alreadyParticipant) {
-                booking.participants.push({
-                    userId: staff._id,
+                const schedule = new Schedule({
+                    staffId: staff._id,
                     role: staff.role,
-                    acceptedAt: new Date(),
+                    bookingId: booking._id,
+                    patientName,
+                    serviceName: service.name,
+                    date: currentDate.clone().toDate(),
+                    timeSlots: [{
+                        start: startDateTime.toDate(),
+                        end: endDateTime.toDate()
+                    }],
+                    status: 'scheduled',
                 });
+
+                schedules.push(schedule);
             }
 
-            await booking.save();
-            await Promise.all(schedulePromises);
-
-            // Gửi thông báo qua socket
-            const customerId = booking.createdBy.toString();
-            const socketId = getUserSocketId(customerId);
-            if (socketId) {
-                io.to(socketId).emit("bookingAccepted", {
-                    bookingId,
-                    message: "Booking của bạn đã được chấp nhận"
-                });
-            }
-
-            booking.participants.forEach(p => {
-                const staffSocketId = getUserSocketId(p.userId.toString());
-                if (staffSocketId) {
-                    io.to(staffSocketId).emit("bookingAccepted", {
-                        bookingId,
-                        message: "Bạn đã được phân công vào booking mới"
-                    });
-                }
-            });
-
-            return res.status(200).json({
-                message: 'Đã chấp nhận lịch hẹn và tạo lịch làm việc thành công',
-                schedule: schedulePromises,
-            });
-        } catch (error) {
-            console.error(error);
-            return res.status(500).json({ message: 'Lỗi server', error: error.message });
+            currentDate.add(1, 'days');
         }
-    },
 
+        // Cập nhật thông tin booking
+        booking.status = 'accepted';
+        booking.acceptedBy = staff._id;
+
+        const alreadyParticipant = booking.participants.some(p =>
+            p.userId.toString() === staff._id.toString()
+        );
+
+        if (!alreadyParticipant) {
+            booking.participants.push({
+                userId: staff._id,
+                role: staff.role,
+                acceptedAt: new Date(),
+            });
+        }
+
+        await booking.save();
+        await Promise.all(schedules.map(s => s.save()));
+
+        // Gửi thông báo socket cho người tạo và tất cả người tham gia
+        const allUserIds = new Set([
+            booking.createdBy.toString(),
+            ...booking.participants.map(p => p.userId.toString())
+        ]);
+
+        allUserIds.forEach(userId => {
+            const socketId = getUserSocketId(userId);
+            console.log("Socket ID:", socketId);
+            
+            if (socketId) {
+                io.to(socketId).emit("bookingAccepted", { bookingId });
+            }
+        });
+
+        return res.status(200).json({
+            message: 'Đã chấp nhận lịch hẹn và tạo lịch làm việc thành công',
+            schedule: schedules,
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Lỗi server', error: error.message });
+    }
+    },
     getBookingById: async (req, res) => {
         try {
             const { staffId } = req.user._id;
@@ -334,7 +442,7 @@ const bookingController = {
         try {
             const user = req.user;
 
-            const bookings = await Booking.find({ createdBy: user._id })
+            const bookings = await Booking.find({ createdBy: user._id }).populate('serviceId').populate('profileId');
 
             if (!bookings || bookings.length === 0) {
                 return res.status(404).json({ message: 'Không tìm thấy booking nào' });
