@@ -5,10 +5,10 @@ import { Booking } from "../types/Booking";
 
 interface ApiResponse<T> {
   message: string;
-  bookings: Booking[];
+  data: Booking[];
 }
 
-const createBooking = async (body: CreateBookingRequest) => {
+export const createBooking = async (body: CreateBookingRequest) => {
   const token = useAuthStore.getState().token;
 
   try {
@@ -32,7 +32,7 @@ const createBooking = async (body: CreateBookingRequest) => {
   }
 };
 
-const getBookings = async (): Promise<Booking[]> => {
+export const getBookings = async (): Promise<Booking[]> => {
   const token = useAuthStore.getState().token;
 
   if (!token) {
@@ -50,7 +50,7 @@ const getBookings = async (): Promise<Booking[]> => {
         },
       }
     );
-    return response.data.bookings;
+    return response.data.data;
   } catch (error) {
     console.error("Error fetching schedules:", error);
     return [];
@@ -58,4 +58,4 @@ const getBookings = async (): Promise<Booking[]> => {
 };
 
 
-export default {createBooking, getBookings};
+
