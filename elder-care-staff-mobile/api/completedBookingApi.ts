@@ -49,6 +49,7 @@ const getCompletedBookings = async (
     } else {
       throw new Error("Đã có lỗi xảy ra khi lấy booking");
     }
+    return []; // Trả về mảng rỗng nếu có lỗi
   }
 };
 export default getCompletedBookings;

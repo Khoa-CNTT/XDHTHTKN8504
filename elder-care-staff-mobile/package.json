@@ -23,7 +23,7 @@
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "dotenv": "^16.5.0",
-    "expo": "~52.0.46",
+    "expo": "~53.0.0",
     "expo-blur": "~14.0.3",
     "expo-constants": "~17.0.8",
     "expo-font": "~13.0.4",
