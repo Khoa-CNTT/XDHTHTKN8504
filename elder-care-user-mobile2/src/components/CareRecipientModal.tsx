@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   avatarContainer: {
-    backgroundColor: '#81D4FA', // Lighter avatar color
+    backgroundColor: '#c4a484', // Lighter avatar color
     width: 40, // Increased size
     height: 40,
     borderRadius: 20,
