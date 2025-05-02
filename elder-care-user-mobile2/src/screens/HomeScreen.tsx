@@ -1,12 +1,19 @@
-import React from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useEffect } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import Header from "../components/Header";
 import SearchBox from "../components/SearchBox";
 import Banner from "../components/Banner";
-// import MedicalCenterCard from "../components/MedicalCenterCard";
 import Footer from "../components/Footer";
+import { useServicesStore } from "../stores/serviceStore";
 
 type RootStackParamList = {
   Home: undefined;
@@ -15,92 +22,169 @@ type RootStackParamList = {
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
-const medicalCenters = [
-  {
-    id: "1",
-    name: "Sunrise Health Clinic",
-    address: "123 Oak Street, CA 98765",
-    rating: 5.0,
-    reviews: 58,
-    distance: "2.5 km/40min",
-    image: require("../asset/img/hinh1.png"),
-    type: "Health Clinic"
-  },
-  {
-    id: "2",
-    name: "Golden Cardiology",
-    address: "555 Bridge Street, CA 12345",
-    rating: 4.9,
-    reviews: 103,
-    distance: "2.5 km/40min",
-    image: require("../asset/img/hinh1.png"),
-    type: "Cardiology"
-  },
-];
-
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { services, fetchServices, isLoading, error } = useServicesStore();
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
 
   const handleSearchPress = () => {
-    navigation.navigate('AllDoctors');
+    navigation.navigate("AllDoctors");
   };
 
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Đang tải dịch vụ...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text>Lỗi: {error}</Text>
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1 }}>
       <Header />
       <TouchableOpacity onPress={handleSearchPress} activeOpacity={0.7}>
-        <SearchBox 
-          editable={false}
-          placeholder="Search doctor..."
-        />
+        <SearchBox editable={false} placeholder="Tìm kiếm bác sĩ..." />
       </TouchableOpacity>
       <Banner />
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Nearby Medical Centers</Text>
-        <TouchableOpacity>
-          <Text style={styles.seeAll}>See All</Text>
-        </TouchableOpacity>
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Dịch vụ nổi bật</Text>
       </View>
 
-      {/* <FlatList
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.medicalCentersList}
-        data={medicalCenters}
-        keyExtractor={(item) => item.id}
-        renderItem={() => <MedicalCenterCard item={item} />}
-      /> */}
+      <FlatList
+        data={services}
+        numColumns={2}
+        keyExtractor={(item) => item._id}
+        renderItem={({ item, index }) => (
+          <TouchableOpacity
+            style={[
+              styles.serviceItem,
+              index % 2 === 0 ? { marginRight: 10 } : { marginLeft: 10 },
+            ]}
+            onPress={() => {
+              console.log(`Đã nhấn vào: ${item.name}`);
+            }}
+            activeOpacity={0.8}
+          >
+            <View style={styles.imageContainer}>
+              <Image
+                source={require("../asset/img/hinh1.png")}
+                style={styles.serviceImage}
+                resizeMode="cover"
+              />
+            </View>
+            <Text style={styles.serviceName}>{item.name}</Text>
+          </TouchableOpacity>
+        )}
+        ListFooterComponent={
+          services.length > 6 && (
+            <TouchableOpacity
+              style={styles.seeAllContainer}
+              onPress={() => {
+                // Xử lý khi nhấn vào "Xem tất cả"
+              }}
+            >
+              {/* <Text style={styles.seeAll}>Xem tất cả</Text> */}
+            </TouchableOpacity>
+          )
+        }
+        contentContainerStyle={[styles.listContent, { paddingBottom: 100 }]} // Đệm để không che bởi Footer
+        style={{ flexGrow: 0 }}
+      />
 
-      <Footer />
+      {/* Footer cố định */}
+      <View style={styles.footerContainer}>
+        <Footer />
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  loadingContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    justifyContent: "center",
+    alignItems: "center",
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sectionContainer: {
     paddingHorizontal: 16,
-    marginBottom: 16,
+    marginTop: 20,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#2c3e50",
+    marginBottom: 20,
+  },
+  listContent: {
+    paddingHorizontal: 16,
+  },
+  serviceItem: {
+    flex: 0.5,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 15,
+    alignItems: "center",
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  imageContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    overflow: "hidden",
+    marginBottom: 10,
+    backgroundColor: "#e0e0e0",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  serviceImage: {
+    width: "100%",
+    height: "100%",
+  },
+  serviceName: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#34495e",
+    textAlign: "center",
+  },
+  seeAllContainer: {
+    marginTop: 15,
+    alignItems: "center",
   },
   seeAll: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 16,
+    color: "#3498db",
+    fontWeight: "bold",
   },
-  medicalCentersList: {
-    paddingLeft: 16,
-    paddingBottom: 16,
+  footerContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    zIndex: 10,
+    elevation: 10,
   },
 });
 

@@ -134,7 +134,7 @@ const ProfileListScreen: React.FC = () => {
             <View style={styles.buttonContainer}>
                 <TouchableOpacity
                     style={styles.addRecipientButton}
-                    onPress={() => navigation.navigate("EditCareRecipient")}
+                    onPress={() => navigation.navigate("AddCareRecipient")}
                 >
                     <Text style={styles.addRecipientText}>Thêm Care Recipient</Text>
                 </TouchableOpacity>
