@@ -11,52 +11,52 @@ import { emitScheduleStatus } from "../controllers/socketController.js";
 import dayjs from "dayjs";
 
 const updateBookingStatus = async (bookingId) => {
-    try {
-        if (!bookingId) {
-            console.warn("⚠️ bookingId không tồn tại");
-            return null;
-        }
-
-        console.log("🔍 Đang kiểm tra schedules với bookingId:", bookingId);
-        const schedules = await Schedule.find({ bookingId });
-
-        const allCompleted = schedules.every(
-            (schedule) => schedule.status === "completed"
-        );
-        console.log("✅ allCompleted:", allCompleted);
-
-        if (allCompleted) {
-            const updatedBooking = await Booking.findByIdAndUpdate(
-                bookingId,
-                { status: "completed" },
-                { new: true }
-            );
-            console.log("✅ Booking đã cập nhật:", updatedBooking);
-            return updatedBooking;
-        }
-
-        return null;
-    } catch (error) {
-        console.error("🔥 Lỗi khi cập nhật trạng thái booking:", error);
-        return null;
+  try {
+    if (!bookingId) {
+      console.warn("⚠️ bookingId không tồn tại");
+      return null;
     }
+
+    console.log("🔍 Đang kiểm tra schedules với bookingId:", bookingId);
+    const schedules = await Schedule.find({ bookingId });
+
+    const allCompleted = schedules.every(
+      (schedule) => schedule.status === "completed"
+    );
+    console.log("✅ allCompleted:", allCompleted);
+
+    if (allCompleted) {
+      const updatedBooking = await Booking.findByIdAndUpdate(
+        bookingId,
+        { status: "completed" },
+        { new: true }
+      );
+      console.log("✅ Booking đã cập nhật:", updatedBooking);
+      return updatedBooking;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("🔥 Lỗi khi cập nhật trạng thái booking:", error);
+    return null;
+  }
 };
 
 // Hàm lấy tên nhân viên dựa vào role ththth
 async function getStaffName(staff) {
-    if (!staff) {
-        return "Chưa phân công";
-    }
+  if (!staff) {
+    return "Chưa phân công";
+  }
 
-    if (staff.role === "doctor") {
-        const doctor = await Doctor.findOne({ userId: staff._id });
-        return doctor ? `${doctor.firstName} ${doctor.lastName}` : "Chưa phân công";
-    } else if (staff.role === "nurse") {
-        const nurse = await Nurse.findOne({ userId: staff._id });
-        return nurse ? `${nurse.firstName} ${nurse.lastName}` : "Chưa phân công";
-    }
+  if (staff.role === "doctor") {
+    const doctor = await Doctor.findOne({ userId: staff._id });
+    return doctor ? `${doctor.firstName} ${doctor.lastName}` : "Chưa phân công";
+  } else if (staff.role === "nurse") {
+    const nurse = await Nurse.findOne({ userId: staff._id });
+    return nurse ? `${nurse.firstName} ${nurse.lastName}` : "Chưa phân công";
+  }
 
-    return "Chưa phân công";  // Nếu role không phải doctor hoặc nurse
+  return "Chưa phân công";  // Nếu role không phải doctor hoặc nurse
 }
 
 const scheduleController = {
@@ -293,11 +293,11 @@ const scheduleController = {
 
         const timeSlots = Array.isArray(item.timeSlots)
           ? item.timeSlots
-              .filter((slot) => slot.start && slot.end)
-              .map((slot) => ({
-                start: moment2(slot.start).tz("Asia/Ho_Chi_Minh").toISOString(),
-                end: moment2(slot.end).tz("Asia/Ho_Chi_Minh").toISOString(),
-              }))
+            .filter((slot) => slot.start && slot.end)
+            .map((slot) => ({
+              start: moment2(slot.start).tz("Asia/Ho_Chi_Minh").toISOString(),
+              end: moment2(slot.end).tz("Asia/Ho_Chi_Minh").toISOString(),
+            }))
           : [];
 
         const status = item.status || "Chưa có trạng thái";
@@ -390,13 +390,13 @@ const scheduleController = {
         const timeSlots =
           item.timeSlots && item.timeSlots.start && item.timeSlots.end
             ? {
-                start: moment(item.timeSlots.start)
-                  .tz("Asia/Ho_Chi_Minh")
-                  .toISOString(),
-                end: moment(item.timeSlots.end)
-                  .tz("Asia/Ho_Chi_Minh")
-                  .toISOString(),
-              }
+              start: moment(item.timeSlots.start)
+                .tz("Asia/Ho_Chi_Minh")
+                .toISOString(),
+              end: moment(item.timeSlots.end)
+                .tz("Asia/Ho_Chi_Minh")
+                .toISOString(),
+            }
             : null;
 
         const status = item.status || "Chưa có trạng thái";
@@ -562,6 +562,16 @@ const scheduleController = {
       });
     }
   },
+
+  deleteAllSchedules: async (req, res) => {
+    try {
+      await Schedule.deleteMany();
+      return res.status(200).json({ message: 'Tất cả schedule đã được xoá thành công.' });
+    } catch (error) {
+      console.error("Lỗi khi xóa booking:", error);
+      return res.status(500).json({ message: 'Lỗi server', error: error.message });
+    }
+  }
 };
 
 export default scheduleController;
