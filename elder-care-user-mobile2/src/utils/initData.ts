@@ -1,6 +1,7 @@
 import useScheduleStore from "../stores/scheduleStore";
 import useProfileStore from "../stores/profileStore";
 import { useServicesStore } from "../stores/serviceStore";
+import { useBookingStore } from "../stores/BookingStore";
 const initData = async () => {
  
 
@@ -9,9 +10,11 @@ const initData = async () => {
       useServicesStore.getState().fetchServices(),
       useProfileStore.getState().fetchProfiles(),
       useScheduleStore.getState().fetchSchedules(),
+      useBookingStore.getState().fetchBookings(),
       // useUserStore.getState().fetchUserInfo(),
       // useOtherStore.getState().fetchSomething(),
     ]);
+    
     
   } catch (error) {
 

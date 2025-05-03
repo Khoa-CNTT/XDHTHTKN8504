@@ -8,6 +8,7 @@ import Doctor from "../models/Doctor.js";
 import Nurse from "../models/Nurse.js";
 import User from "../models/User.js";
 import { emitScheduleStatus } from "../controllers/socketController.js";
+import dayjs from "dayjs";
 
 const updateBookingStatus = async (bookingId) => {
     try {
@@ -317,7 +318,6 @@ const scheduleController = {
   },
   getSchedulesForUserToday: async (req, res) => {
     try {
-      console.log("req.user:", req.user);
       const { _id: userId } = req.user;
 
       if (!userId) {
@@ -328,7 +328,6 @@ const scheduleController = {
 
       // 🔁 Truy vấn từ Profile thay vì user.profiles
       const profiles = await Profile.find({ userId }).select("_id");
-      
 
       if (!profiles || profiles.length === 0) {
         return res
@@ -340,11 +339,10 @@ const scheduleController = {
 
       const todayStart = moment().startOf("day").toDate();
       const todayEnd = moment().endOf("day").toDate();
-  
+
       const bookings = await Booking.find({
         profileId: { $in: profileIds },
       }).select("_id");
-
 
       const bookingIds = bookings.map((b) => b._id);
       if (bookingIds.length === 0) {
@@ -372,7 +370,6 @@ const scheduleController = {
           },
         });
 
-
       const result = [];
 
       for (const item of schedules) {
@@ -390,17 +387,17 @@ const scheduleController = {
         const serviceName =
           item.bookingId?.serviceId?.name || "Không rõ dịch vụ";
 
-       const timeSlots =
-         item.timeSlots && item.timeSlots.start && item.timeSlots.end
-           ? {
-               start: moment(item.timeSlots.start)
-                 .tz("Asia/Ho_Chi_Minh")
-                 .toISOString(),
-               end: moment(item.timeSlots.end)
-                 .tz("Asia/Ho_Chi_Minh")
-                 .toISOString(),
-             }
-           : null;
+        const timeSlots =
+          item.timeSlots && item.timeSlots.start && item.timeSlots.end
+            ? {
+                start: moment(item.timeSlots.start)
+                  .tz("Asia/Ho_Chi_Minh")
+                  .toISOString(),
+                end: moment(item.timeSlots.end)
+                  .tz("Asia/Ho_Chi_Minh")
+                  .toISOString(),
+              }
+            : null;
 
         const status = item.status || "Chưa có trạng thái";
 
@@ -410,7 +407,6 @@ const scheduleController = {
           serviceName,
           status,
           timeSlots,
-          
         });
       }
 
@@ -418,6 +414,152 @@ const scheduleController = {
     } catch (err) {
       console.error("Error:", err);
       return res.status(500).json({ success: false, message: "Server error" });
+    }
+  },
+  getNextScheduleForStaff: async (req, res) => {
+    const { staffId } = req.user;
+
+    try {
+      const now = dayjs();
+
+      // Lấy mốc thời gian bắt đầu và kết thúc của ngày hôm nay
+      const startOfDay = dayjs().startOf("day");
+      const endOfDay = dayjs().endOf("day");
+
+      // Truy vấn các lịch làm việc trong hôm nay
+      const schedules = await Schedule.find({
+        staffId,
+        status: { $nin: ["canceled", "completed"] },
+        date: { $gte: startOfDay.toDate(), $lte: endOfDay.toDate() }, // Lọc theo ngày hôm nay
+      }).sort({ date: 1, "timeSlots.start": 1 });
+
+      // Tìm ca hiện tại (đang diễn ra)
+      const currentSchedule = schedules.find((schedule) =>
+        schedule.timeSlots.some((slot) => {
+          const start = dayjs(slot.start);
+          const end = dayjs(slot.end);
+          return now.isBetween(start, end, null, "[)"); // Kiểm tra ca đang diễn ra
+        })
+      );
+
+      if (currentSchedule) {
+        return res.status(200).json(currentSchedule); // Trả về ca hiện tại
+      }
+
+      // Nếu không có ca hiện tại, tìm ca sắp tới
+      const upcomingSchedule = schedules.find((schedule) =>
+        schedule.timeSlots.some((slot) => {
+          const start = dayjs(slot.start);
+          return now.isBefore(start); // Tìm ca chưa diễn ra
+        })
+      );
+
+      if (!upcomingSchedule) {
+        return res
+          .status(200)
+          .json({ message: "Không có ca sắp tới trong ngày hôm nay." }); // Không có ca nào trong hôm nay
+      }
+
+      return res.status(200).json(upcomingSchedule); // Trả về ca sắp tới
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Lỗi server" });
+    }
+  },
+  getNextScheduleForUser: async (req, res) => {
+    const { userId } = req.user;
+
+    try {
+      const now = dayjs();
+      const startOfDay = now.startOf("day");
+      const endOfDay = now.endOf("day");
+
+      // 1. Lấy tất cả các profile của user
+      const profiles = await Profile.find({ createBy: userId });
+
+      if (profiles.length === 0) {
+        return res.status(200).json({
+          message: "Không có profile nào.",
+          data: null,
+        });
+      }
+
+      // 2. Lọc các booking hợp lệ từ repeatFrom và repeatTo
+      const bookings = await Booking.find({
+        profileId: { $in: profiles.map((profile) => profile._id) }, // Lấy tất cả booking của các profile
+        status: { $nin: ["canceled", "completed"] },
+        $or: [
+          {
+            repeatFrom: { $lte: endOfDay.toDate() },
+            repeatTo: { $gte: startOfDay.toDate() },
+          }, // Booking phải rơi vào khoảng thời gian hôm nay
+          {
+            repeatFrom: { $lte: endOfDay.toDate() },
+            repeatTo: { $gte: endOfDay.toDate() },
+          }, // Booking phải rơi vào cuối ngày
+        ],
+      }).sort({ repeatFrom: 1, "timeSlots.start": 1 });
+
+      if (bookings.length === 0) {
+        return res.status(200).json({
+          message: "Không có lịch hẹn nào hôm nay.",
+          data: null,
+        });
+      }
+
+      // 3. Tìm lịch đang diễn ra
+      const currentBooking = bookings.find(
+        (booking) =>
+          booking.timeSlots && // Kiểm tra timeSlots có tồn tại
+          Object.keys(booking.timeSlots).some((key) => {
+            // Nếu là object, ta sử dụng Object.keys() để duyệt qua các khóa
+            const slot = booking.timeSlots[key];
+            const startTime = dayjs(
+              `${now.format("YYYY-MM-DD")} ${slot.start}`
+            ); // Kết hợp với ngày hiện tại
+            const endTime = dayjs(`${now.format("YYYY-MM-DD")} ${slot.end}`); // Kết hợp với ngày hiện tại
+            return now.isBetween(startTime, endTime, null, "[)"); // Kiểm tra ca đang diễn ra
+          })
+      );
+
+      if (currentBooking) {
+        return res.status(200).json({
+          message: "Lịch hiện tại",
+          data: currentBooking, // Trả về ca hiện tại
+        });
+      }
+
+      // 4. Tìm ca sắp tới
+      const upcomingBooking = bookings.find(
+        (booking) =>
+          booking.timeSlots && // Kiểm tra timeSlots có tồn tại
+          Object.keys(booking.timeSlots).some((key) => {
+            // Nếu là object, ta sử dụng Object.keys() để duyệt qua các khóa
+            const slot = booking.timeSlots[key];
+            const startTime = dayjs(
+              `${now.format("YYYY-MM-DD")} ${slot.start}`
+            ); // Kết hợp với ngày hiện tại
+            return now.isBefore(startTime); // Kiểm tra ca chưa diễn ra
+          })
+      );
+
+      if (upcomingBooking) {
+        return res.status(200).json({
+          message: "Lịch sắp tới",
+          data: upcomingBooking, // Trả về ca sắp tới
+        });
+      }
+
+      return res.status(200).json({
+        message: "Không có lịch hẹn nào hôm nay.",
+        data: null, // Trả về null nếu không có lịch
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        message: "Lỗi server",
+        data: null, // Trả về null khi gặp lỗi
+      });
     }
   },
 };

@@ -16,6 +16,8 @@ const useInitService = () => {
 
       // Nếu đã có token, kết nối socket
       if (token) {
+        console.log("token from useInitService", token);
+        
         connect();
         if (user?._id) {
           join({
