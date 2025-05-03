@@ -860,44 +860,51 @@ export const transactionData = [
   },
 ];
 
-export const dashboardCards = [
-  {
-    id: 1,
-    title: "Tổng số khách hàng",
-    icon: TbUsers,
-    value: 1600,
-    percent: 45.06,
-    color: ["bg-subMain", "text-subMain", "#66B5A3"],
-    datas: [],
-  },
-  {
-    id: 2,
-    title: "Cuộc hẹn",
-    icon: TbCalendar,
-    value: 130,
-    percent: 25.06,
-    color: ["bg-yellow-500", "text-yellow-500", "#F9C851"],
-    datas: [20, 50, 75, 15, 108, 97, 70, 41, 50, 20, 90, 60],
-  },
-  {
-    id: 3,
-    title: "Tổng số điều dưỡng",
-    icon: TbFile,
-    value: 100,
-    percent: 65.06,
-    color: ["bg-green-500", "text-green-500", "#34C759"],
-    datas: [92, 80, 45, 15, 49, 77, 70, 51, 110, 20, 90, 60],
-  },
-  {
-    id: 4,
-    title: "Tổng thu nhập",
-    icon: MdOutlineAttachMoney,
-    value: 4590,
-    percent: 45.06,
-    color: ["bg-red-500", "text-red-500", "#FF3B30"],
-    datas: [20, 50, 75, 15, 108, 97, 70, 41, 50, 20, 90, 60],
-  },
-];
+export const getDashboardCards = (
+  customersData = [],
+  appointmentsData = [],
+  nursesData = [],
+  revenueData = []
+) => {
+  return [
+    {
+      id: 1,
+      title: "Tổng số khách hàng",
+      icon: TbUsers,
+      value: customersData.reduce((a, b) => a + b, 0),
+      percent: 45.06,
+      color: ["bg-subMain", "text-subMain", "#66B5A3"],
+      datas: customersData,
+    },
+    {
+      id: 2,
+      title: "Cuộc hẹn",
+      icon: TbCalendar,
+      value: appointmentsData.reduce((a, b) => a + b, 0),
+      percent: 25.06,
+      color: ["bg-yellow-500", "text-yellow-500", "#F9C851"],
+      datas: appointmentsData,
+    },
+    {
+      id: 3,
+      title: "Tổng số điều dưỡng",
+      icon: TbFile,
+      value: nursesData.reduce((a, b) => a + b, 0),
+      percent: 65.06,
+      color: ["bg-green-500", "text-green-500", "#34C759"],
+      datas: nursesData,
+    },
+    {
+      id: 4,
+      title: "Tổng thu nhập",
+      icon: MdOutlineAttachMoney,
+      value: revenueData.reduce((a, b) => a + b, 0),
+      percent: 45.06,
+      color: ["bg-red-500", "text-red-500", "#FF3B30"],
+      datas: revenueData,
+    },
+  ];
+};
 
 export const notificationsData = [
   {
