@@ -459,6 +459,56 @@ const bookingController = {
         }
     },
 
+    countBookingsLast12Months: async (req, res) => {
+        try {
+            const now = new Date();
+            const startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1); // Đầu tháng cách đây 11 tháng
+
+            const result = await Booking.aggregate([
+                {
+                    $match: {
+                        createdAt: { $gte: startDate }
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            year: { $year: "$createdAt" },
+                            month: { $month: "$createdAt" }
+                        },
+                        count: { $sum: 1 }
+                    }
+                },
+                {
+                    $sort: { "_id.year": 1, "_id.month": 1 }
+                }
+            ]);
+
+            // Tạo danh sách 12 tháng gần nhất
+            const labels = [];
+            const datas = [];
+
+            for (let i = 0; i < 12; i++) {
+                const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+                const year = d.getFullYear();
+                const month = d.getMonth() + 1;
+
+                const found = result.find(r => r._id.year === year && r._id.month === month);
+                labels.push(`${month < 10 ? '0' + month : month}/${year}`);
+                datas.push(found ? found.datas : 0);
+            }
+
+            return res.status(200).json({
+                labels,
+                datas,
+            });
+
+        } catch (err) {
+            console.error("Lỗi khi đếm booking 12 tháng:", err);
+            res.status(500).json({ message: "Server error", error: err });
+        }
+    },
+
     deleteAllBookings: async (req, res) => {
         try {
             await Booking.deleteMany();
