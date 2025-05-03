@@ -107,4 +107,9 @@ router.get(
     bookingController.getBookingForCustomer
 )
 
+router.delete(
+    '/delete',
+    bookingController.deleteAllBookings
+)
+
 export default router

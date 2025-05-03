@@ -16,6 +16,9 @@ const serviceSchema = new Schema(
       type: String,
       enum: ["doctor", "nurse"],
     },
+    imgUrl: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

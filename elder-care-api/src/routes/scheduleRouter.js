@@ -34,6 +34,8 @@ router.get(
   scheduleController.getSchedulesForUserToday
 );
 
+router.delete('/delete', scheduleController.deleteAllSchedules)
+
 router.get("/next/staff",auth, scheduleController.getNextScheduleForStaff);
 router.get("/next/user",auth, scheduleController.getNextScheduleForUser);
 
