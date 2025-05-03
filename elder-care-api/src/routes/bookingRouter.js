@@ -112,4 +112,7 @@ router.delete(
     bookingController.deleteAllBookings
 )
 
+router.get(
+    '/count-bookings', bookingController.countBookingsLast12Months
+)
 export default router
