@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MdOutlineCloudDownload } from 'react-icons/md';
 import { toast } from 'react-hot-toast';
 import { BiChevronDown, BiPlus } from 'react-icons/bi';
@@ -7,11 +7,13 @@ import { Button, Select } from '../components/Form';
 import { ServiceTable } from '../components/Tables';
 import { servicesData, sortsDatas } from '../components/Datas';
 import AddEditServiceModal from '../components/Modals/AddEditServiceModal';
+import { getServices } from '../api/services.js';
 
 function Services() {
   const [isOpen, setIsOpen] = React.useState(false);
   const [data, setData] = React.useState({});
   const [status, setStatus] = React.useState(sortsDatas.service[0]);
+  const [servicesDatas, setServicesDatas] = useState([]);
 
   const onCloseModal = () => {
     setIsOpen(false);
@@ -22,6 +24,18 @@ function Services() {
     setIsOpen(true);
     setData(datas);
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getServices();
+        setServicesDatas(data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <Layout>

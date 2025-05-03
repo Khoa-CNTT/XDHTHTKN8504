@@ -12,7 +12,7 @@ import {
 import { DashboardBigChart, DashboardSmallChart } from "../components/Charts";
 import {
   appointmentsData,
-  dashboardCards,
+  getDashboardCards,
   memberData,
   transactionData,
 } from "../components/Datas";
@@ -20,20 +20,24 @@ import { Transactiontable } from "../components/Tables";
 import { Link } from "react-router-dom";
 // import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { countUsers } from "../api/auth.js";
+
 function Dashboard() {
+  const [userCount, setUserCount] = useState([]);
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/v1/auth/count-users-per-month"
-        );
-        console.log(response.data);
+        const data = await countUsers();
+        setUserCount(data);
+        console.log(data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
     fetchData();
   }, []);
+  
+  const dashboardCards = getDashboardCards(userCount, [], [], []);
 
   return (
     <Layout>
