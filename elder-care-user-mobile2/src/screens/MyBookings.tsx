@@ -7,10 +7,6 @@ import Footer from "../components/Footer";
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
-type TabType = 'Upcoming' | 'Completed' | 'Canceled';
-
-const TABS: TabType[] = ['Upcoming', 'Completed', 'Canceled'];
-
 interface DetailRowProps {
   label: string;
   value: string;
@@ -26,16 +22,11 @@ const DetailRow: React.FC<DetailRowProps> = ({ label, value, icon }) => (
 );
 
 const MyBookings: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('Upcoming');
-  const { fetchBookings, filteredBookings, filterByStatus } = useBookingStore();
+  const { fetchBookings, filteredBookings } = useBookingStore();
 
   useEffect(() => {
     fetchBookings();
   }, []);
-
-  useEffect(() => {
-    filterByStatus(activeTab as BookingStatus);
-  }, [activeTab]);
 
   const formatTime = (isoDate: string | null | undefined, type: 'date' | 'time' | 'dateTime') => {
     if (!isoDate) {
@@ -80,20 +71,6 @@ const MyBookings: React.FC = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Lịch hẹn của tôi</Text>
-
-      {/* Tabs */}
-      <View style={styles.tabs}>
-        {TABS.map(tab => (
-          <TouchableOpacity
-            key={tab}
-            onPress={() => setActiveTab(tab)}
-            style={[styles.tab, activeTab === tab && styles.activeTab]}>
-            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-              {tab === 'Upcoming' ? 'Sắp tới' : tab === 'Completed' ? 'Đã hoàn thành' : 'Đã hủy'}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
 
       {/* Booking list */}
       <ScrollView contentContainerStyle={styles.scrollContainer}>

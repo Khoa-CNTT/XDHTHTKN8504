@@ -21,6 +21,11 @@ const menuItems: MenuItem[] = [
     title: 'Notifications',
     icon: 'chevron-forward',
   },
+  {
+    id: 'profile',
+    title: 'Danh sách Profile',
+    icon: 'chevron-forward',
+  },
 
   {
     id: 'help',
@@ -57,6 +62,8 @@ const Profile: React.FC = () => {
       navigation.navigate('Favorites');
     } else if (id === 'notifications') {
       navigation.navigate('Notifications');
+    }else if (id === 'profile') {
+      navigation.navigate('ProfileList');
     }
   };
 
@@ -64,6 +71,8 @@ const Profile: React.FC = () => {
     switch (id) {
       case 'notifications':
         return <Ionicons name="notifications-outline" size={20} color="#8F9BB3" />;
+      case 'profile':
+        return <Ionicons name="person-circle-outline" size={20} color="#8F9BB3" />;
       case 'help':
         return <Ionicons name="help-circle-outline" size={20} color="#8F9BB3" />;
       case 'terms':
