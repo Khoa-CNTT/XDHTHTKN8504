@@ -54,7 +54,7 @@ const HomeScreen: React.FC = () => {
     <View style={{ flex: 1 }}>
       <Header />
       <TouchableOpacity onPress={handleSearchPress} activeOpacity={0.7}>
-        <SearchBox editable={false} placeholder="Tìm kiếm bác sĩ..." />
+        <SearchBox editable={false} placeholder="Tìm kiếm ..." />
       </TouchableOpacity>
       <Banner />
 

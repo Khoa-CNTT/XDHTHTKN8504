@@ -19,27 +19,6 @@ type RootStackParamList = {
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 const bannerData = [
-  // {
-  //   id: '1',
-  //   title: 'Looking for\nSpecialist Doctors?',
-  //   subtitle: 'Schedule an appointment with\nour top doctors.',
-  //   image: require('../asset/img/hinh1.png'),
-  //   backgroundColor: '#4B9B9B',
-  // },
-  // {
-  //   id: '2',
-  //   title: 'Expert Medical\nCare For You',
-  //   subtitle: 'Get connected with the best\nmedical specialists.',
-  //   image: require('../asset/img/hinh1.png'),
-  //   backgroundColor: '#5B8CD5',
-  // },
-  // {
-  //   id: '3',
-  //   title: 'Your Health\nOur Priority',
-  //   subtitle: 'Quality healthcare at your\nfingertips.',
-  //   image: require('../asset/img/hinh1.png'),
-  //   backgroundColor: '#7C65B0',
-  // },
   {
     id: '1',
     title: "Chăm sóc tại nhà",

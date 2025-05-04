@@ -28,14 +28,14 @@ const Header: React.FC<HeaderProps> = ({ onMessagePress }) => {
       <View>
         
         <TouchableOpacity style={styles.locationButton}>
-          <Ionicons name="home" size={20} color="#333" />
+          <Ionicons name="home-outline" size={20} color="#333" />
           <Text style={styles.locationText}>Sức Khỏe</Text>
 
         </TouchableOpacity>
       </View>
       <View style={styles.iconsContainer}>
         <TouchableOpacity onPress={handleNotificationPress} style={styles.iconContainer}>
-          <Ionicons name="notifications" size={24} color="#333" />
+          <Ionicons name="notifications-outline" size={24} color="#333" />
           {notificationCount > 0 && (
             <View style={styles.notificationBadge}>
               <Text style={styles.notificationText}>{notificationCount}</Text>
@@ -43,7 +43,7 @@ const Header: React.FC<HeaderProps> = ({ onMessagePress }) => {
           )}
         </TouchableOpacity>
         <TouchableOpacity onPress={onMessagePress} style={styles.iconContainer}>
-          <Ionicons name="chatbubble" size={24} color="#333" />
+          <Ionicons name="chatbubble-outline" size={24} color="#333" />
         </TouchableOpacity>
       </View>
     </View>
