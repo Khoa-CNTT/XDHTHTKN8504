@@ -1,129 +1,160 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../navigation/StackNavigator';
-// import { useBookings } from '../context/BookingsContext';
-import Footer from '../components/Footer';
+import { useBookingStore } from '../stores/BookingStore';
+import { BookingStatus } from '../types/BookingStatus';
+import { User, CalendarDays, Clock, Stethoscope, DollarSign } from 'lucide-react-native';
+import Footer from "../components/Footer";
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
 type TabType = 'Upcoming' | 'Completed' | 'Canceled';
-type NavigationProp = StackNavigationProp<RootStackParamList>;
+
+const TABS: TabType[] = ['Upcoming', 'Completed', 'Canceled'];
+
+interface DetailRowProps {
+  label: string;
+  value: string;
+  icon: React.ReactElement;
+}
+
+const DetailRow: React.FC<DetailRowProps> = ({ label, value, icon }) => (
+  <View style={styles.detailRow}>
+    {icon}
+    <Text style={styles.detailLabel}>{label}</Text>
+    <Text style={styles.detailValue}>{value}</Text>
+  </View>
+);
 
 const MyBookings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('Upcoming');
-  // const { bookings, cancelBooking } = useBookings();
-  const navigation = useNavigation<NavigationProp>();
+  const { fetchBookings, filteredBookings, filterByStatus } = useBookingStore();
 
-  // const filteredBookings = bookings.filter(booking => {
-  //   if (activeTab === 'Upcoming') return booking.status === 'upcoming';
-  //   if (activeTab === 'Completed') return booking.status === 'completed';
-  //   return booking.status === 'cancelled';
-  // });
+  useEffect(() => {
+    fetchBookings();
+  }, []);
 
-  const handleReschedule = (booking: any) => {
-    navigation.navigate('BookAppointment', {
-      doctor: {
-        id: booking.doctorId,
-        name: booking.doctorName,
-        specialty: booking.doctorSpecialty,
-        image: booking.doctorImage,
-        clinic: booking.clinic,
+  useEffect(() => {
+    filterByStatus(activeTab as BookingStatus);
+  }, [activeTab]);
+
+  const formatTime = (isoDate: string | null | undefined, type: 'date' | 'time' | 'dateTime') => {
+    if (!isoDate) {
+      console.warn("Giá trị thời gian không hợp lệ (null hoặc undefined), trả về 'N/A'");
+      return 'N/A';
+    }
+    try {
+      let date;
+      // Kiểm tra xem chuỗi có vẻ chỉ là thời gian (ví dụ: HH:mm)
+      if (/^\d{2}:\d{2}$/.test(isoDate)) {
+        // Nếu chỉ là thời gian, tạo một đối tượng Date giả với ngày hiện tại
+        // để có thể sử dụng format của date-fns
+        const [hours, minutes] = isoDate.split(':');
+        const now = new Date();
+        date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hours, 10), parseInt(minutes, 10), 0);
+        if (isNaN(date.getTime())) {
+          console.warn(`Giá trị thời gian không hợp lệ: ${isoDate}, trả về 'N/A'`);
+          return 'N/A';
+        }
+        return format(date, 'HH:mm', { locale: vi });
+      } else {
+        // Nếu là định dạng ngày giờ đầy đủ
+        date = new Date(isoDate);
+        if (isNaN(date.getTime())) {
+          console.warn(`Giá trị ngày giờ không hợp lệ: ${isoDate}, trả về 'N/A'`);
+          return 'N/A';
+        }
+        if (type === 'date') {
+          return format(date, 'dd/MM/yyyy', { locale: vi });
+        } else if (type === 'time') {
+          return format(date, 'HH:mm', { locale: vi });
+        } else {
+          return format(date, 'HH:mm, dd/MM/yyyy', { locale: vi });
+        }
       }
-    });
+    } catch (error) {
+      console.error("Lỗi định dạng thời gian:", error);
+      return 'N/A';
+    }
   };
-
-  const renderAppointmentCard = (booking: any) => (
-    <View key={booking.id} style={styles.appointmentCard}>
-      <Text style={styles.dateTime}>{booking.date}</Text>
-      
-      <View style={styles.doctorInfo}>
-        <Image 
-          source={booking.doctorImage} 
-          style={styles.doctorImage}
-        />
-        <View style={styles.doctorDetails}>
-          <Text style={styles.doctorName}>{booking.doctorName}</Text>
-          <Text style={styles.specialty}>{booking.doctorSpecialty}</Text>
-          <View style={styles.locationContainer}>
-            <Ionicons name="location-outline" size={14} color="#8F9BB3" />
-            <Text style={styles.locationText}>{booking.clinic}</Text>
-          </View>
-        </View>
-      </View>
-
-      {activeTab === 'Upcoming' && (
-        <View style={styles.buttonContainer}>
-          {/* <TouchableOpacity 
-            style={styles.cancelButton}
-            onPress={() => cancelBooking(booking.id)}
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity> */}
-          {/* <TouchableOpacity 
-            style={styles.rescheduleButton}
-            onPress={() => handleReschedule(booking)}
-          >
-            <Text style={styles.rescheduleButtonText}>Reschedule</Text>
-          </TouchableOpacity> */}
-        </View>
-      )}
-
-      {activeTab === 'Completed' && (
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={styles.reBookButton}
-            onPress={() => handleReschedule(booking)}
-          >
-            <Text style={styles.reBookButtonText}>Re-Book</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.reviewButton}>
-            <Text style={styles.reviewButtonText}>Add Review</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
-  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>My Bookings</Text>
+      <Text style={styles.header}>Lịch hẹn của tôi</Text>
 
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'Upcoming' && styles.activeTab]}
-          onPress={() => setActiveTab('Upcoming')}
-        >
-          <Text style={[styles.tabText, activeTab === 'Upcoming' && styles.activeTabText]}>
-            Upcoming
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'Completed' && styles.activeTab]}
-          onPress={() => setActiveTab('Completed')}
-        >
-          <Text style={[styles.tabText, activeTab === 'Completed' && styles.activeTabText]}>
-            Completed
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'Canceled' && styles.activeTab]}
-          onPress={() => setActiveTab('Canceled')}
-        >
-          <Text style={[styles.tabText, activeTab === 'Canceled' && styles.activeTabText]}>
-            Canceled
-          </Text>
-        </TouchableOpacity>
+      {/* Tabs */}
+      <View style={styles.tabs}>
+        {TABS.map(tab => (
+          <TouchableOpacity
+            key={tab}
+            onPress={() => setActiveTab(tab)}
+            style={[styles.tab, activeTab === tab && styles.activeTab]}>
+            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+              {tab === 'Upcoming' ? 'Sắp tới' : tab === 'Completed' ? 'Đã hoàn thành' : 'Đã hủy'}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* {filteredBookings.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>No {activeTab.toLowerCase()} appointments</Text>
+      {/* Booking list */}
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {filteredBookings.map((booking) => (
+          <View key={booking._id} style={styles.card}>
+            <View style={styles.cardContent}>
+              <Image
+                source={require('../asset/img/hinh1.png')}
+                style={styles.image}
+              />
+              <View style={styles.info}>
+                <DetailRow
+                  label="Khách hàng"
+                  value={`${booking.profileId?.firstName || 'N/A'} ${booking.profileId?.lastName || 'N/A'}`}
+                  icon={<User size={22} color="#4f46e5" />}
+                />
+                <DetailRow
+                  label="Dịch vụ"
+                  value={booking.serviceId?.name || 'N/A'}
+                  icon={<Stethoscope size={22} color="#4f46e5" />}
+                />
+                {booking.repeatFrom && booking.repeatTo && (
+                  <DetailRow
+                    label="Ngày thực hiện"
+                    value={`${formatTime(booking.repeatFrom, "date")} - ${formatTime(booking.repeatTo, "date")}`}
+                    icon={<CalendarDays size={22} color="#4f46e5" />}
+                  />
+                )}
+                {booking.timeSlot && booking.timeSlot.start && booking.timeSlot.end && (
+                  <DetailRow
+                    label="Thời Gian"
+                    value={`${formatTime(booking.timeSlot.start, "time")} - ${formatTime(booking.timeSlot.end, "time")}`}
+                    icon={<Clock size={22} color="#4f46e5" />}
+                  />
+                )}
+                {booking.totalDiscount !== undefined && (
+                  <DetailRow
+                    label="Tiền nhận được"
+                    value={`${(booking.totalDiscount || 0).toLocaleString()}đ`}
+                    icon={<DollarSign size={22} color="#4f46e5" />}
+                  />
+                )}
+                {booking.notes ? <Text style={styles.notesText}>Ghi chú: {booking.notes}</Text> : null}
+                <Text style={{ marginTop: 8 }}>Trạng thái: <Text style={{ fontWeight: 'bold' }}>{
+                  booking.status === 'pending' ? 'Đang chờ' :
+                  booking.status === 'accepted' ? 'Đã xác nhận' :
+                  booking.status === 'completed' ? 'Đã hoàn thành' :
+                  booking.status === 'cancelled' ? 'Đã hủy' : booking.status
+                }</Text></Text>
+              </View>
+            </View>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity style={styles.cancelButton}>
+                <Text style={styles.buttonText}>Hủy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.rescheduleButton}>
+                <Text style={styles.buttonText}>Đổi lịch</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        ) : (
-          filteredBookings.map(renderAppointmentCard)
-        )} */}
+        ))}
       </ScrollView>
       <Footer />
     </View>
@@ -133,160 +164,103 @@ const MyBookings: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 50,
     backgroundColor: '#fff',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#2E3A59',
+  header: {
+    fontSize: 20,
+    fontWeight: 'bold',
     textAlign: 'center',
-    marginTop: 60,
-    marginBottom: 24,
+    marginBottom: 16,
   },
-  tabContainer: {
+  tabs: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EDF1F7',
+    justifyContent: 'space-around',
+    marginBottom: 16,
   },
   tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  tabText: {
+    color: '#aaa',
+    fontWeight: '600',
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: '#2E3A59',
-  },
-  tabText: {
-    fontSize: 14,
-    color: '#8F9BB3',
+    borderBottomColor: '#000',
   },
   activeTabText: {
-    color: '#2E3A59',
-    fontWeight: '500',
+    color: '#000',
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
+  scrollContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
   },
-  appointmentCard: {
+  card: {
     backgroundColor: '#fff',
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
   },
-  dateTime: {
-    fontSize: 14,
-    color: '#2E3A59',
-    marginBottom: 12,
-    fontWeight: '500',
-  },
-  doctorInfo: {
+  cardContent: {
     flexDirection: 'row',
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  doctorImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
+  image: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
     marginRight: 12,
   },
-  doctorDetails: {
+  info: {
     flex: 1,
+    justifyContent: 'flex-start',
   },
-  doctorName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2E3A59',
-    marginBottom: 4,
-  },
-  specialty: {
-    fontSize: 14,
-    color: '#8F9BB3',
-    marginBottom: 4,
-  },
-  locationContainer: {
+  detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 8,
   },
-  locationText: {
-    fontSize: 14,
-    color: '#8F9BB3',
-    marginLeft: 4,
+  detailLabel: {
+    marginLeft: 8,
+    fontWeight: 'bold',
+    flex: 0.4,
   },
-  buttonContainer: {
+  detailValue: {
+    flex: 0.6,
+  },
+  notesText: {
+    fontStyle: 'italic',
+    color: '#555',
+    marginTop: 8,
+  },
+  buttonRow: {
     flexDirection: 'row',
-    gap: 12,
+    justifyContent: 'space-between',
+    marginTop: 16,
   },
   cancelButton: {
-    flex: 1,
-    paddingVertical: 12,
-    backgroundColor: '#F7F9FC',
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    fontSize: 14,
-    color: '#2E3A59',
-    fontWeight: '500',
+    backgroundColor: '#E5E7EB',
+    padding: 10,
+    borderRadius: 10,
+    flex: 0.48,
   },
   rescheduleButton: {
-    flex: 1,
-    paddingVertical: 12,
-    backgroundColor: '#2E3A59',
-    borderRadius: 12,
-    alignItems: 'center',
+    backgroundColor: '#111827',
+    padding: 10,
+    borderRadius: 10,
+    flex: 0.48,
   },
-  rescheduleButtonText: {
-    fontSize: 14,
+  buttonText: {
     color: '#fff',
-    fontWeight: '500',
-  },
-  reBookButton: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: '#F7F9FC',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  reBookButtonText: {
-    fontSize: 14,
-    color: '#2E3A59',
-    fontWeight: '500',
-  },
-  reviewButton: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: '#2E3A59',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  reviewButtonText: {
-    fontSize: 14,
-    color: '#fff',
-    fontWeight: '500',
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: '#8F9BB3',
+    textAlign: 'center',
+    fontWeight: '600',
   },
 });
 
