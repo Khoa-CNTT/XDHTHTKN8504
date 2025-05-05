@@ -107,4 +107,31 @@ router.get(
     bookingController.getBookingForCustomer
 )
 
+router.delete(
+    '/delete',
+    bookingController.deleteAllBookings
+)
+
+router.get(
+    '/count-bookings', bookingController.countBookingsLast12Months
+)
+
+router.get(
+    '/get-all-bookings',
+    bookingController.getAllBookings
+)
+
+router.patch(
+    '/canceled/:bookingId',
+    auth,
+    authorizeRoles("admin", "family_member"),
+    bookingController.canceledBooking
+)
+
+router.get(
+    '/get-profiles',
+    auth,
+    authorizeRoles("admin"),
+    bookingController.getCompletedPatients
+)
 export default router

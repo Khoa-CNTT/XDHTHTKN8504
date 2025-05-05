@@ -20,8 +20,8 @@ import CareRecipientModal from "../components/CareRecipientModal";
 import ServiceModal from "../components/ServiceModal";
 import { useServicesStore } from "../stores/serviceStore";
 import { Profile } from "../types/profile";
+import {createBooking} from "../api/BookingService";
 
-import createBooking from "../api/BookingService";
 import { CreateBookingRequest } from "../types/CreateBookingRequest";
 
 const BookVisitScreen: React.FC = () => {

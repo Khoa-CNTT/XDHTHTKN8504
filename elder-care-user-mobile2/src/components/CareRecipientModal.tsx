@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 16, // Increased padding
-    backgroundColor: '#FFFFFF', // White background for items
+    backgroundColor: '#fff', // White background for items
     borderRadius: 12, // More rounded corners for items
     marginBottom: 12, // Increased margin
     shadowColor: 'rgba(0, 0, 0, 0.1)', // Subtle shadow
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   selectedItem: {
     backgroundColor: '#E0F7FA', // Lighter selected color
     borderColor: '#80DEEA', // Highlight border
-    shadowColor: 'rgba(0, 0, 0, 0.2)', // একটু গাঢ় ছায়া
+    shadowColor: 'rgba(0, 0, 0, 0.2)', //
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.9,
     shadowRadius: 6,
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     marginTop: 24, // Increased margin
   },
   disabledApplyBtn: {
-    backgroundColor: '#DEDDDD', // হালকা কমলা
+    backgroundColor: '#DEDDDD', //
   },
   applyText: {
     fontWeight: "bold",

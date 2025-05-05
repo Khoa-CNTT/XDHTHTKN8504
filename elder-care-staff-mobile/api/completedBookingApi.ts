@@ -43,7 +43,9 @@ const getCompletedBookings = async (
     return response.data.bookings; // Trả về danh sách booking hoàn thành
   } catch (error) {
     // Xử lý lỗi và trả về thông báo chi tiết
+
     console.log("Lỗi API lấy danh sách booking đã hoàn thành:", error);
+
     return []; // Trả về mảng rỗng nếu có lỗi
   }
 };

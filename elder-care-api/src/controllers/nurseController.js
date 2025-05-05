@@ -41,6 +41,23 @@ const nurseController = {
             });
         }
     },
+
+    getAllNurse: async (req, res) => {
+        try {
+            const { _id: adminId } = req.user;
+
+            const nurses = await Nurse.find()
+                .populate('userId', 'phone role')
+                .sort({ createdAt: -1 });
+
+            res.status(200).json({ nurses });
+        } catch (error) {
+            return res.status(500).json({
+                message: "Loi server",
+                error: error.message
+            })
+        }
+    }
 }
 
 export default nurseController;
