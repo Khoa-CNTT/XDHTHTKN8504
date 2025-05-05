@@ -509,6 +509,61 @@ const bookingController = {
         }
     },
 
+    getAllBookings: async (req, res) => {
+        try {
+            await Booking.find()
+                .populate('profileId')
+                .populate('serviceId')
+                .then((bookings) => {
+                    return res.status(200).json({
+                        message: 'Lấy tất cả booking thành công!',
+                        data: bookings
+                    });
+                })
+                .catch((error) => {
+                    console.error("Lỗi khi lấy tất cả booking:", error);
+                    return res.status(500).json({ message: 'Lỗi server', error: error.message });
+                });
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal server error",
+                error: error.message,
+            });
+        }
+    },
+
+    canceledBooking: async (req, res) => {
+        try {
+            const { _id: userId } = req.user;
+            const { bookingId } = req.params;
+
+            const booking = await Booking.findById(bookingId);
+
+            if (!booking) {
+                return res.status(404).json({ message: 'Không tìm thấy booking' });
+            }
+
+            if (userId.toString() !== booking.createdBy.toString()) {
+                return res.status(403).json({ message: 'Bạn không có quyền hủy booking này' });
+            }
+
+            if (booking.status === 'completed' || booking.status === 'cancelled') {
+                return res.status(400).json({ message: 'Booking đã được xử lý hoặc đã bị hủy trước đó' });
+            }
+
+            if (booking.status === 'pending') {
+                booking.status = 'cancelled';
+                await booking.save();
+            }
+
+            res.status(200).json({ message: 'Hủy booking thành công', booking });
+
+        } catch (error) {
+            console.error("Lỗi khi hủy booking:", error);
+            res.status(500).json({ message: 'Lỗi server', error: error.message });
+        }
+    },
+
     deleteAllBookings: async (req, res) => {
         try {
             await Booking.deleteMany();
