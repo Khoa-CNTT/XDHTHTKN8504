@@ -43,12 +43,8 @@ const getCompletedBookings = async (
     return response.data.bookings; // Trả về danh sách booking hoàn thành
   } catch (error) {
     // Xử lý lỗi và trả về thông báo chi tiết
-    console.error("Lỗi khi gọi API:", error);
-    if (error instanceof Error) {
-      throw new Error(error.message || "Đã có lỗi xảy ra khi lấy booking");
-    } else {
-      throw new Error("Đã có lỗi xảy ra khi lấy booking");
-    }
+    console.log("Lỗi API lấy danh sách booking đã hoàn thành:", error);
+    return []; // Trả về mảng rỗng nếu có lỗi
   }
 };
 export default getCompletedBookings;

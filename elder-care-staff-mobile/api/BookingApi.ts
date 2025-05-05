@@ -54,7 +54,7 @@ const getBookingById = async (bookingId: string): Promise<Booking> => {
 
     return data.booking;
   } catch (error) {
-    console.error("Lỗi khi gọi API:", error);
+    console.error("Errol from getBookingById:", error);
     throw new Error(
       error instanceof Error
         ? error.message
