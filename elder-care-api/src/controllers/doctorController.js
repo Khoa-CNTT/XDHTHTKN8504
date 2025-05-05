@@ -42,6 +42,27 @@ const docterController = {
                 error: error.message,
             })
         }
+    },
+
+    getAllDoctor: async (req, res) => {
+        try {
+            const { _id: adminId } = req.user;
+
+            const doctors = await Doctor.find()
+                .populate('userId')
+                .sort({ createdAt: -1 })
+                
+            return res.status(200).json({
+                message: "Lấy danh sách bác sĩ thành công",
+                doctors: doctors,
+            })
+        } catch (error) {
+            console.error("Lỗi:", error);
+            return res.status(500).json({
+                message: "Lỗi server",
+                error: error.message
+            });
+        }
     }
 }
 

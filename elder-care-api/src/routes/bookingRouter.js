@@ -127,4 +127,11 @@ router.patch(
     authorizeRoles("admin", "family_member"),
     bookingController.canceledBooking
 )
+
+router.get(
+    '/get-profiles',
+    auth,
+    authorizeRoles("admin"),
+    bookingController.getCompletedPatients
+)
 export default router

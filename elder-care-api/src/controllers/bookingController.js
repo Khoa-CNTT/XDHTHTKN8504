@@ -564,6 +564,38 @@ const bookingController = {
         }
     },
 
+    getCompletedPatients: async (req, res) => {
+        try {
+            const { _id: adminId } = req.user;
+
+            const bookings = await Booking.find({ status: 'completed' })
+                .populate('profileId')
+                .populate('createdBy', 'phone')
+                .sort({ updatedAt: -1 });
+
+            // Lấy danh sách bệnh nhân không trùng lặp
+            const uniqueProfiles = [];
+            const profileIds = new Set();
+
+            bookings.forEach(booking => {
+                const profile = booking.profileId;
+                if (profile && !profileIds.has(profile._id.toString())) {
+                    uniqueProfiles.push({
+                        ...profile.toObject(),
+                        bookedByPhone: booking.createdBy?.phone || '',
+                        bookingDate: booking.updatedAt,
+                    });
+                    profileIds.add(profile._id.toString());
+                }
+            });
+
+            res.status(200).json({ patients: uniqueProfiles });
+        } catch (error) {
+            console.error("Lỗi khi lấy danh sách bệnh nhân:", error);
+            res.status(500).json({ message: 'Lỗi server', error: error.message });
+        }
+    },
+
     deleteAllBookings: async (req, res) => {
         try {
             await Booking.deleteMany();
