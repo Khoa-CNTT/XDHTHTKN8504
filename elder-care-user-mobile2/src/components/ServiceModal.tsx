@@ -8,9 +8,11 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useServicesStore } from "../stores/serviceStore";
+import { ro } from "date-fns/locale";
 
 type ServiceModalProps = {
   visible: boolean;
+  role: string;
   onClose: () => void;
   onSelect: (serviceId: string) => void;
 };
@@ -19,14 +21,14 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
   visible,
   onClose,
   onSelect,
+  role,
 }) => {
-  const { services, isLoading } = useServicesStore();
+  const { isLoading, getServicesByRole } = useServicesStore();
+  
 
-//   useEffect(() => {
-//     if (visible) {
-//       fetchServices();
-//     }
-//   }, [visible]);
+  const filteredServices = getServicesByRole(role); // lọc tại đây
+  
+  
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -52,7 +54,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
             <ActivityIndicator />
           ) : (
             <FlatList
-              data={services}
+              data={filteredServices}
               keyExtractor={(item) => item._id}
               renderItem={({ item }) => (
                 <TouchableOpacity
@@ -79,5 +81,6 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
     </Modal>
   );
 };
+
 
 export default ServiceModal;
