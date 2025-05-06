@@ -1,4 +1,4 @@
 export interface TimeSlot {
-  start: string; // hoặc string nếu bạn xử lý sau
-  end: string;
+  start: Date; // hoặc string nếu bạn xử lý sau
+  end: Date;
 }

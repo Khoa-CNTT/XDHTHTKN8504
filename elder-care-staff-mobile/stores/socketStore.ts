@@ -4,11 +4,11 @@ import socket from "../utils/socket";
 import { Booking } from "@/types/Booking";
 import useAuthStore from "./authStore";
 
-type Payload = {
+type Payload =  Partial<{
   userId: string;
   role?: string; // optional
   scheduleId?: string; // optional
-};
+}>;
 interface SocketStore {
   socket: typeof socket;
   isConnected: boolean;
