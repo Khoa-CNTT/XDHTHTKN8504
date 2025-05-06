@@ -37,7 +37,7 @@ const HomeScreen: React.FC = () => {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Đang tải dịch vụ...</Text>
+        <Text style={styles.loadingText}>Đang tải dịch vụ...</Text>
       </View>
     );
   }
@@ -45,13 +45,13 @@ const HomeScreen: React.FC = () => {
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <Text>Lỗi: {error}</Text>
+        <Text style={styles.errorText}>Lỗi: {error}</Text>
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <Header />
       <TouchableOpacity onPress={handleSearchPress} activeOpacity={0.7}>
         <SearchBox editable={false} placeholder="Tìm kiếm ..." />
@@ -70,7 +70,7 @@ const HomeScreen: React.FC = () => {
           <TouchableOpacity
             style={[
               styles.serviceItem,
-              index % 2 === 0 ? { marginRight: 10 } : { marginLeft: 10 },
+              index % 2 === 0 ? { marginRight: 12 } : { marginLeft: 12 },
             ]}
             onPress={() => {
               console.log(`Đã nhấn vào: ${item.name}`);
@@ -79,7 +79,7 @@ const HomeScreen: React.FC = () => {
           >
             <View style={styles.imageContainer}>
               <Image
-                source={require("../asset/img/hinh1.png")}
+                source={require("../asset/img/hinh2.jpeg")}
                 style={styles.serviceImage}
                 resizeMode="cover"
               />
@@ -87,89 +87,91 @@ const HomeScreen: React.FC = () => {
             <Text style={styles.serviceName}>{item.name}</Text>
           </TouchableOpacity>
         )}
-        ListFooterComponent={
-          services.length > 6 && (
-            <TouchableOpacity
-              style={styles.seeAllContainer}
-              onPress={() => {
-                // Xử lý khi nhấn vào "Xem tất cả"
-              }}
-            >
-              {/* <Text style={styles.seeAll}>Xem tất cả</Text> */}
-            </TouchableOpacity>
-          )
-        }
-        contentContainerStyle={[styles.listContent, { paddingBottom: 100 }]} // Đệm để không che bởi Footer
-        style={{ flexGrow: 0 }}
+        contentContainerStyle={[styles.listContent, { paddingBottom: 120 }]}
+        style={{ flex: 1 }}
       />
-
-      {/* Footer cố định */}
-      <View style={styles.footerContainer}>
-        <Footer />
-      </View>
+      <Footer />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f9f9f9",
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f9f9f9",
+  },
+  loadingText: {
+    fontSize: 18,
+    color: "#555",
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f9f9f9",
+  },
+  errorText: {
+    fontSize: 18,
+    color: "#FF4500",
   },
   sectionContainer: {
-    paddingHorizontal: 16,
-    marginTop: 20,
+    paddingHorizontal: 20,
+    marginTop: 25,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#2c3e50",
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#34495e",
     marginBottom: 20,
+    letterSpacing: -0.5,
   },
   listContent: {
     paddingHorizontal: 16,
   },
   serviceItem: {
     flex: 0.5,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 15,
+    backgroundColor: "#ffffff",
+    borderRadius: 14,
+    padding: 12,
     alignItems: "center",
-    marginBottom: 15,
+    marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
     elevation: 3,
+    borderWidth: 0.5,
+    borderColor: "#e5e5e5",
   },
   imageContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: "100%",
+    height: 120,
+    borderRadius: 10,
     overflow: "hidden",
     marginBottom: 10,
-    backgroundColor: "#e0e0e0",
+    backgroundColor: "#f0f0f0",
     justifyContent: "center",
     alignItems: "center",
   },
   serviceImage: {
     width: "100%",
     height: "100%",
+    borderRadius: 10,
   },
   serviceName: {
-    fontSize: 16,
-    fontWeight: "500",
+    fontSize: 15,
+    fontWeight: "600",
     color: "#34495e",
     textAlign: "center",
   },
   seeAllContainer: {
-    marginTop: 15,
+    marginTop: 20,
     alignItems: "center",
   },
   seeAll: {
@@ -178,14 +180,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   footerContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff",
-    zIndex: 10,
-    elevation: 10,
+    marginTop: 30,
+    marginBottom: 30,
   },
 });
 
 export default HomeScreen;
+

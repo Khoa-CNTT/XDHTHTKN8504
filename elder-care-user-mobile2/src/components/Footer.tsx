@@ -1,11 +1,11 @@
 import React, { useState, useCallback } from 'react';
- import { View, TouchableOpacity, StyleSheet } from 'react-native';
- import { useNavigation, useRoute } from '@react-navigation/native';
- import { Ionicons } from '@expo/vector-icons';
- import { StackNavigationProp } from '@react-navigation/stack';
- import { RouteProp } from '@react-navigation/native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
 
- type RootStackParamList = {
+type RootStackParamList = {
   Home: undefined;
   MyBookings: undefined;
   Profile: undefined;
@@ -13,16 +13,25 @@ import React, { useState, useCallback } from 'react';
   Booking: undefined; // Changed from Payment to Booking
   DoctorDetails: { doctor: any };
   BookAppointment: { doctor: any };
- };
+};
 
- type NavigationProp = StackNavigationProp<RootStackParamList>;
- type RouteProps = RouteProp<RootStackParamList>;
+type NavigationProp = StackNavigationProp<RootStackParamList>;
+type RouteProps = RouteProp<RootStackParamList>;
 
- const Footer: React.FC = () => {
+const Footer: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
   const [activeTab, setActiveTab] = useState<keyof RootStackParamList | null>(route.name as keyof RootStackParamList | null);
   const [pressedTab, setPressedTab] = useState<keyof RootStackParamList | null>(null);
+  const [iconSizes, setIconSizes] = useState<{ [key in keyof RootStackParamList]: number }>({
+    Home: 28,
+    Map: 28,
+    Booking: 28,
+    MyBookings: 28,
+    Profile: 28,
+    DoctorDetails: 28,  // Added DoctorDetails
+    BookAppointment: 28,  // Added BookAppointment
+  });
 
   const handleNavigation = useCallback((screenName: keyof RootStackParamList) => {
     if (screenName === 'DoctorDetails' || screenName === 'BookAppointment') {
@@ -35,10 +44,23 @@ import React, { useState, useCallback } from 'react';
 
   const handlePressIn = useCallback((tabName: keyof RootStackParamList) => {
     setPressedTab(tabName);
+    setIconSizes(prevSizes => ({
+      ...prevSizes,
+      [tabName]: 36, // Increased size on press
+    }));
   }, []);
 
   const handlePressOut = useCallback(() => {
-    setPressedTab(null);
+    if (pressedTab) {
+      setIconSizes(prevSizes => {
+        const newSizes = { ...prevSizes };
+        for (const key in newSizes) {
+          newSizes[key as keyof RootStackParamList] = 28;
+        }
+        return newSizes;
+      });
+      setPressedTab(null);
+    }
   }, []);
 
   const getTabStyle = (tabName: keyof RootStackParamList) => {
@@ -50,11 +72,11 @@ import React, { useState, useCallback } from 'react';
   };
 
   const getIconSize = (tabName: keyof RootStackParamList) => {
-    return 28;
+    return iconSizes[tabName];
   };
 
   const getIconColor = (tabName: keyof RootStackParamList) => {
-    return activeTab === tabName || pressedTab === tabName ? '#00CC00' : '#8E8E93';
+    return activeTab === tabName || pressedTab === tabName ? '#37B44E' : '#BBBFBC';
   };
 
   return (
@@ -65,11 +87,13 @@ import React, { useState, useCallback } from 'react';
         onPressIn={() => handlePressIn('Home')}
         onPressOut={handlePressOut}
       >
+        <View style={{alignItems: 'center', justifyContent: 'center', transform: pressedTab === 'Home' ? [{ scale: 1.3 }] : [{scale: 1}]}}>
         <Ionicons
-          name="home-outline"
+          name="home"
           size={getIconSize('Home')}
           color={getIconColor('Home')}
         />
+        </View>
       </TouchableOpacity>
       <TouchableOpacity
         style={getTabStyle('Map')}
@@ -77,11 +101,13 @@ import React, { useState, useCallback } from 'react';
         onPressIn={() => handlePressIn('Map')}
         onPressOut={handlePressOut}
       >
+        <View style={{alignItems: 'center', justifyContent: 'center', transform: pressedTab === 'Map' ? [{ scale: 1.3 }] : [{scale: 1}]}}>
         <Ionicons
-          name="location-outline"
+          name="location"
           size={getIconSize('Map')}
           color={getIconColor('Map')}
         />
+        </View>
       </TouchableOpacity>
       <TouchableOpacity
         style={getTabStyle('Booking')}
@@ -89,11 +115,13 @@ import React, { useState, useCallback } from 'react';
         onPressIn={() => handlePressIn('Booking')}
         onPressOut={handlePressOut}
       >
+        <View style={{alignItems: 'center', justifyContent: 'center', transform: pressedTab === 'Booking' ? [{ scale: 1.3 }] : [{scale: 1}]}}>
         <Ionicons
-          name="book-outline" // Changed icon to represent Booking
+          name="book" // Changed icon to represent Booking
           size={getIconSize('Booking')}
           color={getIconColor('Booking')}
         />
+        </View>
       </TouchableOpacity>
       <TouchableOpacity
         style={getTabStyle('MyBookings')}
@@ -101,11 +129,13 @@ import React, { useState, useCallback } from 'react';
         onPressIn={() => handlePressIn('MyBookings')}
         onPressOut={handlePressOut}
       >
+        <View style={{alignItems: 'center', justifyContent: 'center', transform: pressedTab === 'MyBookings' ? [{ scale: 1.3 }] : [{scale: 1}]}}>
         <Ionicons
-          name="calendar-outline"
+          name="calendar"
           size={getIconSize('MyBookings')}
           color={getIconColor('MyBookings')}
         />
+        </View>
       </TouchableOpacity>
       <TouchableOpacity
         style={getTabStyle('Profile')}
@@ -113,17 +143,19 @@ import React, { useState, useCallback } from 'react';
         onPressIn={() => handlePressIn('Profile')}
         onPressOut={handlePressOut}
       >
+        <View style={{alignItems: 'center', justifyContent: 'center', transform: pressedTab === 'Profile' ? [{ scale: 1.3 }] : [{scale: 1}]}}>
         <Ionicons
-          name="settings-outline"
+          name="settings"
           size={getIconSize('Profile')}
           color={getIconColor('Profile')}
         />
+        </View>
       </TouchableOpacity>
     </View>
   );
- };
+};
 
- const styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     position: 'absolute', // Fix the Footer at the bottom
     bottom: 0,
@@ -148,6 +180,6 @@ import React, { useState, useCallback } from 'react';
     // borderWidth: 2,
     // padding: 8, // Adjust padding to accommodate the border
   },
- });
+});
 
- export default Footer;
+export default Footer;
