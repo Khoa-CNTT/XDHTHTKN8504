@@ -26,10 +26,8 @@ import ServiceDetails from '../screens/ServiceDetails';
 import { NavigationContainer } from '@react-navigation/native';
 import ProfileListScreen from '../screens/ProfileListScreen';
 import EditCareRecipientScreen from '../screens/EditCareRecipientScreen';
-
-
-
-
+import ServiceScreen from '../screens/ServiceScreen'; 
+import Seach from '../screens/Seach';
 
 export type RootStackParamList = {
   Onboarding: undefined;
@@ -54,6 +52,8 @@ export type RootStackParamList = {
   ServiceDetails: { serviceId: string };
   ProfileList: undefined;
   EditCareRecipient: { profileId: string };
+  ServiceScreen: undefined;
+  Seach: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -93,6 +93,9 @@ const StackNavigator = (): JSX.Element => {
         <Stack.Screen name="BookVisit" component={BookVisitScreen} />
         <Stack.Screen name="ProfileList" component={ProfileListScreen} />
         <Stack.Screen name="EditCareRecipient" component={EditCareRecipientScreen} />
+        <Stack.Screen name="ServiceScreen" component={ServiceScreen} />
+        <Stack.Screen name="Seach" component={Seach} />
+        
 
         <Stack.Screen name="BookingSuccess" component={BookingSuccessScreen} />
 
