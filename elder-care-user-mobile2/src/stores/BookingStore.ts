@@ -1,53 +1,63 @@
 import { create } from "zustand";
-import { Booking } from "../types/Booking"; 
+import { Booking } from "../types/Booking";
 import { BookingStatus } from "../types/BookingStatus";
-import  {getBookings}  from "../api/BookingService";
+import { getBookings } from "../api/BookingService";
 
 interface BookingState {
-  bookings: Booking[];
-  filteredBookings: Booking[];
-  selectedBooking: Booking | null;
-  loading: boolean;
-  error: string | null;
-  fetchBookings: () => Promise<void>;
-  filterByStatus: (status: BookingStatus | null) => void;
-  getBookingById: (id: string) => Booking | undefined;
+    bookings: Booking[];
+    filteredBookings: Booking[];
+    selectedBooking: Booking | null;
+    loading: boolean;
+    error: string | null;
+    selectedStatus: BookingStatus | null; // Thêm trạng thái lọc hiện tại
+    fetchBookings: () => Promise<void>;
+    filterByStatus: (status: BookingStatus | null) => void;
+    getBookingById: (id: string) => Booking | undefined;
+    setSelectedStatus: (status: BookingStatus | null) => void; // Hàm cập nhật trạng thái lọc
 }
 
 export const useBookingStore = create<BookingState>((set, get) => ({
-  bookings: [],
-  filteredBookings: [],
-  selectedBooking: null,
-  loading: false,
-  error: null,
+    bookings: [],
+    filteredBookings: [],
+    selectedBooking: null,
+    loading: false,
+    error: null,
+    selectedStatus: 'accepted', // Khởi tạo trạng thái lọc là 'accepted'
 
-  fetchBookings: async () => {
-    set({ loading: true, error: null });
+    fetchBookings: async () => {
+        set({ loading: true, error: null });
 
-    try {
-      const bookings = await getBookings();
-      console.log("Fetched bookings:", bookings);
-      
-      set({ bookings, filteredBookings: bookings, loading: false });
-    } catch (err: any) {
-      set({
-        error: err?.message || "Lỗi khi tải danh sách lịch đặt.",
-        loading: false,
-      });
-    }
-  },
+        try {
+            const bookings = await getBookings();
+            console.log("Fetched bookings:", bookings);
 
-  filterByStatus: (status: BookingStatus | null) => {
-    const allBookings = get().bookings;
-    if (!status) {
-      set({ filteredBookings: allBookings });
-    } else {
-      const filtered = allBookings.filter((b) => b.status === status);
-      set({ filteredBookings: filtered });
-    }
-  },
+            set({ bookings, loading: false });
+            get().filterByStatus(get().selectedStatus); // Lọc ngay sau khi fetch
+        } catch (err: any) {
+            set({
+                error: err?.message || "Lỗi khi tải danh sách lịch đặt.",
+                loading: false,
+            });
+        }
+    },
 
-  getBookingById: (id: string) => {
-    return get().bookings.find((b) => b._id === id);
-  },
+    filterByStatus: (status: BookingStatus | null) => {
+        set({ selectedStatus: status }); // Cập nhật trạng thái lọc khi lọc
+        const allBookings = get().bookings;
+        if (!status) {
+            set({ filteredBookings: allBookings });
+        } else {
+            const filtered = allBookings.filter((b) => b.status === status);
+            set({ filteredBookings: filtered });
+        }
+    },
+
+    getBookingById: (id: string) => {
+        return get().bookings.find((b) => b._id === id);
+    },
+
+    setSelectedStatus: (status: BookingStatus | null) => {
+        set({ selectedStatus: status });
+        get().filterByStatus(status); // Lọc lại khi trạng thái lọc thay đổi
+    },
 }));
