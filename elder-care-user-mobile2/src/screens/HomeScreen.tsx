@@ -17,7 +17,8 @@ import { useServicesStore } from "../stores/serviceStore";
 
 type RootStackParamList = {
   Home: undefined;
-  AllDoctors: undefined;
+  ServiceScreen: { serviceId: string };
+  Seach: undefined;
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -31,7 +32,7 @@ const HomeScreen: React.FC = () => {
   }, []);
 
   const handleSearchPress = () => {
-    navigation.navigate("AllDoctors");
+    navigation.navigate("Seach");
   };
 
   if (isLoading) {
@@ -54,7 +55,7 @@ const HomeScreen: React.FC = () => {
     <View style={styles.container}>
       <Header />
       <TouchableOpacity onPress={handleSearchPress} activeOpacity={0.7}>
-        <SearchBox editable={false} placeholder="Tìm kiếm ..." />
+        <SearchBox editable={false} placeholder="Tìm kiếm dịch vụ ..." />
       </TouchableOpacity>
       <Banner />
 
@@ -68,24 +69,24 @@ const HomeScreen: React.FC = () => {
         keyExtractor={(item) => item._id}
         renderItem={({ item, index }) => (
           <TouchableOpacity
-            style={[
-              styles.serviceItem,
-              index % 2 === 0 ? { marginRight: 12 } : { marginLeft: 12 },
-            ]}
-            onPress={() => {
-              console.log(`Đã nhấn vào: ${item.name}`);
-            }}
-            activeOpacity={0.8}
-          >
-            <View style={styles.imageContainer}>
-              <Image
-                source={require("../asset/img/hinh2.jpeg")}
-                style={styles.serviceImage}
-                resizeMode="cover"
-              />
-            </View>
-            <Text style={styles.serviceName}>{item.name}</Text>
-          </TouchableOpacity>
+          style={[
+            styles.serviceItem,
+            index % 2 === 0 ? { marginRight: 12 } : { marginLeft: 12 },
+          ]}
+          onPress={() => {
+            navigation.navigate("ServiceScreen", { serviceId: item._id });
+          }}
+          activeOpacity={0.8}
+        >
+          <View style={styles.imageContainer}>
+            <Image
+              source={require("../asset/img/hinh2.jpeg")}
+              style={styles.serviceImage}
+              resizeMode="cover"
+            />
+          </View>
+          <Text style={styles.serviceName}>{item.name}</Text>
+        </TouchableOpacity>
         )}
         contentContainerStyle={[styles.listContent, { paddingBottom: 120 }]}
         style={{ flex: 1 }}
@@ -98,7 +99,7 @@ const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#fff",
   },
   loadingContainer: {
     flex: 1,
@@ -118,16 +119,17 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: "#FF4500",
+    color: "#red",
   },
   sectionContainer: {
     paddingHorizontal: 20,
     marginTop: 25,
+    
   },
   sectionTitle: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#34495e",
+    color: "black",
     marginBottom: 20,
     letterSpacing: -0.5,
   },
@@ -167,7 +169,7 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#34495e",
+    color: "#black",
     textAlign: "center",
   },
   seeAllContainer: {
