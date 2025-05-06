@@ -41,6 +41,8 @@ const useAuthStore = create<AuthState>((set) => ({
       if (!user || !token || !extraInfo) {
         throw new Error("Dữ liệu trả về không hợp lệ");
       }
+      console.log("token from useAuthStore", token);
+      
 
       // Lưu trữ vào AsyncStorage
       await AsyncStorage.setItem("token", token);

@@ -417,55 +417,65 @@ const scheduleController = {
     }
   },
   getNextScheduleForStaff: async (req, res) => {
-    const { staffId } = req.user;
+  const staffId = req.user._id;
+  console.log("staffID: ", staffId);
+  try {
+    // Lấy thời gian hiện tại theo múi giờ UTC
+    const now = moment.utc(); // Lấy thời gian UTC hiện tại
 
-    try {
-      const now = dayjs();
+    // Lấy mốc thời gian bắt đầu và kết thúc của ngày hôm nay theo UTC
+    const startOfDay = now.clone().startOf("day");
+    const endOfDay = now.clone().endOf("day");
 
-      // Lấy mốc thời gian bắt đầu và kết thúc của ngày hôm nay
-      const startOfDay = dayjs().startOf("day");
-      const endOfDay = dayjs().endOf("day");
+    console.log("startOfDay (UTC)", startOfDay.format()); // Kiểm tra thời gian bắt đầu của ngày UTC
+    console.log("endOfDay (UTC)", endOfDay.format()); // Kiểm tra thời gian kết thúc của ngày UTC
 
-      // Truy vấn các lịch làm việc trong hôm nay
-      const schedules = await Schedule.find({
-        staffId,
-        status: { $nin: ["canceled", "completed"] },
-        date: { $gte: startOfDay.toDate(), $lte: endOfDay.toDate() }, // Lọc theo ngày hôm nay
-      }).sort({ date: 1, "timeSlots.start": 1 });
+    // Truy vấn các lịch làm việc trong hôm nay (theo UTC)
+    const schedules = await Schedule.find({
+      staffId: "67ffc8b1601e349d5c4fcab8",
+      date: { $gte: startOfDay.toDate(), $lte: endOfDay.toDate() },
+    }).sort({ date: 1, "timeSlots.start": 1 });
 
-      // Tìm ca hiện tại (đang diễn ra)
-      const currentSchedule = schedules.find((schedule) =>
-        schedule.timeSlots.some((slot) => {
-          const start = dayjs(slot.start);
-          const end = dayjs(slot.end);
-          return now.isBetween(start, end, null, "[)"); // Kiểm tra ca đang diễn ra
-        })
-      );
+    console.log("schedules", schedules);
 
-      if (currentSchedule) {
-        return res.status(200).json(currentSchedule); // Trả về ca hiện tại
-      }
+    // Tìm ca hiện tại (đang diễn ra)
+    const currentSchedule = schedules.find((schedule) =>
+      schedule.timeSlots.some((slot) => {
+        const start = dayjs.utc(slot.start); // Đảm bảo làm việc với thời gian UTC
+        const end = dayjs.utc(slot.end); // Đảm bảo làm việc với thời gian UTC
+        console.log("start (UTC)", start.format("YYYY-MM-DD HH:mm:ss"));
+        console.log("end (UTC)", end.format("YYYY-MM-DD HH:mm:ss"));
 
-      // Nếu không có ca hiện tại, tìm ca sắp tới
-      const upcomingSchedule = schedules.find((schedule) =>
-        schedule.timeSlots.some((slot) => {
-          const start = dayjs(slot.start);
-          return now.isBefore(start); // Tìm ca chưa diễn ra
-        })
-      );
+        // Kiểm tra ca đang diễn ra trong ngày
+        return now.isBetween(start, end, null, "[)");
+      })
+    );
 
-      if (!upcomingSchedule) {
-        return res
-          .status(200)
-          .json({ message: "Không có ca sắp tới trong ngày hôm nay." }); // Không có ca nào trong hôm nay
-      }
-
-      return res.status(200).json(upcomingSchedule); // Trả về ca sắp tới
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ error: "Lỗi server" });
+    if (currentSchedule) {
+      return res.status(200).json(currentSchedule); // Trả về ca hiện tại
     }
+
+    // Nếu không có ca hiện tại, tìm ca sắp tới
+    const upcomingSchedule = schedules.find((schedule) =>
+      schedule.timeSlots.some((slot) => {
+        const start = dayjs.utc(slot.start); // Đảm bảo làm việc với thời gian UTC
+        return now.isBefore(start); // Kiểm tra ca chưa diễn ra
+      })
+    );
+
+    if (!upcomingSchedule) {
+      return res
+        .status(200)
+        .json({ message: "Không có ca sắp tới trong ngày hôm nay." }); // Không có ca nào trong hôm nay
+    }
+
+    return res.status(200).json(upcomingSchedule); // Trả về ca sắp tới
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Lỗi server" });
+  }
   },
+
   getNextScheduleForUser: async (req, res) => {
     const { userId } = req.user;
 
