@@ -1,38 +1,33 @@
-import React, { useState, useEffect } from "react";
- import {
+import React, { useState } from "react";
+import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  FlatList,
   Image,
- } from "react-native";
- import { useNavigation } from "@react-navigation/native";
- import { StackNavigationProp } from "@react-navigation/stack";
- import { Ionicons } from "@expo/vector-icons";
- import Footer from "../components/Footer";
- import CareRecipientModal from "../components/CareRecipientModal";
- import { Profile } from "../types/profile";
- import { useServicesStore } from "../stores/serviceStore";
- import { Service } from "../types/Service";
+  Alert,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { Ionicons } from "@expo/vector-icons";
+import Footer from "../components/Footer";
+import CareRecipientModal from "../components/CareRecipientModal";
+import { Profile } from "../types/profile";
 
- type RootStackParamList = {
+type RootStackParamList = {
   AddCareRecipient: undefined;
   ProfileList: undefined;
-  BookVisit: undefined;
- };
+  BookVisit: { role: "doctor" | "nurse"; careRecipient: Profile };
+};
 
- type NavigationProp = StackNavigationProp<RootStackParamList>;
+type NavigationProp = StackNavigationProp<RootStackParamList>;
 
- const BookingScreen: React.FC = () => {
+const BookingScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedCareRecipient, setSelectedCareRecipient] = useState<Profile | undefined>(undefined);
-  const { services, fetchServices, isLoading, error } = useServicesStore();
-
-  useEffect(() => {
-    fetchServices();
-  }, [fetchServices]);
+  const [selectedCareRecipient, setSelectedCareRecipient] = useState<
+    Profile | undefined
+  >(undefined);
 
   const handleCareRecipientClick = () => {
     setModalVisible(true);
@@ -46,21 +41,16 @@ import React, { useState, useEffect } from "react";
     setSelectedCareRecipient(profile);
   };
 
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Đang tải dịch vụ...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Lỗi: {error}</Text>
-      </View>
-    );
-  }
+  const handleSelectCareType = (type: "doctor" | "nurse") => {
+    if (!selectedCareRecipient) {
+      Alert.alert("Thông báo", "Vui lòng chọn người được chăm sóc trước.");
+      return;
+    }
+    navigation.navigate("BookVisit", {
+      role: type,
+      careRecipient: selectedCareRecipient,
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -70,14 +60,21 @@ import React, { useState, useEffect } from "react";
           <Ionicons name="menu-outline" size={33} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Chọn dịch vụ</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("ProfileList")} activeOpacity={0.7}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("ProfileList")}
+          activeOpacity={0.7}
+        >
           <Ionicons name="person-circle-outline" size={33} color="#333" />
         </TouchableOpacity>
       </View>
 
       {/* Care Recipient */}
       <View style={styles.careRecipient}>
-        <TouchableOpacity style={styles.careBox} onPress={handleCareRecipientClick} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.careBox}
+          onPress={handleCareRecipientClick}
+          activeOpacity={0.8}
+        >
           <View style={styles.avatarContainer}>
             {selectedCareRecipient ? (
               <Text style={styles.avatarLetter}>
@@ -89,41 +86,57 @@ import React, { useState, useEffect } from "react";
           </View>
           <Text style={styles.careText}>
             {selectedCareRecipient
-              ? `${selectedCareRecipient.firstName} ${selectedCareRecipient.lastName || ""}`
+              ? `${selectedCareRecipient.firstName} ${
+                  selectedCareRecipient.lastName || ""
+                }`
               : "Chọn người được chăm sóc"}
           </Text>
           <Ionicons name="pencil-outline" size={22} color="#777" />
         </TouchableOpacity>
       </View>
 
-      {/* Dịch vụ Homage tiêu đề */}
-      <Text style={styles.sectionTitle}>Dịch vụ của chúng tôi</Text>
+      {/* Section title */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Chọn loại dịch vụ</Text>
 
-      {/* Danh sách dịch vụ */}
-      <FlatList
-        data={services}
-        keyExtractor={(item) => item._id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() => navigation.navigate("BookVisit")}
-            activeOpacity={0.8}
-          >
-            <Image
-              source={require("../asset/img/hinh1.png")}
-              style={styles.cardImage}
-              resizeMode="cover"
-            />
-            <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>{item.name}</Text>
-              <Text style={styles.cardDescription}>{item.description}</Text>
-            </View>
-            <Ionicons name="chevron-forward-outline" size={22} color="#999" />
-          </TouchableOpacity>
-        )}
-        contentContainerStyle={styles.serviceList}
-        showsVerticalScrollIndicator={false}
-      />
+        {/* Doctor Card */}
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => handleSelectCareType("doctor")}
+        >
+          <Image
+            source={require("../asset/img/DoctorAvatar.jpg")} // Thay bằng ảnh thực tế của bạn
+            style={styles.cardImage}
+            resizeMode="cover"
+          />
+          <View style={styles.cardContent}>
+            <Text style={styles.cardTitle}>Bác sĩ</Text>
+            <Text style={styles.cardDescription}>
+              Chăm sóc chuyên môn y tế tại nhà
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward-outline" size={22} color="#999" />
+        </TouchableOpacity>
+
+        {/* Nurse Card */}
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => handleSelectCareType("nurse")}
+        >
+          <Image
+            source={require("../asset/img/nurse_avatar.png")} // Thay bằng ảnh thực tế của bạn
+            style={styles.cardImage}
+            resizeMode="cover"
+          />
+          <View style={styles.cardContent}>
+            <Text style={styles.cardTitle}>Điều dưỡng</Text>
+            <Text style={styles.cardDescription}>
+              Chăm sóc sinh hoạt và theo dõi sức khoẻ
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward-outline" size={22} color="#999" />
+        </TouchableOpacity>
+      </View>
 
       {/* Footer cố định */}
       <View style={styles.footerFixed}>
@@ -138,30 +151,12 @@ import React, { useState, useEffect } from "react";
       />
     </View>
   );
- };
+};
 
- const styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9f9f9", // Light background
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    fontSize: 16,
-    color: "#555",
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  errorText: {
-    fontSize: 16,
-    color: "red",
+    backgroundColor: "#f9f9f9",
   },
   header: {
     flexDirection: "row",
@@ -194,7 +189,7 @@ import React, { useState, useEffect } from "react";
     borderWidth: 1,
   },
   avatarContainer: {
-    backgroundColor: "#c4a484",////////////
+    backgroundColor: "#c4a484",
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -212,17 +207,15 @@ import React, { useState, useEffect } from "react";
     fontSize: 17,
     color: "#444",
   },
+  sectionContainer: {
+    paddingHorizontal: 20,
+    marginTop: 25,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 18,
-    paddingHorizontal: 20,
-    marginTop: 25,
-  },
-  serviceList: {
-    paddingHorizontal: 20,
-    paddingBottom: 130, // Adjust for footer
   },
   card: {
     flexDirection: "row",
@@ -267,6 +260,6 @@ import React, { useState, useEffect } from "react";
     zIndex: 10,
     elevation: 10,
   },
- });
+});
 
- export default BookingScreen;
+export default BookingScreen;

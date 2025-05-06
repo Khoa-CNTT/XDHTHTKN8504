@@ -1,41 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
-import MapView from "react-native-maps";
+import { View, Text, Image, StyleSheet, TouchableOpacity, Linking } from "react-native";
 import { Button } from "react-native-paper";
-import { MapPin, Phone, MessageCircle } from "lucide-react-native"; // Importing Lucide icons
+import { MapPin, Phone, MessageCircle } from "lucide-react-native";
 import { router } from "expo-router";
 import TooEarlyModal from "../../../components/TooEarlyModal";
 import useScheduleStore from "../../../stores/scheduleStore";
 import { ScheduleStatus } from "../../../types/ScheduleStatus";
 import { useScheduleSocket } from "../../../hooks/useScheduleSocket";
-import updateScheduleStatus from "../../../api/ScheduleStatusApi";
+import ScheduleStatusApi from "../../../api/ScheduleStatusApi";
+import { MapWithRoute } from "@/components/MapWithRoute";
 
 const ShiftWorkScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
-
   const nearestSchedule = useScheduleStore((state) => state.nearestSchedule);
   const getNearestSchedule = useScheduleStore(
     (state) => state.getNearestSchedule
   );
   const updateSchedule = useScheduleStore((state) => state.updateSchedule);
-
-  // Lấy lịch gần nhất khi load màn hình
-  useEffect(() => {
-    getNearestSchedule();
-  }, []);
-
   // Kết nối socket với lịch hiện tại
-  useScheduleSocket(nearestSchedule?._id || "");
+  useScheduleSocket(nearestSchedule?.schedule._id || "");
 
   // Hàm cập nhật trạng thái lịch
   const handleUpdateStatus = async (newStatus: ScheduleStatus) => {
     if (!nearestSchedule) return;
     try {
-      const updatedSchedule = await updateScheduleStatus(
-        nearestSchedule._id,
+      const updatedSchedule = await ScheduleStatusApi.updateScheduleStatus(
+        nearestSchedule.schedule._id,
         newStatus
       );
       updateSchedule(updatedSchedule); // cập nhật local store
+      getNearestSchedule();
     } catch (error) {
       console.error("Không thể cập nhật trạng thái:", error);
     }
@@ -103,16 +97,14 @@ const ShiftWorkScreen = () => {
         );
       default:
         return (
-          <Text style={styles.actionButtonText}>
-            Trở về màn hình chính
-          </Text>
+          <Text style={styles.actionButtonText}>Trở về màn hình chính</Text>
         );
     }
   };
 
   if (!nearestSchedule) {
     return (
-      <View style={styles.centered}>
+      <View>
         <Text>Không có lịch gần nhất.</Text>
       </View>
     );
@@ -120,40 +112,24 @@ const ShiftWorkScreen = () => {
 
   return (
     <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        initialRegion={{
-          latitude: 31.2001,
-          longitude: 29.9187,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        }}
+      <MapWithRoute 
+        customerAddress={nearestSchedule.customerAddress}
       />
 
       <View style={styles.overlay}>
-        <TouchableOpacity style={styles.showWayBtn}>
-          <MapPin size={16} color="#000" />
-          <Text style={styles.showWayText}>Hiển thị đường đi</Text>
-        </TouchableOpacity>
-
         <View style={styles.arrivalInfo}>
-          <Text style={styles.expectedLabel}>
-            Thời gian dự kiến đến với khách
-          </Text>
           <View style={styles.userInfo}>
             <Image
               source={{
-                uri:
-                  // nearestSchedule.patientAvatar ||
-                  "https://via.placeholder.com/40",
+                uri: "https://via.placeholder.com/40", // Placeholder ảnh bệnh nhân
               }}
               style={styles.avatar}
             />
             <View>
               <Text style={styles.userName}>
-                {nearestSchedule.patientName || "Tên khách hàng"}
+                {nearestSchedule.schedule.patientName || "Tên khách hàng"}
               </Text>
-              <Text style={styles.travelInfo}>Chưa có thông tin</Text>
+              <Text style={styles.travelInfo}>{nearestSchedule.serviceName}</Text>
             </View>
           </View>
         </View>
@@ -163,7 +139,14 @@ const ShiftWorkScreen = () => {
             mode="outlined"
             icon={() => <Phone size={20} />}
             style={styles.button}
-            onPress={() => {}}
+            onPress={() => {
+              const phoneNumber = nearestSchedule.phoneNumber;
+              if (phoneNumber) {
+                Linking.openURL(`tel:${phoneNumber}`);
+              } else {
+                console.log("Số điện thoại không hợp lệ");
+              }
+            }}
           >
             Call
           </Button>
@@ -171,7 +154,9 @@ const ShiftWorkScreen = () => {
             mode="outlined"
             icon={() => <MessageCircle size={20} />}
             style={styles.button}
-            onPress={() => {router.push("/screens/chat")}}
+            onPress={() => {
+              router.push("/screens/chat");
+            }}
           >
             Chat
           </Button>
@@ -182,7 +167,7 @@ const ShiftWorkScreen = () => {
           onClose={() => setModalVisible(false)}
         />
 
-        {renderActionButtonByStatus(nearestSchedule.status)}
+        {renderActionButtonByStatus(nearestSchedule.schedule.status)}
       </View>
     </View>
   );
@@ -217,10 +202,6 @@ const styles = StyleSheet.create({
   arrivalInfo: {
     marginBottom: 16,
   },
-  expectedLabel: {
-    fontSize: 12,
-    color: "gray",
-  },
   userInfo: {
     flexDirection: "row",
     alignItems: "center",
@@ -246,23 +227,18 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   actionButtonText: {
-    color: "white",
+    padding: 14,
+    color: "#fff",
     textAlign: "center",
-    padding: 15,
     fontWeight: "bold",
   },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginVertical: 12,
+    marginTop: 16,
   },
   button: {
-    flex: 0.48,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    width: "48%",
   },
 });
 

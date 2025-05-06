@@ -1,12 +1,19 @@
 import { create } from "zustand";
 import getSchedules from "@/api/scheduleApi"; // API fetch lịch trình
-import { getNearestSchedule as getNearestScheduleUtil } from "@/utils/getNearestSchedule";
 import { Schedule } from "../types/Schedule";
+import ScheduleStatusApi from "../api/ScheduleStatusApi"; // API lấy lịch trình gần nhất
+interface nearestSchedule {
+  serviceName: string;
+  customerAddress: string;
+  phoneNumber: string;
+  schedule: Schedule;
+}
+
 
 interface ScheduleStore {
   schedules: Schedule[];
   selectedDay: Date;
-  nearestSchedule: Schedule | null;
+  nearestSchedule: nearestSchedule | null;
   loading: boolean;
   error: string | null;
 
@@ -15,7 +22,7 @@ interface ScheduleStore {
   updateSchedule: (updated: Schedule) => void;
   addSchedule: (schedule: Schedule) => void;
   removeSchedule: (scheduleId: string) => void;
-  getNearestSchedule: () => void;
+  getNearestSchedule: () => Promise<void>;
   fetchSchedules: () => Promise<void>;
 }
 
@@ -46,23 +53,28 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
       schedules: state.schedules.filter((s) => s._id !== scheduleId),
     })),
 
-  getNearestSchedule: () => {
-    const schedules = get().schedules;
-    const nearestSchedule = getNearestScheduleUtil(schedules);
-    set({ nearestSchedule });
+  // Lấy lịch trình gần nhất của nhân viên
+  getNearestSchedule: async () => {
+    try {
+      // Gọi hàm lấy lịch trình gần nhất
+      const schedule = await ScheduleStatusApi.getNextScheduleForStaff();
+      if (!schedule) {
+        throw new Error("Không có lịch trình gần nhất");
+      }
+      // Cập nhật trạng thái nearestSchedule
+      set({ nearestSchedule: schedule });
+    } catch (error: any) {
+      console.log("Error fetching nearest schedule:", error);
+      set({ error: error?.message || "Lỗi khi tải lịch trình gần nhất" });
+    }
   },
 
+  // Fetch các lịch trình
   fetchSchedules: async () => {
     set({ loading: true, error: null });
     try {
-    ;
-      
       const schedules = await getSchedules();
-      
       set({ schedules, loading: false });
-
-      const nearest = getNearestScheduleUtil(schedules);
-      set({ nearestSchedule: nearest });
     } catch (error: any) {
       set({
         error: error?.message || "Lỗi khi tải lịch trình",

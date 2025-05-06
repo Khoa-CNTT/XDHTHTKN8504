@@ -23,13 +23,32 @@ interface ScheduleItemProps {
 const ScheduleItem: React.FC<ScheduleItemProps> = ({ schedule, onPress }) => {
   const { _id, patientName, timeSlots, status, serviceName } = schedule;
 
-  const time = timeSlots
-    .map((slot) => {
-      const start = format(new Date(slot.startTime), "HH:mm");
-      const end = format(new Date(slot.endTime), "HH:mm");
-      return `${start} - ${end}`;
-    })
-    .join(", ");
+  // let time = "Chưa rõ thời gian";
+
+  // if (timeSlots?.start && timeSlots?.end) {
+  //   const start = format(new Date(timeSlots.start), "HH:mm");
+  //   const end = format(new Date(timeSlots.end), "HH:mm");
+  //   time = `${start} - ${end}`;
+  // }
+
+  let time = "Chưa rõ thời gian";
+
+  if (Array.isArray(timeSlots)) {
+    time = timeSlots
+      .map((slot) => {
+        if (!slot.start || !slot.end) return null;
+        try {
+          const start = format(new Date(slot.start), "HH:mm");
+          const end = format(new Date(slot.end), "HH:mm");
+          return `${start} - ${end}`;
+        } catch (err) {
+          console.warn("Lỗi chuyển đổi ngày giờ:", slot, err);
+          return null;
+        }
+      })
+      .filter(Boolean)
+      .join(", ");
+  }
 
   const statusLabel = getStatusLabel(status);
 

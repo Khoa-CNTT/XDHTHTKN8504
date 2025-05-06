@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ScrollView,
   Text,
@@ -21,6 +21,15 @@ import ServiceModal from "../components/ServiceModal";
 import { useServicesStore } from "../stores/serviceStore";
 import { Profile } from "../types/profile";
 import {createBooking} from "../api/BookingService";
+
+import { useRoute, RouteProp } from "@react-navigation/native";
+
+type BookVisitRouteParams = {
+  BookVisitScreen: {
+    careRecipient?: Profile;
+    role?: string;
+  };
+};
 
 import { CreateBookingRequest } from "../types/CreateBookingRequest";
 
@@ -48,6 +57,33 @@ const BookVisitScreen: React.FC = () => {
   const selectedService = useServicesStore((state) =>
     state.getServiceById(selectedServiceId ?? "")
   );
+  const [role, setRole] = useState<string | undefined>(undefined);
+
+  const route = useRoute<RouteProp<BookVisitRouteParams, "BookVisitScreen">>();
+
+  useEffect(() => {
+    if (route.params?.careRecipient) {
+      setCareRecipient(route.params.careRecipient);
+    }
+    if (route.params?.role) {
+      setRole(route.params.role);
+    }
+  }, [route.params]);
+
+  const handleResetForm = () => {
+   
+    setSelectedServiceId(null);
+    setNote("");
+    setAddress("");
+    setSelectedDate(null);
+    setStartDate(null);
+    setEndDate(null);
+    setStartTime(null);
+    setEndTime(null);
+    setMode("single");
+  };
+
+
   const handleGetCurrentLocation = async () => {
     try {
       setIsGettingLocation(true);
@@ -96,26 +132,56 @@ const BookVisitScreen: React.FC = () => {
   const formatTime = (date: Date | null): string => {
     return date ? date.toTimeString().slice(0, 5) : "";
   };
+  const validateBookingData = () => {
+    if (!careRecipient) {
+      alert("Vui lòng chọn người nhận chăm sóc.");
+      return false;
+    }
+    if (!selectedServiceId) {
+      alert("Vui lòng chọn dịch vụ.");
+      return false;
+    }
+    if (!startTime || !endTime) {
+      alert("Vui lòng chọn thời gian bắt đầu và kết thúc.");
+      return false;
+    }
+    if (mode === "range" && (!startDate || !endDate)) {
+      alert("Vui lòng chọn khoảng ngày đặt lịch.");
+      return false;
+    }
+    if (mode === "single" && !selectedDate) {
+      alert("Vui lòng chọn ngày đặt lịch.");
+      return false;
+    }
+    return true;
+  };
+
   // Hàm gửi request tạo booking
   const handleBookingSubmit = async () => {
-    if (!careRecipient || !selectedServiceId || !startTime || !endTime) {
-      alert("Vui lòng điền đầy đủ thông tin bắt buộc.");
+    if (!validateBookingData()) {
       return;
     }
+    let repeatFrom: string;
+    let repeatTo: string;
 
-    // Xác định ngày bắt đầu và kết thúc lặp (single hoặc repeat mode)
-    // const fromDate =
-    //   mode === "single" && selectedDate ? selectedDate : startDate!;
-    // const toDate = mode === "single" && selectedDate ? selectedDate : endDate!;
-    // Nếu người dùng chọn 1 ngày duy nhất:
-    const selectedDate = new Date(); // ví dụ ngày 2025-04-30
-
-    const repeatFrom = new Date(
-      selectedDate.setHours(0, 0, 0, 0)
-    ).toISOString();
-    const repeatTo = new Date(
-      selectedDate.setHours(23, 59, 59, 999)
-    ).toISOString();
+    if (mode === "single" && selectedDate) {
+      const start = new Date(selectedDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(selectedDate);
+      end.setHours(23, 59, 59, 999);
+      repeatFrom = start.toISOString();
+      repeatTo = end.toISOString();
+    } else if (mode === "range" && startDate && endDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      repeatFrom = start.toISOString();
+      repeatTo = end.toISOString();
+    } else {
+      alert("Vui lòng chọn ngày hợp lệ.");
+      return;
+    }
 
     // Tạo timeSlot từ giờ bắt đầu và kết thúc
     const timeSlot = {
@@ -153,7 +219,7 @@ const BookVisitScreen: React.FC = () => {
             <Ionicons name="chevron-back-outline" size={24} color="#2E3A59" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Đặt lịch hẹn</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleResetForm}>
             <Text style={styles.resetText}>Thiết lập lại</Text>
           </TouchableOpacity>
         </View>
@@ -191,6 +257,7 @@ const BookVisitScreen: React.FC = () => {
 
         <ServiceModal
           visible={modalServiceVisible}
+          role= {role}
           onClose={() => setModalServiceVisible(false)}
           onSelect={(id) => {
             setSelectedServiceId(id);
