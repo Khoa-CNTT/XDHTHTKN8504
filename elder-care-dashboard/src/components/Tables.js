@@ -536,7 +536,8 @@ export function BookingTable({ data, functions, doctor }) {
           {/* <th className={thclass}>{doctor ? "Điều dưỡng" : "Y Tá"}</th> */}
           <th className={thclass}>Khách hàng</th>
           <th className={thclass}>Điều dưỡng</th>
-          <th className={thclass}>Ngày Tạo</th>
+          <th className={thclass}>Ngày bắt đầu</th>
+          <th className={thclass}>Ngày kết thúc</th>
           <th className={thclass}>Dịch vụ</th>
           <th className={thclass}>Trạng thái</th>
           <th className={thclass}>Hành Động</th>
@@ -561,9 +562,10 @@ export function BookingTable({ data, functions, doctor }) {
                 <h4 className="text-sm font-medium">{item.user.title}</h4>
               </div>
             </td>
-            <td className={tdclass}>Điều dưỡng</td>
+            <td className={tdclass}>Tên người điều dưỡng</td>
             <td className={tdclass}>12 Tháng 5, 2021</td>
-            <td className={tdclass}>{item.title}</td>
+            <td className={tdclass}>12 Tháng 5, 2021</td>
+            <td className={tdclass}>Vật lý trị liệu</td>
             <td className={tdclass}>
               <span class="py-1 px-4 bg-subMain text-subMain bg-opacity-10 text-xs rounded-xl">
                 Đã thanh toán
