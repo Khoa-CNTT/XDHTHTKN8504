@@ -3,11 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../navigation/StackNavigator'; // Import RootStackParamList
+import { RootStackParamList } from '../navigation/StackNavigator';
 
-// Define the type for the navigation prop
 type HeaderScreenNavigationProp = StackNavigationProp<
-  RootStackParamList, // Use RootStackParamList here
+  RootStackParamList,
   "Notifications"
 >;
 
@@ -17,7 +16,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onMessagePress }) => {
   const navigation = useNavigation<HeaderScreenNavigationProp>();
-  const notificationCount = 3; // Example notification count
+  const notificationCount = 0;
 
   const handleNotificationPress = () => {
     navigation.navigate('Notifications');
@@ -25,17 +24,15 @@ const Header: React.FC<HeaderProps> = ({ onMessagePress }) => {
 
   return (
     <View style={styles.container}>
-      <View>
-        
-        <TouchableOpacity style={styles.locationButton}>
-          <Ionicons name="home-outline" size={20} color="#333" />
-          <Text style={styles.locationText}>Sức Khỏe</Text>
-
-        </TouchableOpacity>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>
+          <Text style={{ color: '#37B44E' }}>Elder</Text>
+          <Text style={{ color: '#BBBFBC' }}>Care</Text>
+        </Text>
       </View>
       <View style={styles.iconsContainer}>
         <TouchableOpacity onPress={handleNotificationPress} style={styles.iconContainer}>
-          <Ionicons name="notifications-outline" size={24} color="#333" />
+          <Ionicons name="notifications-outline" size={26} color="#333" />
           {notificationCount > 0 && (
             <View style={styles.notificationBadge}>
               <Text style={styles.notificationText}>{notificationCount}</Text>
@@ -43,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({ onMessagePress }) => {
           )}
         </TouchableOpacity>
         <TouchableOpacity onPress={onMessagePress} style={styles.iconContainer}>
-          <Ionicons name="chatbubble-outline" size={24} color="#333" />
+          <Ionicons name="chatbubble-outline" size={26} color="#333" />
         </TouchableOpacity>
       </View>
     </View>
@@ -56,47 +53,45 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 44,
-    paddingBottom: 16,
+    paddingTop: 50,
+    paddingBottom: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#EEEEEE',
   },
-  locationLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
+  titleContainer: {
+    flex: 1,
+    alignItems: 'flex-start',
   },
-  locationButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  locationText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginHorizontal: 4,
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#2C3E50',
   },
   iconsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   iconContainer: {
-    marginLeft: 16,
+    marginLeft: 20,
     position: 'relative',
   },
   notificationBadge: {
     position: 'absolute',
-    top: -5,
-    right: -5,
-    backgroundColor: 'red',
-    borderRadius: 10,
-    width: 20,
-    height: 20,
+    top: -2,
+    right: -2,
+    backgroundColor: '#FF4500',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
   notificationText: {
     color: 'white',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
+    marginTop: -1,
   },
 });
 
