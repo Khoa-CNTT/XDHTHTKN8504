@@ -5,7 +5,8 @@ import initData from "../utils/initData";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../navigation/StackNavigator";
-import useScheduleStore from "../stores/scheduleStore"; // Import useScheduleStore
+import useScheduleStore from "../stores/scheduleStore";
+import { loadAllSounds } from "../utils/soundService";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -15,41 +16,51 @@ const useInitService = () => {
   const token = useAuthStore((state) => state.token);
   const user = useAuthStore((state) => state.user);
 
-  const navigation = useNavigation<NavigationProp>(); 
-  // Phục hồi session ngay khi app khởi chạy
+  const navigation = useNavigation<NavigationProp>();
+
+  // Load âm thanh thông báo
+  useEffect(() => {
+    loadAllSounds();
+  }, []);
+
+  // Phục hồi session
   useEffect(() => {
     restoreSession();
   }, [restoreSession]);
 
-  // Khi có token rồi mới connect + init data
+  // Khi đã có token và user thì khởi tạo kết nối
   useEffect(() => {
     const afterLoginInit = async () => {
       if (token) {
-        console.log("token from init: ", token);
-        
         try {
-          await initData();
-          connect();
-          const schedules = useScheduleStore.getState().schedules;
-           if (schedules.length > 0) {
-            schedules.forEach((scheduleUser) => {
-            const scheduleId = scheduleUser._id;
-            useSocketStore.getState().join({ scheduleId });
-            console.log("✅ Đã tham gia phòng với scheduleId:", scheduleId);
-            })}
+          connect(); // Kết nối socket (sẽ gọi listenToEvents bên trong)
+          await initData(); // Gọi API lấy dữ liệu
 
-          // Điều hướng đến màn hình "Home" và loại bỏ tất cả màn hình trước đó
+          // Tham gia phòng user
+          if (user?._id) {
+            join({ userId: user._id });
+          }
+
+          // Tham gia các phòng schedule
+          const schedules = useScheduleStore.getState().schedules;
+          if (schedules.length > 0) {
+            schedules.forEach((s) => {
+              const scheduleId = s._id;
+              useSocketStore.getState().join({ scheduleId });
+            });
+          }
+
+          // Điều hướng tới Home
           navigation.reset({
             index: 0,
-            routes: [{ name: "Home" }], 
+            routes: [{ name: "Home" }],
           });
-        } catch (error) {
-          console.error("Có lỗi khi khởi tạo dịch vụ:", error);
+        } catch (err) {
+          console.error("Lỗi khởi tạo:", err);
         }
       }
     };
 
-    // Kiểm tra và gọi afterLoginInit khi token hoặc user._id thay đổi
     if (token && user) {
       afterLoginInit();
     }

@@ -2,13 +2,16 @@ import { useEffect } from "react";
 import useAuthStore from "@/stores/authStore";
 import { useSocketStore } from "@/stores/socketStore";
 import initService from "@/utils/initService"; // Hàm khởi tạo dịch vụ
+import { loadAllSounds } from "@/utils/soundService";
 
 const useInitService = () => {
   const { restoreSession } = useAuthStore.getState();
   const { connect, join, disconnect } = useSocketStore.getState();
   const token = useAuthStore((state) => state.token);
   const user = useAuthStore((state) => state.user);
-
+  useEffect(() => {
+    loadAllSounds();
+  }, []);
   useEffect(() => {
     const init = async () => {
       // Phục hồi phiên đăng nhập
@@ -16,8 +19,6 @@ const useInitService = () => {
 
       // Nếu đã có token, kết nối socket
       if (token) {
-        console.log("token from useInitService", token);
-        
         connect();
         if (user?._id) {
           join({
@@ -28,17 +29,14 @@ const useInitService = () => {
           console.error("Không tìm thấy user ID");
         }
       } else {
-        // Nếu không còn token (người dùng đã logout), ngắt kết nối socket
         disconnect();
         console.log("Token không tồn tại, ngắt kết nối socket.");
       }
-
-      // Khởi tạo các dịch vụ khác (gọi API ban đầu)
       await initService();
     };
 
     init();
-  }, [token]); // Chỉ chạy lại khi token thay đổi
+  }, [token]); 
 };
 
 export default useInitService;

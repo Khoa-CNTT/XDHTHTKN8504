@@ -14,7 +14,6 @@ type NavigationProp = StackNavigationProp<RootStackParamList>;
 const WorkScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const Schedules = useScheduleStore((state) => state.schedules);
-  console.log("from screen: ", Schedules);
   
   return (
     <View style={styles.container}>

@@ -1,4 +1,3 @@
-// src/stores/socketStore.ts
 import { create } from "zustand";
 import socket from "../utils/socket";
 import { Booking } from "@/types/Booking";
@@ -31,13 +30,15 @@ export const useSocketStore = create<SocketStore>((set) => {
       socket.on("bookingAccepted", (bookingId: string) => {
         console.log(`😋: Booking được chấp thuận: ${bookingId}`);
         useScheduleStore.getState().fetchSchedules();
+        useScheduleStore.getState().getNearestSchedule();
       });
 
       socket.on("connect", () => {
         console.log("✅ Socket connected:", socket.id);
         set({ isConnected: true });
         const userId = currentUser?._id;
-        socket.emit("join", { userId });
+        const role = currentUser?.role;
+        socket.emit("join", { userId, role });
         listenToEvents(); // Lắng nghe sự kiện sau khi kết nối
       });
 
@@ -58,10 +59,9 @@ export const useSocketStore = create<SocketStore>((set) => {
     newBooking: null,
 
     connect: () => {
+      listenToEvents();
       if (!socket.connected) {
-        console.log("Đang kết nối socket...");
         socket.connect();
-        listenToEvents();
         set({ isConnected: true });
       }
     },

@@ -34,7 +34,8 @@ const getNextScheduleForStaff = async (): Promise<nearestSchedule | null> => {
     return response.data as nearestSchedule;
   } catch (error: any) {
     // Xử lý lỗi tốt hơn, log ra chi tiết để debug
-    console.error("Error fetching schedule:", error);
+    console.log("Error fetching schedule:", error);
+    return null; // Hoặc ném lỗi nếu cần thiết
 
     // Nếu lỗi từ API, kiểm tra thông báo lỗi
     const message =

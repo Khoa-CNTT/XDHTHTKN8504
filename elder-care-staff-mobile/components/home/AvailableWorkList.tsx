@@ -5,12 +5,16 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  ScrollView,
+  FlatList,
+  ScrollView, // Đảm bảo ScrollView được sử dụng đúng cách
 } from "react-native";
 import { Card, Divider } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import useScheduleStore from "../../stores/scheduleStore";
 import { router } from "expo-router";
+import { Schedule } from "@/types/Schedule";
+
+
 
 const AvailableWorkList = () => {
   const schedules = useScheduleStore((state) => state.schedules);
@@ -29,8 +33,32 @@ const AvailableWorkList = () => {
     );
   }
 
+  const renderItem = ({ item }: { item: Schedule }) => (
+    <View key={item._id}>
+      <TouchableOpacity
+        onPress={() => router.push(`/screens/schedule-detail/${item._id}`)}
+      >
+        <View style={styles.jobItem}>
+          <Ionicons
+            name="location-outline"
+            size={20}
+            color="#007bff"
+            style={styles.icon}
+          />
+          <View style={styles.jobInfo}>
+            <Text style={styles.jobTitle}>{item.patientName}</Text>
+            <Text style={styles.jobSubtitle}>{item.serviceName}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+      <Divider style={styles.divider} />
+    </View>
+  );
+
   return (
-    <ScrollView>
+    <ScrollView style={styles.scrollView}>
+      {" "}
+      {/* Thêm ScrollView vào đây */}
       <Card style={styles.card}>
         <Card.Title
           titleStyle={{ fontSize: 16, fontWeight: "bold" }}
@@ -50,37 +78,14 @@ const AvailableWorkList = () => {
               Không có công việc trong hôm nay
             </Text>
           ) : (
-            todayJobs.map((job, index) => (
-              <View key={job._id}>
-                <TouchableOpacity
-                  onPress={() =>
-                    router.push(`/screens/schedule-detail/${job._id}`)
-                  }
-                >
-                  <View style={styles.jobItem}>
-                    <Ionicons
-                      name="location-outline"
-                      size={20}
-                      color="#007bff"
-                      style={styles.icon}
-                    />
-                    <View style={styles.jobInfo}>
-                      <Text style={styles.jobTitle}>{job.patientName}</Text>
-                      <Text style={styles.jobSubtitle}>
-                        {job.serviceName} -{" "}
-                        {new Date(job.date).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-                {index < todayJobs.length - 1 && (
-                  <Divider style={styles.divider} />
-                )}
-              </View>
-            ))
+            <FlatList
+              data={todayJobs}
+              renderItem={renderItem}
+              keyExtractor={(item) => item._id}
+              initialNumToRender={10}
+              maxToRenderPerBatch={5}
+              windowSize={5}
+            />
           )}
         </Card.Content>
       </Card>
@@ -89,6 +94,9 @@ const AvailableWorkList = () => {
 };
 
 const styles = StyleSheet.create({
+  scrollView: {
+    flex: 1, // Đảm bảo ScrollView chiếm toàn bộ không gian có sẵn
+  },
   card: {
     margin: 10,
     borderRadius: 20,
@@ -114,6 +122,9 @@ const styles = StyleSheet.create({
   jobSubtitle: {
     fontSize: 14,
     color: "#666",
+    flexWrap: "wrap", // Cho phép text xuống dòng
+    width: 300,
+    flexShrink: 1,
   },
   divider: {
     marginVertical: 5,
@@ -125,7 +136,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   icon: {
-    marginRight: 10, // Đảm bảo các icon thẳng hàng với nội dung
+    marginRight: 10,
   },
 });
 

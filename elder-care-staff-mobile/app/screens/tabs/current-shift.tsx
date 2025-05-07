@@ -52,6 +52,15 @@ const ShiftWorkScreen = () => {
             <Text style={styles.actionButtonText}>Chờ khách hàng sẵn sàng</Text>
           </TouchableOpacity>
         );
+      case "waiting_for_nurse":
+        return (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleUpdateStatus("on_the_way")}
+          >
+            <Text style={styles.actionButtonText}>Bắt đầu di chuyển</Text>
+          </TouchableOpacity>
+        );
       case "on_the_way":
         return (
           <TouchableOpacity
@@ -81,11 +90,21 @@ const ShiftWorkScreen = () => {
         );
       case "check_out":
         return (
-          <Text style={styles.actionButtonText}>
-            Chờ khách xác nhận hoàn tất
-          </Text>
+          <TouchableOpacity
+            style={styles.actionButton}
+          >
+            <Text style={styles.actionButtonText}>Chờ khách hàng xác nhận hoàn thành</Text>
+          </TouchableOpacity>
         );
       case "completed":
+        return (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push("/screens/tabs/home")}
+          >
+            <Text style={styles.actionButtonText}>Trở về màn hình chính</Text>
+          </TouchableOpacity>
+        );
       case "cancelled":
         return (
           <TouchableOpacity

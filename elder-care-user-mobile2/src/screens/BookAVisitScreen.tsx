@@ -21,6 +21,7 @@ import ServiceModal from "../components/ServiceModal";
 import { useServicesStore } from "../stores/serviceStore";
 import { Profile } from "../types/profile";
 import {createBooking} from "../api/BookingService";
+import { useModalStore } from "../stores/modalStore";
 
 import { useRoute, RouteProp } from "@react-navigation/native";
 
@@ -204,7 +205,13 @@ const BookVisitScreen: React.FC = () => {
 
     try {
       await createBooking(bookingData);
-      alert("Đặt lịch thành công!");
+      useModalStore.getState().showModal(
+        "Đặt lịch thành công",
+        'Đơn đặt lịch của bạn đã được gửi đi, bạn sẽ nhận được thông báo khi có người nhận lịch.',
+        {
+          type: "popup",
+          autoHideDuration: 3000,
+        });
       navigation.goBack();
     } catch (error: any) {
       alert("Lỗi khi đặt lịch: " + error.message);

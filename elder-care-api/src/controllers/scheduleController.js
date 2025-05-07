@@ -7,8 +7,7 @@ import moment2 from "moment-timezone";
 import Service from "../models/Service.js";
 import Doctor from "../models/Doctor.js";
 import Nurse from "../models/Nurse.js";
-import User from "../models/User.js";
-import { emitScheduleStatus } from "../controllers/socketController.js";
+import { getIO } from "../config/socketConfig.js";
 import dayjs from "dayjs";
 
 const updateBookingStatus = async (bookingId) => {
@@ -144,54 +143,8 @@ const scheduleController = {
     }
   },
 
-  // updateScheduleStatus: async (req, res) => {
-  //   try {
-  //     const { _id } = req.user;
-  //     const { scheduleId } = req.params;
-  //     const { status } = req.body;
-
-  //     // Cập nhật trạng thái schedule
-  //     const updatedSchedule = await Schedule.findByIdAndUpdate(
-  //       scheduleId,
-  //       { status: status },
-  //       { new: true }
-  //     );
-
-  //     if (!updatedSchedule) {
-  //       return res.status(404).json({ message: "Schedule không tồn tại" });
-  //     }
-
-  //     // Cập nhật trạng thái booking nếu cần
-  //     const updatedBooking = await updateBookingStatus(
-  //       updatedSchedule.bookingId
-  //     );
-
-  //     // Emit realtime nếu có
-  //     const targetUserId = updatedSchedule.userId;
-
-  //     emitScheduleStatus(targetUserId, {
-  //       message: "Lịch hẹn của bạn đã được cập nhật",
-  //       scheduleId: updatedSchedule._id,
-  //       newStatus: updatedSchedule.status,
-  //       bookingId: updatedSchedule.bookingId,
-  //       bookingStatus: updatedBooking?.status || null, // Dùng optional chaining để tránh lỗi
-  //     });
-
-  //     return res.status(200).json({
-  //       message: updatedBooking
-  //         ? "Cập nhật trạng thái thành công và booking đã được hoàn thành"
-  //         : "Cập nhật trạng thái schedule thành công",
-  //       schedule: updatedSchedule,
-  //       booking: updatedBooking || null,
-  //     });
-  //   } catch (error) {
-  //     console.error("🔥 Lỗi khi cập nhật trạng thái:", error);
-  //     return res
-  //       .status(500)
-  //       .json({ message: "Lỗi server", error: error.message });
-  //   }
-  // },
   updateScheduleStatus: async (req, res) => {
+    const io = getIO();
     try {
       const { _id } = req.user;
       const { scheduleId } = req.params;
@@ -213,17 +166,16 @@ const scheduleController = {
         updatedSchedule.bookingId
       );
 
-      // Emit realtime vào phòng socket liên quan đến scheduleId
-      const targetUserId = updatedSchedule.userId;
 
       // Thay đổi: Emit vào phòng có tên là `schedule_${scheduleId}`
-      emitScheduleStatus(`schedule_${scheduleId}`, {
-        message: "Lịch hẹn của bạn đã được cập nhật",
-        scheduleId: updatedSchedule._id,
-        newStatus: updatedSchedule.status,
-        bookingId: updatedSchedule.bookingId,
-        bookingStatus: updatedBooking?.status || null, // Dùng optional chaining để tránh lỗi
-      });
+            io.to(`schedule_${scheduleId}`).emit("scheduleStatusUpdated", {
+                message: "Lịch hẹn của bạn đã được cập nhật",
+                scheduleId: updatedSchedule._id,
+                newStatus: updatedSchedule.status,
+                bookingId: updatedSchedule.bookingId,
+                bookingStatus: updatedBooking?.status || null,
+              });
+          
 
       return res.status(200).json({
         message: updatedBooking
