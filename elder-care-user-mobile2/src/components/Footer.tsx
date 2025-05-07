@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#FAFAFA', // Light background
+    backgroundColor: '#fff', // Light background
     paddingVertical: 10,
     borderTopWidth: 0.5,
     borderTopColor: '#D3D3D3', // Light gray border

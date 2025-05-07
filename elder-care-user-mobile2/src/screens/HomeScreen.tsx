@@ -17,7 +17,8 @@ import { useServicesStore } from "../stores/serviceStore";
 
 type RootStackParamList = {
   Home: undefined;
-  AllDoctors: undefined;
+  ServiceScreen: { serviceId: string };
+  Seach: undefined;
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -31,7 +32,7 @@ const HomeScreen: React.FC = () => {
   }, []);
 
   const handleSearchPress = () => {
-    navigation.navigate("AllDoctors");
+    navigation.navigate("Seach");
   };
 
   if (isLoading) {
@@ -54,7 +55,7 @@ const HomeScreen: React.FC = () => {
     <View style={styles.container}>
       <Header />
       <TouchableOpacity onPress={handleSearchPress} activeOpacity={0.7}>
-        <SearchBox editable={false} placeholder="Tìm kiếm ..." />
+        <SearchBox editable={false} placeholder="Tìm kiếm dịch vụ ..." />
       </TouchableOpacity>
       <Banner />
 
@@ -68,21 +69,26 @@ const HomeScreen: React.FC = () => {
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={styles.serviceItem}
-            onPress={() => {
-              console.log(`Đã nhấn vào: ${item.name}`);
-            }}
-            activeOpacity={0.8}
-          >
-            <View style={styles.imageContainer}>
-              <Image
-                source={require("../asset/img/hinh2.jpeg")}
-                style={styles.serviceImage}
-                resizeMode="cover"
-              />
-            </View>
-            <Text style={styles.serviceName}>{item.name}</Text>
-          </TouchableOpacity>
+
+          style={[
+            styles.serviceItem,
+            index % 2 === 0 ? { marginRight: 12 } : { marginLeft: 12 },
+          ]}
+          onPress={() => {
+            navigation.navigate("ServiceScreen", { serviceId: item._id });
+          }}
+          activeOpacity={0.8}
+        >
+          <View style={styles.imageContainer}>
+            <Image
+              source={require("../asset/img/hinh2.jpeg")}
+              style={styles.serviceImage}
+              resizeMode="cover"
+            />
+          </View>
+          <Text style={styles.serviceName}>{item.name}</Text>
+        </TouchableOpacity>
+
         )}
         contentContainerStyle={[styles.listContent, { paddingBottom: 5 }]}
         style={{ flex: 1 }}
@@ -98,9 +104,8 @@ const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9f9f9",
-    paddingBottom: 20,
-    width: "100%",
+    backgroundColor: "#fff",
+
   },
   loadingContainer: {
     flex: 1,
@@ -120,17 +125,20 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: "#e74c3c",
+    color: "#red",
   },
   sectionContainer: {
     paddingHorizontal: 20,
-    marginTop: 30,
+    marginTop: 25,
+    
+
   },
   sectionTitle: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#2c3e50",
-    marginBottom: 15,
+    color: "black",
+    marginBottom: 20,
+
     letterSpacing: -0.5,
   },
   listContent: {
@@ -161,6 +169,18 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   serviceName: {
+
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#black",
+    textAlign: "center",
+  },
+  seeAllContainer: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  seeAll: {
+
     fontSize: 16,
     fontWeight: "600",
     color: "#2c3e50",
