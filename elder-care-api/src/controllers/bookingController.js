@@ -302,6 +302,8 @@ const bookingController = {
                 p.userId.toString() === staff._id.toString()
             );
 
+            let fullName = "Không rõ";
+
             if (staff.role === 'doctor') {
                 const doctor = await Doctor.findOne({ userId: staff._id });
                 if (doctor) {
@@ -319,7 +321,7 @@ const bookingController = {
                 booking.participants.push({
                     userId: staff._id,
                     role: staff.role,
-                    name: fullName,
+                    fullName: fullName,
                     acceptedAt: new Date(),
                 });
             }

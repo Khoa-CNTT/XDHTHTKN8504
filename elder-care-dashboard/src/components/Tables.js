@@ -542,7 +542,7 @@ export function BookingTable({ data, functions, doctor }) {
       <tbody>
         {data.map((item, index) => {
           const userFullName = `${item?.profileId?.firstName || "Ẩn"} ${item?.profileId?.lastName || ""}`;
-          // const staffFullName = `${item?.}`
+          const staffFullName = `${item?.participants?.fullName || "lỗi"}`;
           const serviceName = item?.serviceId?.name || "Không rõ";
           const startDate = new Date(item?.repeatFrom).toLocaleDateString("vi-VN");
           const endDate = new Date(item?.repeatTo).toLocaleDateString("vi-VN");
@@ -568,7 +568,7 @@ export function BookingTable({ data, functions, doctor }) {
                 </div>
               </td>
 
-              <td className={tdclass}>Tên điều dưỡng</td>
+              <td className={tdclass}>{ staffFullName }</td>
 
               <td className={tdclass}>{startDate}</td>
               <td className={tdclass}>{endDate}</td>
