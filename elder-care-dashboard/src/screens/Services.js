@@ -7,13 +7,17 @@ import { Button, Select } from '../components/Form';
 import { ServiceTable } from '../components/Tables';
 import { servicesData, sortsDatas } from '../components/Datas';
 import AddEditServiceModal from '../components/Modals/AddEditServiceModal';
-import { getServices } from '../api/services.js';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchServices } from '../store/serviceSlice';
+
 
 function Services() {
   const [isOpen, setIsOpen] = React.useState(false);
   const [data, setData] = React.useState({});
   const [status, setStatus] = React.useState(sortsDatas.service[0]);
   const [servicesDatas, setServicesDatas] = useState([]);
+  const dispatch = useDispatch();
+  const { services, loading, error } = useSelector((state) => state.service);
 
   const onCloseModal = () => {
     setIsOpen(false);
@@ -26,17 +30,11 @@ function Services() {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getServices();
-        setServicesDatas(data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-    fetchData();
-  }, []);
+    dispatch(fetchServices());
+  }, [dispatch]);
 
+  console.log('services', services);
+  
   return (
     <Layout>
       {isOpen && (
@@ -92,7 +90,7 @@ function Services() {
           />
         </div>
         <div className="mt-8 w-full overflow-x-scroll">
-          <ServiceTable data={servicesData.slice(1, 100)} onEdit={onEdit} />
+          <ServiceTable data={services} onEdit={onEdit} />
         </div>
       </div>
     </Layout>

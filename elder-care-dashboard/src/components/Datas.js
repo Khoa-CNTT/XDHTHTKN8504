@@ -52,7 +52,7 @@ export const MenuDatas = [
     icon: HiOutlineUsers,
   },
   {
-    title: "Nurse",
+    title: "Staff",
     path: "/nurses",
     icon: RiUserHeartLine,
   },

@@ -78,10 +78,10 @@ export function Transactiontable({ data, action, functions }) {
             <td className={tdclass}>
               <span
                 className={`py-1 px-4 ${item.status === "Paid"
-                    ? "bg-subMain text-subMain"
-                    : item.status === "Pending"
-                      ? "bg-orange-500 text-orange-500"
-                      : item.status === "Cancel" && "bg-red-600 text-red-600"
+                  ? "bg-subMain text-subMain"
+                  : item.status === "Pending"
+                    ? "bg-orange-500 text-orange-500"
+                    : item.status === "Cancel" && "bg-red-600 text-red-600"
                   } bg-opacity-10 text-xs rounded-xl`}
               >
                 {item.status === "Paid"
@@ -236,8 +236,8 @@ export function MedicineTable({ data, onEdit }) {
             <td className={tdclass}>
               <span
                 className={`text-xs font-medium ${item?.status === "Out of stock"
-                    ? "text-red-600"
-                    : "text-green-600"
+                  ? "text-red-600"
+                  : "text-green-600"
                   }`}
               >
                 {item?.status === "Out of stock" ? "Hết hàng" : "Còn hàng"}
@@ -291,33 +291,45 @@ export function ServiceTable({ data, onEdit }) {
         </tr>
       </thead>
       <tbody>
-        {data.map((item, index) => (          
-          <tr
-            key={item.id}
-            className="border-b border-border hover:bg-greyed transitions"
-          >
-            <td className={tdclass}>
-              <h4 className="text-sm font-medium">{item?.name}</h4>
-            </td>
-            <td className={tdclass}>{item?.date}</td>
-            <td className={`${tdclass} font-semibold`}>{item?.price}</td>
-            <td className={tdclass}>
-              <span
-                className={`text-xs font-medium ${!item?.status ? "text-red-600" : "text-green-600"
-                  }`}
-              >
-                {!item?.status ? "Tắt" : "Bật"}
-              </span>
-            </td>
-            <td className={tdclass}>
-              <MenuSelect datas={DropDown1} item={item}>
-                <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
-                  <BiDotsHorizontalRounded />
-                </div>
-              </MenuSelect>
-            </td>
-          </tr>
-        ))}
+        {data.map((item, index) => {
+          const serviceName = item?.name || "Không rõ";
+          const serviceDate = new Date(item?.createdAt).toLocaleDateString("vi-VN");
+          const servicePrice = item?.price || "Không rõ";
+          let serviceStatus;
+          if (item?.isActive === true) {
+            serviceStatus = "Bật";
+          } else if (item?.isActive === false) {
+            serviceStatus = "Tắt";
+          }
+
+          return (
+            <tr
+              key={item._id}
+              className="border-b border-border hover:bg-greyed transitions"
+            >
+              <td className={tdclass}>
+                <h4 className="text-sm font-medium">{serviceName}</h4>
+              </td>
+              <td className={tdclass}>{serviceDate}</td>
+              <td className={`${tdclass} font-semibold`}>{servicePrice}</td>
+              <td className={tdclass}>
+                <span
+                  className={`text-xs font-medium ${!serviceStatus ? "text-red-600" : "text-green-600"
+                    }`}
+                >
+                  {serviceStatus}
+                </span>
+              </td>
+              <td className={tdclass}>
+                <MenuSelect datas={DropDown1} item={item}>
+                  <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
+                    <BiDotsHorizontalRounded />
+                  </div>
+                </MenuSelect>
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );
@@ -401,8 +413,8 @@ export function PatientTable({ data, functions, used }) {
             <td className={tdclasse}>
               <span
                 className={`py-1 px-4 ${item.gender === "Male"
-                    ? "bg-subMain text-subMain"
-                    : "bg-orange-500 text-orange-500"
+                  ? "bg-subMain text-subMain"
+                  : "bg-orange-500 text-orange-500"
                   } bg-opacity-10 text-xs rounded-xl`}
               >
                 {item.gender === "Male" ? "Nam" : "Nữ"}
@@ -513,7 +525,7 @@ export function BookingTable({ data, functions, doctor }) {
     accepted: "Đã được nhận",
     completed: "Hoàn thành",
     cancelled: "Đã hủy",
-  };  
+  };
   const DropDown1 = [
     {
       title: "Xem",
@@ -574,7 +586,7 @@ export function BookingTable({ data, functions, doctor }) {
                 </div>
               </td>
 
-              <td className={tdclass}>{ staffFullName }</td>
+              <td className={tdclass}>{staffFullName}</td>
 
               <td className={tdclass}>{startDate}</td>
               <td className={tdclass}>{endDate}</td>
@@ -635,10 +647,10 @@ export function AppointmentTable({ data, functions, doctor }) {
             <td className={tdclass}>
               <span
                 className={`py-1 px-4 ${item.status === "Approved"
-                    ? "bg-subMain text-subMain"
-                    : item.status === "Pending"
-                      ? "bg-orange-500 text-orange-500"
-                      : item.status === "Cancel" && "bg-red-600 text-red-600"
+                  ? "bg-subMain text-subMain"
+                  : item.status === "Pending"
+                    ? "bg-orange-500 text-orange-500"
+                    : item.status === "Cancel" && "bg-red-600 text-red-600"
                   } bg-opacity-10 text-xs rounded-xl`}
               >
                 {item.status === "Approved"
@@ -701,10 +713,10 @@ export function PaymentTable({ data, functions, doctor }) {
             <td className={tdclass}>
               <span
                 className={`py-1 px-4 ${item.status === "Paid"
-                    ? "bg-subMain text-subMain"
-                    : item.status === "Pending"
-                      ? "bg-orange-500 text-orange-500"
-                      : item.status === "Cancel" && "bg-red-600 text-red-600"
+                  ? "bg-subMain text-subMain"
+                  : item.status === "Pending"
+                    ? "bg-orange-500 text-orange-500"
+                    : item.status === "Cancel" && "bg-red-600 text-red-600"
                   } bg-opacity-10 text-xs rounded-xl`}
               >
                 {item.status === "Paid"
