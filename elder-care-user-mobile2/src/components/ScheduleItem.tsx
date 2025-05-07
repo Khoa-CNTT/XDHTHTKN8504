@@ -1,32 +1,55 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { format } from "date-fns";
-import { Schedule } from "@/types/Schedule";
+import { Schedule } from "../types/schedule";
 
 const getStatusLabel = (status: string) => {
   const statusMap: Record<string, string> = {
     scheduled: "Đang lên lịch",
-    pending: "Đang lên lịch",
-    waiting: "Đang lên lịch",
-    "in-progress": "Đang thực hiện",
-    started: "Đang thực hiện",
+    waiting_for_client: "Chờ bạn xác nhận",
+    waiting_for_nurse: "Chờ nhân viên xác nhận",
+    on_the_way: "Nhân viên đang di chuyển",
+    check_in: "Nhân viên đã đến nơi",
+    in_progress: "Đang thực hiện chăm sóc",
+    check_out: "Đã hoàn tất, chờ xác nhận",
+    completed: "Khách đã xác nhận hoàn tất",
+    cancelled: "Bị hủy",
     default: "Không thực hiện",
   };
   return statusMap[status] || statusMap["default"];
 };
 
-interface ScheduleItemProps {
+const statusStyles: Record<string, any> = {
+  "in-progress": { color: "#28A745" },
+  scheduled: { color: "#FFC107" },
+  waiting_for_client: { color: "#FFC107" },
+  waiting_for_nurse: { color: "#FFC107" },
+  on_the_way: { color: "#17A2B8" },
+  check_in: { color: "#17A2B8" },
+  check_out: { color: "#007BFF" },
+  completed: { color: "#28A745" },
+  cancelled: { color: "#DC3545" },
+  default: { color: "#6C757D" },
+};
+interface ScheduleUser {
   schedule: Schedule;
+  staffFullName: string;
+  staffPhone: string;
+  staffAvatar?: string;
+}
+
+interface ScheduleItemProps {
+  schedule: ScheduleUser;
   onPress?: () => void;
 }
 
 const ScheduleItem: React.FC<ScheduleItemProps> = ({ schedule, onPress }) => {
-  const { _id, patientName, timeSlots, status, serviceName } = schedule;
+
 
   let time = "Chưa rõ thời gian";
 
-  if (Array.isArray(timeSlots)) {
-    time = timeSlots
+  if (Array.isArray(schedule.schedule.timeSlots)) {
+    time = schedule.schedule.timeSlots
       .map((slot) => {
         if (!slot.start || !slot.end) return null;
         try {
@@ -48,9 +71,9 @@ const ScheduleItem: React.FC<ScheduleItemProps> = ({ schedule, onPress }) => {
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <Text style={styles.time}>{time}</Text>
       <View style={styles.content}>
-        <Text style={styles.title}>{serviceName}</Text>
-        {serviceName && (
-          <Text style={styles.service}>Khách hàng: {patientName}</Text>
+        <Text style={styles.title}>{schedule.schedule.serviceName}</Text>
+        {schedule.schedule.serviceName && (
+          <Text style={styles.service}>Nhân viên: {schedule.staffFullName}</Text>
         )}
         <Text
           style={[styles.status, statusStyles[status] || styles.defaultStatus]}
@@ -105,10 +128,3 @@ const styles = StyleSheet.create({
     color: "#6C757D",
   },
 });
-
-const statusStyles: Record<string, any> = {
-  "in-progress": { color: "#28A745" },
-  scheduled: { color: "#FFC107" },
-  pending: { color: "#FFC107" },
-  waiting: { color: "#FFC107" },
-};

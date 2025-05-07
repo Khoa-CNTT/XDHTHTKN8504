@@ -1,177 +1,252 @@
-import React from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from "react-native";
-import MapView from "react-native-maps";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Linking,
+} from "react-native";
 import { Button } from "react-native-paper";
-import Icon from "react-native-vector-icons/Ionicons";
-import Footer from "../components/Footer";
+import { MapPin, Phone, MessageCircle } from "lucide-react-native";
+import { useNavigation } from "@react-navigation/native";
+import { useRoute, RouteProp } from "@react-navigation/native";
 
-const MapScreen = () => {
+import useScheduleStore from "../stores/scheduleStore";
+import { ScheduleStatus } from "../types/ScheduleStatus";
+// import { useScheduleSocket } from "../../../hooks/useScheduleSocket";
+import { MapWithRoute } from "../components/MapWithRoute";
+
+type MapRouteParams = {
+  MapScreen: { id: string };
+};
+
+const MapScreen: React.FC = () => {
+  const navigation = useNavigation();
+   const route = useRoute<RouteProp<{ MapScreen: { id: string } }, "MapScreen">>();
+   const { id } = route.params;
+  const [modalVisible, setModalVisible] = useState(false);
+  const nearestSchedule = useScheduleStore((state) => state.getScheduleById(id));
+
+  const updateSchedule = useScheduleStore((state) => state.updateSchedule);
+  // Kết nối socket với lịch hiện tại
+  // useScheduleSocket(nearestSchedule?.schedule._id || "");
+
+  // Hàm cập nhật trạng thái lịch
+  const handleUpdateStatus = async (newStatus: ScheduleStatus) => {
+    if (!nearestSchedule) return;
+    try {
+      const updatedSchedule = undefined;
+      // await ScheduleStatusApi.updateScheduleStatus(
+      //   nearestSchedule.schedule._id,
+      //   newStatus
+      // );
+      updateSchedule(updatedSchedule); // cập nhật local store
+    } catch (error) {
+      console.error("Không thể cập nhật trạng thái:", error);
+    }
+  };
+
+  const renderActionButtonByStatus = (status: ScheduleStatus) => {
+    switch (status) {
+      case "scheduled":
+        return (
+          <TouchableOpacity
+            style={styles.actionButton}
+          >
+            <Text style={styles.actionButtonText}>Lịch chưa tới thời gian thực hiện</Text>
+          </TouchableOpacity>
+        );
+      case "waiting_for_client":
+        return (
+          <TouchableOpacity style={styles.actionButton}
+             onPress={() => handleUpdateStatus("waiting_for_nurse")}
+          >
+            <Text style={styles.actionButtonText}>Chờ khách hàng sẵn sàng</Text>
+          </TouchableOpacity>
+        );
+      case "on_the_way":
+        return (
+          <TouchableOpacity
+            style={styles.actionButton}
+          >
+            <Text style={styles.actionButtonText}>Nhân viên đang trên đường tới</Text>
+          </TouchableOpacity>
+        );
+      case "check_in":
+        return (
+          <TouchableOpacity
+            style={styles.actionButton}
+          >
+            <Text style={styles.actionButtonText}>Nhân viên đã tới</Text>
+          </TouchableOpacity>
+        );
+      case "in_progress":
+        return (
+          <TouchableOpacity
+            style={styles.actionButton}
+          >
+            <Text style={styles.actionButtonText}>Đang chăm sóc</Text>
+          </TouchableOpacity>
+        );
+      case "check_out":
+        return (
+          <TouchableOpacity style={styles.actionButton}
+             onPress={() => handleUpdateStatus("completed")}
+          >
+            <Text style={styles.actionButtonText}>Xác nhận hoàn thành</Text>
+          </TouchableOpacity>
+        );
+      case "completed":
+      case "cancelled":
+        return (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => {}}
+          >
+            <Text style={styles.actionButtonText}>Kết thúc chăm sóc</Text>
+          </TouchableOpacity>
+        );
+      default:
+        return (
+          <Text style={styles.actionButtonText}>Trở về màn hình chính</Text>
+        );
+    }
+  };
+
+  if (!nearestSchedule) {
+    return (
+      <View>
+        <Text>Không có lịch gần nhất.</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {/* Bản đồ */}
-      <MapView
-        style={styles.map}
-        initialRegion={{
-          latitude: 31.2001,
-          longitude: 29.9187,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        }}
-      />
+      <MapWithRoute customerAddress={nearestSchedule.serviceName} />
 
-      {/* Nội dung phía trên */}
       <View style={styles.overlay}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {/* Nút chỉ đường */}
-          <TouchableOpacity style={styles.showWayBtn}>
-            <Icon name="navigate-outline" size={18} color="#000" />
-            <Text style={styles.showWayText}>Show The Way</Text>
-          </TouchableOpacity>
-
-          {/* Thông tin người dùng */}
+        <View style={styles.arrivalInfo}>
           <View style={styles.userInfo}>
             <Image
-              source={{ uri: "https://via.placeholder.com/40" }}
+              source={{
+                uri: "https://via.placeholder.com/40", // Placeholder ảnh bệnh nhân
+              }}
               style={styles.avatar}
             />
             <View>
-              <Text style={styles.userName}>Mahmoud Atef</Text>
-              <Text style={styles.travelInfo}>26 min • 16.3 km</Text>
+              <Text style={styles.userName}>
+                {nearestSchedule.patientName || "Tên khách hàng"}
+              </Text>
+              <Text style={styles.travelInfo}>
+                {nearestSchedule.serviceName}
+              </Text>
             </View>
           </View>
+        </View>
 
-          {/* Thông tin thanh toán */}
-          <View style={styles.paymentRow}>
-            <Text style={styles.paymentType}>Cash</Text>
-            <Text style={styles.paymentAmount}>120 EGP</Text>
-          </View>
-
-          {/* Nút gọi và trò chuyện */}
-          <View style={styles.buttonRow}>
-            <Button
-              mode="outlined"
-              icon="phone"
-              style={styles.actionButton}
-              onPress={() => {}}
-            >
-              Call
-            </Button>
-            <Button
-              mode="outlined"
-              icon="chat"
-              style={styles.actionButton}
-              onPress={() => {}}
-            >
-              Chat
-            </Button>
-          </View>
-
-          {/* Nút đã đến nơi */}
+        <View style={styles.buttonRow}>
           <Button
-            mode="contained"
-            style={styles.arrivedButton}
-            labelStyle={styles.arrivedButtonText}
+            mode="outlined"
+            icon={() => <Phone size={20} />}
+            style={styles.button}
+            onPress={() => {
+              const phoneNumber = nearestSchedule.updatedAt;
+              if (phoneNumber) {
+                Linking.openURL(`tel:${phoneNumber}`);
+              } else {
+                console.log("Số điện thoại không hợp lệ");
+              }
+            }}
           >
-            I have arrived
+            Call
           </Button>
-        </ScrollView>
-      </View>
+          <Button
+            mode="outlined"
+            icon={() => <MessageCircle size={20} />}
+            style={styles.button}
+            onPress={() => {
+              
+            }}
+          >
+            Chat
+          </Button>
+        </View>
 
-      {/* Footer cố định */}
-      <Footer />
+        {renderActionButtonByStatus(nearestSchedule.status)}
+      </View>
     </View>
   );
 };
 
-export default MapScreen;
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  map: {
-    ...StyleSheet.absoluteFillObject,
-  },
+  container: { flex: 1, backgroundColor: "#F5F5F5" },
+  map: { ...StyleSheet.absoluteFillObject },
   overlay: {
     position: "absolute",
     bottom: 0,
     width: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: "white",
+    padding: 16,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 20,
-    paddingBottom: 100, // 👈 Thêm padding để tránh bị chồng nút
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowRadius: 10,
     elevation: 10,
-    maxHeight: "60%", // Giới hạn chiều cao nếu nội dung dài
   },
   showWayBtn: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 12,
   },
   showWayText: {
-    marginLeft: 8,
-    fontSize: 16,
-    fontWeight: "bold",
+    marginLeft: 6,
     color: "#000",
+    fontWeight: "bold",
+  },
+  arrivalInfo: {
+    marginBottom: 16,
   },
   userInfo: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
+    marginTop: 8,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     marginRight: 12,
   },
   userName: {
-    fontSize: 16,
     fontWeight: "bold",
+    fontSize: 16,
   },
   travelInfo: {
     fontSize: 14,
-    color: "#666",
+    color: "gray",
   },
-  paymentRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginVertical: 12,
+  actionButton: {
+    marginTop: 10,
+    backgroundColor: "#4CAF50",
+    borderRadius: 20,
   },
-  paymentType: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  paymentAmount: {
-    fontSize: 16,
+  actionButtonText: {
+    padding: 14,
+    color: "#fff",
+    textAlign: "center",
     fontWeight: "bold",
   },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 16,
+    marginTop: 16,
   },
-  actionButton: {
-    flex: 0.48,
-    borderRadius: 10,
-    borderColor: "#ccc",
-  },
-  arrivedButton: {
-    backgroundColor: "#38B2AC",
-    paddingVertical: 10,
-    borderRadius: 14,
-    elevation: 3,
-  },
-  arrivedButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
+  button: {
+    width: "48%",
   },
 });
+
+export default MapScreen;

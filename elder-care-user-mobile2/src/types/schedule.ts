@@ -1,10 +1,17 @@
 import { TimeSlot } from "./timeSlot";
 import { ScheduleStatus } from "./ScheduleStatus";
-export interface Schedule {
+
+export type Schedule = {
   _id: string;
-  staffName: string;
-  staffAvatar: string;
+  staffId: string;
+  role: string;
+  bookingId: string;
+  patientName: string;
   serviceName: string;
-  status: ScheduleStatus;
+  date: Date;
   timeSlots: TimeSlot;
-}
+  status: ScheduleStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  __v: number;
+};
