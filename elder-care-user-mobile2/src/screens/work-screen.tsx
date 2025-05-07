@@ -8,7 +8,7 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
 type RootStackParamList = {
-  MapScreen: { id: string };
+  Map: { id: string };
 };
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 const WorkScreen: React.FC = () => {
@@ -22,10 +22,10 @@ const WorkScreen: React.FC = () => {
       {Schedules.length > 0 ? (
         Schedules.map((item) => (
           <ScheduleItem
-            key={item.schedule._id}
+            key={item._id}
             schedule={item}
             onPress={() => {
-              navigation.navigate("MapScreen", { id: item.schedule._id });  
+              navigation.navigate("Map", { id: item._id });  
             }}
           />
         ))

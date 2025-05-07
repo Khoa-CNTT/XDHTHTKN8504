@@ -67,9 +67,8 @@ const HomeScreen: React.FC = () => {
         data={services}
         horizontal={true} // Để cuộn ngang
         keyExtractor={(item) => item._id}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <TouchableOpacity
-
           style={[
             styles.serviceItem,
             index % 2 === 0 ? { marginRight: 12 } : { marginLeft: 12 },

@@ -5,6 +5,7 @@ import initData from "../utils/initData";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../navigation/StackNavigator";
+import useScheduleStore from "../stores/scheduleStore"; // Import useScheduleStore
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -27,18 +28,15 @@ const useInitService = () => {
         console.log("token from init: ", token);
         
         try {
-          // Connect socket
-          connect();
-
-          // Kiểm tra và tham gia phòng nếu có user._id
-          if (user?._id) {
-            join({userId: user._id});
-          } else {
-            console.error("Không tìm thấy user ID");
-          }
-
-          // Khởi tạo dữ liệu sau khi đăng nhập
           await initData();
+          connect();
+          const schedules = useScheduleStore.getState().schedules;
+           if (schedules.length > 0) {
+            schedules.forEach((scheduleUser) => {
+            const scheduleId = scheduleUser._id;
+            useSocketStore.getState().join({ scheduleId });
+            console.log("✅ Đã tham gia phòng với scheduleId:", scheduleId);
+            })}
 
           // Điều hướng đến màn hình "Home" và loại bỏ tất cả màn hình trước đó
           navigation.reset({

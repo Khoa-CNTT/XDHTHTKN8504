@@ -3,6 +3,7 @@ import { create } from "zustand";
 import socket from "../utils/socket";
 import { Booking } from "@/types/Booking";
 import useAuthStore from "./authStore";
+import useScheduleStore from "./scheduleStore";
 
 type Payload =  Partial<{
   userId: string;
@@ -24,12 +25,12 @@ export const useSocketStore = create<SocketStore>((set) => {
   const currentUser = useAuthStore.getState().user;
     const listenToEvents = () => {
       socket.on("newBookingSignal", (booking) => {
-        console.log("😋: Nhận được booking mới:");
         set({ newBooking: booking });
       });
 
       socket.on("bookingAccepted", (bookingId: string) => {
         console.log(`😋: Booking được chấp thuận: ${bookingId}`);
+        useScheduleStore.getState().fetchSchedules();
       });
 
       socket.on("connect", () => {

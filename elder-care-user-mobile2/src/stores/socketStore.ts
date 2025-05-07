@@ -1,14 +1,14 @@
-// src/stores/socketStore.ts
 import { create } from "zustand";
 import socket from "../utils/socket";
 import useAuthStore from "./authStore";
+import useScheduleStore from "./scheduleStore"; // Import useScheduleStore
+import {useModalStore} from "./modalStore"; // Import useModalStore
 
-
-type Payload = {
+type Payload = Partial<{
   userId: string;
   role?: string; // optional
   scheduleId?: string; // optional
-};
+}>;
 
 interface SocketStore {
   socket: typeof socket;
@@ -21,18 +21,13 @@ interface SocketStore {
 
 export const useSocketStore = create<SocketStore>((set) => {
   const currentUser = useAuthStore.getState().user;
+  const { schedules, updateSchedule } = useScheduleStore.getState();
   const listenToEvents = () => {
-    
-    socket.on("bookingAccepted", (bookingId: string) => {
-      console.log(`😋: Booking đã được được chấp thuận: ${bookingId}`);
-    });
-
     socket.on("connect", () => {
       console.log("✅ Socket connected:", socket.id);
       set({ isConnected: true });
       const userId = currentUser?._id;
       socket.emit("join", { userId });
-      listenToEvents(); // Lắng nghe sự kiện sau khi kết nối
     });
 
     socket.on("disconnect", () => {
@@ -42,6 +37,32 @@ export const useSocketStore = create<SocketStore>((set) => {
 
     socket.on("connect_error", (err) => {
       console.warn("⚠️ from socketStore :", err.message);
+    });
+
+    socket.on("bookingAccepted", (bookingId: string) => {
+      console.log(`😋: Booking đã được được chấp thuận: ${bookingId}`);
+      useModalStore
+        .getState()
+        .showModal(
+          "Booking Accepted",
+          `Mã booking: ${bookingId} đã được chấp thuận!`
+        );
+    });
+
+    // Lắng nghe sự kiện "scheduleStatusUpdated" và xử lý khi có dữ liệu mới
+    socket.on("scheduleStatusUpdated", (data: any) => {
+      console.log("🚨 Lịch hẹn đã được cập nhật:", data);
+      const updatedSchedule = data.schedule;
+      if (updatedSchedule) {
+        // Cập nhật schedule trong store
+        updateSchedule(updatedSchedule);
+        useModalStore
+          .getState()
+          .showModal(
+            "Cập nhật lịch hẹn",
+            `Lịch hẹn đã được cập nhật: ${updatedSchedule._id}`
+          );
+      }
     });
   };
 
@@ -53,6 +74,7 @@ export const useSocketStore = create<SocketStore>((set) => {
       if (!socket.connected) {
         console.log("Đang kết nối socket...");
         socket.connect();
+        listenToEvents();
         set({ isConnected: true });
       }
     },
@@ -77,6 +99,5 @@ export const useSocketStore = create<SocketStore>((set) => {
         socket.emit("leave", { userId, role, scheduleId });
       }
     },
-    
   };
 });

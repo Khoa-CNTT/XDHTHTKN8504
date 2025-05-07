@@ -20,7 +20,7 @@ const getStatusLabel = (status: string) => {
 };
 
 const statusStyles: Record<string, any> = {
-  "in-progress": { color: "#28A745" },
+  in_progress: { color: "#28A745" },
   scheduled: { color: "#FFC107" },
   waiting_for_client: { color: "#FFC107" },
   waiting_for_nurse: { color: "#FFC107" },
@@ -31,12 +31,12 @@ const statusStyles: Record<string, any> = {
   cancelled: { color: "#DC3545" },
   default: { color: "#6C757D" },
 };
-interface ScheduleUser {
-  schedule: Schedule;
+
+export type ScheduleUser = Schedule & {
   staffFullName: string;
   staffPhone: string;
   staffAvatar?: string;
-}
+};
 
 interface ScheduleItemProps {
   schedule: ScheduleUser;
@@ -44,12 +44,12 @@ interface ScheduleItemProps {
 }
 
 const ScheduleItem: React.FC<ScheduleItemProps> = ({ schedule, onPress }) => {
-
+  const status = schedule.status;
+  const statusLabel = getStatusLabel(status);
 
   let time = "Chưa rõ thời gian";
-
-  if (Array.isArray(schedule.schedule.timeSlots)) {
-    time = schedule.schedule.timeSlots
+  if (Array.isArray(schedule.timeSlots)) {
+    time = schedule.timeSlots
       .map((slot) => {
         if (!slot.start || !slot.end) return null;
         try {
@@ -65,16 +65,12 @@ const ScheduleItem: React.FC<ScheduleItemProps> = ({ schedule, onPress }) => {
       .join(", ");
   }
 
-  const statusLabel = getStatusLabel(status);
-
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <Text style={styles.time}>{time}</Text>
       <View style={styles.content}>
-        <Text style={styles.title}>{schedule.schedule.serviceName}</Text>
-        {schedule.schedule.serviceName && (
-          <Text style={styles.service}>Nhân viên: {schedule.staffFullName}</Text>
-        )}
+        <Text style={styles.title}>{schedule.serviceName}</Text>
+        <Text style={styles.service}>Nhân viên: {schedule.staffFullName}</Text>
         <Text
           style={[styles.status, statusStyles[status] || styles.defaultStatus]}
         >
