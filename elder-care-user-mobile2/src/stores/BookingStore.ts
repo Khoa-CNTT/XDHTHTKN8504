@@ -30,8 +30,6 @@ export const useBookingStore = create<BookingState>((set, get) => ({
 
         try {
             const bookings = await getBookings();
-            console.log("Fetched bookings:", bookings);
-
             set({ bookings, loading: false });
             get().filterByStatus(get().selectedStatus); // Lọc ngay sau khi fetch
         } catch (err: any) {

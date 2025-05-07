@@ -2,12 +2,11 @@ import API from "../utils/api";
 import useAuthStore from "../stores/authStore";
 import { Schedule } from "../types/schedule";
 
-interface ScheduleUser {
-  schedule: Schedule;
+export type ScheduleUser = Schedule & {
   staffFullName: string;
   staffPhone: string;
   staffAvatar?: string;
-}
+};
 
 const getSchedules = async (): Promise<ScheduleUser[]> => {
   const token = useAuthStore.getState().token;

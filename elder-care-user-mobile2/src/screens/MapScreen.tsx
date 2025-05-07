@@ -9,38 +9,35 @@ import {
 } from "react-native";
 import { Button } from "react-native-paper";
 import { MapPin, Phone, MessageCircle } from "lucide-react-native";
-import { useNavigation } from "@react-navigation/native";
+
 import { useRoute, RouteProp } from "@react-navigation/native";
 
 import useScheduleStore from "../stores/scheduleStore";
 import { ScheduleStatus } from "../types/ScheduleStatus";
-// import { useScheduleSocket } from "../../../hooks/useScheduleSocket";
 import { MapWithRoute } from "../components/MapWithRoute";
+import updateScheduleStatus from "../api/ScheduleStatusApi";
 
 type MapRouteParams = {
-  MapScreen: { id: string };
+  Map: { id: string };
 };
 
 const MapScreen: React.FC = () => {
-  const navigation = useNavigation();
-   const route = useRoute<RouteProp<{ MapScreen: { id: string } }, "MapScreen">>();
-   const { id } = route.params;
-  const [modalVisible, setModalVisible] = useState(false);
+
+  const route = useRoute<RouteProp<{ Map: { id: string } }, "Map">>();
+  const { id } = route.params;
   const nearestSchedule = useScheduleStore((state) => state.getScheduleById(id));
 
   const updateSchedule = useScheduleStore((state) => state.updateSchedule);
-  // Kết nối socket với lịch hiện tại
-  // useScheduleSocket(nearestSchedule?.schedule._id || "");
+  
 
   // Hàm cập nhật trạng thái lịch
   const handleUpdateStatus = async (newStatus: ScheduleStatus) => {
     if (!nearestSchedule) return;
     try {
-      const updatedSchedule = undefined;
-      // await ScheduleStatusApi.updateScheduleStatus(
-      //   nearestSchedule.schedule._id,
-      //   newStatus
-      // );
+      const updatedSchedule = await updateScheduleStatus(
+        nearestSchedule._id,
+        newStatus
+      );
       updateSchedule(updatedSchedule); // cập nhật local store
     } catch (error) {
       console.error("Không thể cập nhật trạng thái:", error);
@@ -137,10 +134,10 @@ const MapScreen: React.FC = () => {
             />
             <View>
               <Text style={styles.userName}>
-                {nearestSchedule.patientName || "Tên khách hàng"}
+                {nearestSchedule.staffFullName || "Tên khách hàng"}
               </Text>
               <Text style={styles.travelInfo}>
-                {nearestSchedule.serviceName}
+                {nearestSchedule.staffPhone}
               </Text>
             </View>
           </View>
@@ -152,7 +149,7 @@ const MapScreen: React.FC = () => {
             icon={() => <Phone size={20} />}
             style={styles.button}
             onPress={() => {
-              const phoneNumber = nearestSchedule.updatedAt;
+              const phoneNumber = nearestSchedule.staffPhone;
               if (phoneNumber) {
                 Linking.openURL(`tel:${phoneNumber}`);
               } else {
@@ -174,7 +171,7 @@ const MapScreen: React.FC = () => {
           </Button>
         </View>
 
-        {renderActionButtonByStatus(nearestSchedule.status)}
+        {renderActionButtonByStatus(nearestSchedule.status)} 
       </View>
     </View>
   );
