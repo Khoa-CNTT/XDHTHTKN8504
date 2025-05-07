@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Schedule from "../models/Schedule.js";
 import Booking from "../models/Booking.js";
 import Profile from "../models/Profile.js";
@@ -316,106 +317,7 @@ const scheduleController = {
       return res.status(500).json({ success: false, message: "Server error" });
     }
   },
-  // getSchedulesForUserToday: async (req, res) => {
-  //   try {
-  //     const { _id: userId } = req.user;
 
-  //     if (!userId) {
-  //       return res
-  //         .status(400)
-  //         .json({ success: false, message: "Missing userId" });
-  //     }
-
-  //     // 🔁 Truy vấn từ Profile thay vì user.profiles
-  //     const profiles = await Profile.find({ userId }).select("_id");
-
-  //     if (!profiles || profiles.length === 0) {
-  //       return res
-  //         .status(400)
-  //         .json({ success: false, message: "User does not have any profiles" });
-  //     }
-
-  //     const profileIds = profiles.map((p) => p._id);
-
-  //     const todayStart = moment().startOf("day").toDate();
-  //     const todayEnd = moment().endOf("day").toDate();
-
-  //     const bookings = await Booking.find({
-  //       profileId: { $in: profileIds },
-  //     }).select("_id");
-
-  //     const bookingIds = bookings.map((b) => b._id);
-  //     if (bookingIds.length === 0) {
-  //       return res.status(200).json({ success: true, data: [] });
-  //     }
-
-  //     const schedules = await Schedule.find({
-  //       bookingId: { $in: bookingIds },
-  //       date: { $gte: todayStart, $lte: todayEnd },
-  //     })
-  //       .populate({
-  //         path: "staffId",
-  //         select: "role userId",
-  //         populate: {
-  //           path: "userId",
-  //           select: "avatar",
-  //           strictPopulate: false,
-  //         },
-  //       })
-  //       .populate({
-  //         path: "bookingId",
-  //         populate: {
-  //           path: "serviceId",
-  //           select: "name",
-  //         },
-  //       });
-
-  //     const result = [];
-
-  //     for (const item of schedules) {
-  //       let staffName = "Không rõ nhân viên";
-  //       let staffAvatar = "";
-  //       if (item.staffId) {
-  //         try {
-  //           staffName = await getStaffName(item.staffId);
-  //           staffAvatar = item.staffId.userId?.avatar || "";
-  //         } catch (err) {
-  //           console.error("Lỗi khi lấy staff name:", err);
-  //         }
-  //       }
-
-  //       const serviceName =
-  //         item.bookingId?.serviceId?.name || "Không rõ dịch vụ";
-
-  //       const timeSlots =
-  //         item.timeSlots && item.timeSlots.start && item.timeSlots.end
-  //           ? {
-  //               start: moment(item.timeSlots.start)
-  //                 .tz("Asia/Ho_Chi_Minh")
-  //                 .toISOString(),
-  //               end: moment(item.timeSlots.end)
-  //                 .tz("Asia/Ho_Chi_Minh")
-  //                 .toISOString(),
-  //             }
-  //           : null;
-
-  //       const status = item.status || "Chưa có trạng thái";
-
-  //       result.push({
-  //         staffName,
-  //         staffAvatar,
-  //         serviceName,
-  //         status,
-  //         timeSlots,
-  //       });
-  //     }
-
-  //     return res.status(200).json({ success: true, data: result });
-  //   } catch (err) {
-  //     console.error("Error:", err);
-  //     return res.status(500).json({ success: false, message: "Server error" });
-  //   }
-  // },
   getNextScheduleForStaff: async (req, res) => {
     const staffId = req.user._id;
     if (!staffId) {
@@ -456,30 +358,29 @@ const scheduleController = {
           .status(404)
           .json({ message: "No current or upcoming schedule found." });
       }
-      const booking = await Booking.findOne({ _id: schedule.bookingId})
-            .populate("serviceId") // Tìm thông tin dịch vụ
-            .populate("profileId");
+      const booking = await Booking.findOne({ _id: schedule.bookingId })
+        .populate("serviceId") // Tìm thông tin dịch vụ
+        .populate("profileId");
 
-          if (!booking) {
-            return res
-              .status(404)
-              .json({ message: "No booking found for the schedule." });
-          }
+      if (!booking) {
+        return res
+          .status(404)
+          .json({ message: "No booking found for the schedule." });
+      }
 
-          // 4. Lấy tên dịch vụ, địa chỉ khách hàng và ca làm việc từ booking
-          const serviceName = booking.serviceId?.name || "No service name";
-          const customerAddress = booking.profileId?.address || "No address";
-          const phoneNumber =
-            booking.profileId?.emergencyContact.phone || "No phone number";
+      // 4. Lấy tên dịch vụ, địa chỉ khách hàng và ca làm việc từ booking
+      const serviceName = booking.serviceId?.name || "No service name";
+      const customerAddress = booking.profileId?.address || "No address";
+      const phoneNumber =
+        booking.profileId?.emergencyContact.phone || "No phone number";
 
-          // 5. Trả về kết quả
-          return res.status(200).json({
-            schedule,
-            serviceName,
-            customerAddress,
-            phoneNumber,
-          });
-
+      // 5. Trả về kết quả
+      return res.status(200).json({
+        schedule,
+        serviceName,
+        customerAddress,
+        phoneNumber,
+      });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: "Internal server error" });
@@ -579,6 +480,76 @@ const scheduleController = {
         message: "Lỗi server",
         data: null, // Trả về null khi gặp lỗi
       });
+    }
+  },
+
+  getTodaySchedulesByUser: async (req, res) => {
+    try {
+      const customerId = req.user._id;
+
+      // Lấy ngày bắt đầu và kết thúc của ngày hôm nay
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
+
+      // Tìm các Schedule có ngày trong ngày hôm nay
+      const schedules = await Schedule.find({
+        date: { $gte: startOfDay, $lte: endOfDay },
+        bookingId: {
+          $in: (
+            await Booking.find({ createdBy: customerId }).select("_id")
+          ).map((b) => b._id),
+        },
+      })
+        .populate({
+          path: "staffId", // Populate thông tin nhân viên từ bảng User
+          select: "phone avatar role", // Lấy các trường cần thiết từ User
+        })
+        .lean() // Tối ưu hóa truy vấn với lean()
+        .exec();
+
+      if (!schedules.length) {
+        return res
+          .status(404)
+          .json({ message: "No schedules found for today" });
+      }
+
+      // Sau khi populate staffId, lấy thêm thông tin chi tiết từ Doctor hoặc Nurse
+      for (let schedule of schedules) {
+        const staff = schedule.staffId;
+
+        // Lấy thông tin từ Doctor hoặc Nurse tùy theo role
+        if (staff.role === "doctor") {
+          const doctor = await Doctor.findOne({ userId: staff._id }).select(
+            "firstName lastName"
+          );
+          staff.firstName = doctor.firstName;
+          staff.lastName = doctor.lastName;
+        } else if (staff.role === "nurse") {
+          const nurse = await Nurse.findOne({ userId: staff._id }).select(
+            "firstName lastName"
+          );
+          staff.firstName = nurse.firstName;
+          staff.lastName = nurse.lastName;
+        }
+
+        // Tạo fullname từ firstName và lastName
+        schedule.staffFullName = `${staff.firstName} ${staff.lastName}`;
+        schedule.staffPhone = staff.phone;
+        schedule.staffAvatar = staff.avatar;
+
+        // Xóa trường staffId đi (nếu không cần nữa)
+        delete schedule.staffId;
+      }
+
+      res.status(200).json(schedules);
+    } catch (err) {
+      console.error("Error fetching schedules:", err);
+      res
+        .status(500)
+        .json({ error: "Something went wrong while fetching schedules." });
     }
   },
 

@@ -13,6 +13,7 @@ type RootStackParamList = {
   Booking: undefined; // Changed from Payment to Booking
   DoctorDetails: { doctor: any };
   BookAppointment: { doctor: any };
+  WorkScreen: undefined; // Added WorkScreen
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -31,6 +32,7 @@ const Footer: React.FC = () => {
     Profile: 28,
     DoctorDetails: 28,  // Added DoctorDetails
     BookAppointment: 28,  // Added BookAppointment
+    WorkScreen: 28, // Added WorkScreen
   });
 
   const handleNavigation = useCallback((screenName: keyof RootStackParamList) => {
@@ -97,7 +99,7 @@ const Footer: React.FC = () => {
       </TouchableOpacity>
       <TouchableOpacity
         style={getTabStyle('Map')}
-        onPress={() => handleNavigation('Map')}
+        onPress={() => handleNavigation('WorkScreen')}
         onPressIn={() => handlePressIn('Map')}
         onPressOut={handlePressOut}
       >

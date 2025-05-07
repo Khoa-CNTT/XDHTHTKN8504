@@ -64,14 +64,11 @@ const HomeScreen: React.FC = () => {
 
       <FlatList
         data={services}
-        numColumns={2}
+        horizontal={true} // Để cuộn ngang
         keyExtractor={(item) => item._id}
-        renderItem={({ item, index }) => (
+        renderItem={({ item }) => (
           <TouchableOpacity
-            style={[
-              styles.serviceItem,
-              index % 2 === 0 ? { marginRight: 12 } : { marginLeft: 12 },
-            ]}
+            style={styles.serviceItem}
             onPress={() => {
               console.log(`Đã nhấn vào: ${item.name}`);
             }}
@@ -87,9 +84,12 @@ const HomeScreen: React.FC = () => {
             <Text style={styles.serviceName}>{item.name}</Text>
           </TouchableOpacity>
         )}
-        contentContainerStyle={[styles.listContent, { paddingBottom: 120 }]}
+        contentContainerStyle={[styles.listContent, { paddingBottom: 5 }]}
         style={{ flex: 1 }}
+        snapToAlignment="center"
+        decelerationRate="fast"
       />
+
       <Footer />
     </View>
   );
@@ -99,6 +99,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f9f9f9",
+    paddingBottom: 20,
+    width: "100%",
   },
   loadingContainer: {
     flex: 1,
@@ -108,7 +110,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 18,
-    color: "#555",
+    color: "#7f8c8d",
   },
   errorContainer: {
     flex: 1,
@@ -118,43 +120,38 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: "#FF4500",
+    color: "#e74c3c",
   },
   sectionContainer: {
     paddingHorizontal: 20,
-    marginTop: 25,
+    marginTop: 30,
   },
   sectionTitle: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#34495e",
-    marginBottom: 20,
+    color: "#2c3e50",
+    marginBottom: 15,
     letterSpacing: -0.5,
   },
   listContent: {
     paddingHorizontal: 16,
   },
   serviceItem: {
-    flex: 0.5,
-    backgroundColor: "#ffffff",
-    borderRadius: 14,
-    padding: 12,
+    width: 380, // Mỗi item chiếm 300px
+    backgroundColor: "#F7FFF9",
+    borderRadius: 20,
     alignItems: "center",
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3,
-    borderWidth: 0.5,
-    borderColor: "#e5e5e5",
+    marginRight: 5, // Khoảng cách giữa các item
+    elevation: 6,
+    borderColor: "#ecf0f1",
+    borderWidth: 1,
+    overflow: "hidden",
+    marginBottom: 50,
   },
   imageContainer: {
     width: "100%",
-    height: 120,
-    borderRadius: 10,
+    height: 180, // Chiều cao hình ảnh
     overflow: "hidden",
-    marginBottom: 10,
     backgroundColor: "#f0f0f0",
     justifyContent: "center",
     alignItems: "center",
@@ -162,22 +159,15 @@ const styles = StyleSheet.create({
   serviceImage: {
     width: "100%",
     height: "100%",
-    borderRadius: 10,
   },
   serviceName: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#34495e",
-    textAlign: "center",
-  },
-  seeAllContainer: {
-    marginTop: 20,
-    alignItems: "center",
-  },
-  seeAll: {
     fontSize: 16,
-    color: "#3498db",
-    fontWeight: "bold",
+    fontWeight: "600",
+    color: "#2c3e50",
+    // textAlign: "center",
+    paddingHorizontal: 10,
+    paddingBottom: 15,
+    marginTop: 10,
   },
   footerContainer: {
     marginTop: 30,
@@ -186,4 +176,3 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
-

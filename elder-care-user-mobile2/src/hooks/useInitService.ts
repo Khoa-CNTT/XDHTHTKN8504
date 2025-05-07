@@ -24,6 +24,8 @@ const useInitService = () => {
   useEffect(() => {
     const afterLoginInit = async () => {
       if (token) {
+        console.log("token from init: ", token);
+        
         try {
           // Connect socket
           connect();
