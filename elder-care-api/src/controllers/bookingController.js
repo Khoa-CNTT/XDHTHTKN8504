@@ -331,16 +331,23 @@ const bookingController = {
 
             // Gửi thông báo socket cho người tạo và tất cả người tham gia
             const allUserIds = new Set([
-                booking.createdBy.toString(),
-                ...booking.participants.map(p => p.userId.toString())
+                booking.createdBy?.toString(),
+                ...booking.participants?.map(p => p.userId?.toString())
             ]);
+
+            console.log("Gửi socket đến các userId sau:", Array.from(allUserIds));
 
             allUserIds.forEach(userId => {
                 const socketId = getUserSocketId(userId);
-                console.log("Socket ID:", socketId);
+                console.log(`UserId: ${userId} - SocketId: ${socketId}`);
 
                 if (socketId) {
-                    io.to(socketId).emit("bookingAccepted", { bookingId });
+                    io.to(socketId).emit("bookingAccepted", {
+                        bookingId: booking._id,
+                        message: "Lịch đặt đã được chấp nhận"
+                    });
+                } else {
+                    console.log(`⚠️ Không tìm thấy socket cho userId: ${userId}`);
                 }
             });
 

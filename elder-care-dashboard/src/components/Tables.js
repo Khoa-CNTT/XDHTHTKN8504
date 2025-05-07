@@ -291,7 +291,7 @@ export function ServiceTable({ data, onEdit }) {
         </tr>
       </thead>
       <tbody>
-        {data.map((item, index) => (
+        {data.map((item, index) => (          
           <tr
             key={item.id}
             className="border-b border-border hover:bg-greyed transitions"
@@ -508,6 +508,12 @@ export function DoctorsTable({ data, functions, doctor }) {
   );
 }
 export function BookingTable({ data, functions, doctor }) {
+  const statusMap = {
+    pending: "Chưa nhận",
+    accepted: "Đã được nhận",
+    completed: "Hoàn thành",
+    cancelled: "Đã hủy",
+  };  
   const DropDown1 = [
     {
       title: "Xem",
@@ -542,11 +548,11 @@ export function BookingTable({ data, functions, doctor }) {
       <tbody>
         {data.map((item, index) => {
           const userFullName = `${item?.profileId?.firstName || "Ẩn"} ${item?.profileId?.lastName || ""}`;
-          const staffFullName = `${item?.participants?.fullName || "lỗi"}`;
+          const staffFullName = item?.participants?.[0]?.fullName || "Chưa có";
           const serviceName = item?.serviceId?.name || "Không rõ";
           const startDate = new Date(item?.repeatFrom).toLocaleDateString("vi-VN");
           const endDate = new Date(item?.repeatTo).toLocaleDateString("vi-VN");
-          const statusText = item.status === "completed" ? "Đã thanh toán" : "Chưa thanh toán";
+          const statusText = statusMap[item.status] || "Không xác định";
 
           return (
             <tr
@@ -732,7 +738,6 @@ export function PaymentTable({ data, functions, doctor }) {
 }
 
 // invoice used table
-
 export function InvoiceUsedTable({ data, functions }) {
   return (
     <table className="table-auto w-full">
