@@ -228,7 +228,18 @@ const authController = {
       console.error(`Lỗi khi cập nhật trạng thái ${role}:`, error);
       return res.status(500).json({ message: 'Lỗi server', error: error.message });
     }
-  }
+  },
+
+  getAllUsers: async (req, res) => {
+    try {
+      const users = await User.find({ role: 'family_member'}).select("-password").sort({ createdAt: -1 });
+      res.status(200).json({ message: "Lấy danh sách người dùng thành công", data: users });
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách người dùng:", error);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
 };
 
 export default authController;

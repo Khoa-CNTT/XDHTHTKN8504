@@ -5,6 +5,8 @@ import moment from "moment-timezone";
 import Service from "../models/Service.js";
 import { getIO } from "../config/socketConfig.js";
 import { getUserSocketId } from '../controllers/socketController.js';
+import Doctor from "../models/Doctor.js";
+import Nurse from "../models/Nurse.js";
 
 const bookingController = {
     // create new booking
@@ -300,10 +302,24 @@ const bookingController = {
                 p.userId.toString() === staff._id.toString()
             );
 
+            if (staff.role === 'doctor') {
+                const doctor = await Doctor.findOne({ userId: staff._id });
+                if (doctor) {
+                    fullName = `${doctor.firstName} ${doctor.lastName}`;
+                }
+            } else if (staff.role === 'nurse') {
+                const nurse = await Nurse.findOne({ userId: staff._id });
+                if (nurse) {
+                    fullName = `${nurse.firstName} ${nurse.lastName}`;
+                }
+            }
+
+            // Thêm participant nếu chưa có
             if (!alreadyParticipant) {
                 booking.participants.push({
                     userId: staff._id,
                     role: staff.role,
+                    name: fullName,
                     acceptedAt: new Date(),
                 });
             }
@@ -336,6 +352,7 @@ const bookingController = {
             return res.status(500).json({ message: 'Lỗi server', error: error.message });
         }
     },
+
     getBookingById: async (req, res) => {
         try {
             const { staffId } = req.user._id;
@@ -517,7 +534,7 @@ const bookingController = {
                 .then((bookings) => {
                     return res.status(200).json({
                         message: 'Lấy tất cả booking thành công!',
-                        data: bookings
+                        bookings
                     });
                 })
                 .catch((error) => {
