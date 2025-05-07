@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { Schedule } from "../types/schedule";
-import getNearestSchedule from "../utils/getNearestSchedule";
 import getSchedules from "../api/scheduleApi";
+import { ScheduleStatus } from "../types/ScheduleStatus";
+import { useSocketStore } from "./socketStore";
 
 export type ScheduleUser = Schedule & {
   staffFullName: string;
@@ -16,7 +17,7 @@ interface ScheduleStore {
   hasFetched: boolean;
   fetchSchedules: () => Promise<void>;
   setSchedules: (schedules: ScheduleUser[]) => void;
-  updateSchedule: (updatedSchedule: Schedule) => void;
+  updateSchedule: (data: { scheduleId: string; newStatus: ScheduleStatus }) => void;
   getScheduleById: (id: string) => ScheduleUser | undefined;
 }
 
@@ -28,10 +29,9 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
   setSchedules: (schedules) => {
     const filtered = schedules.filter(
-      (s) =>
-        s.status !== "completed" && s.status !== "cancelled"
+      (s) => s.status !== "completed" && s.status !== "cancelled"
     );
-    set((state) => ({
+    set(() => ({
       schedules: filtered,
     }));
   },
@@ -46,11 +46,11 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
       }
 
       const filtered = schedules.filter(
-        (s) =>
-          s.status !== "completed" && s.status !== "cancelled"
+        (s) => s.status !== "completed" && s.status !== "cancelled"
       );
+
       set({
-        schedules: filtered, // ✅ Đúng rồi
+        schedules: filtered,
         loading: false,
         error: null,
         hasFetched: true,
@@ -65,23 +65,22 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }
   },
 
-  updateSchedule: (updatedSchedule: Schedule) => {
+  updateSchedule: ({ scheduleId, newStatus }) => {
     set((state) => {
-      const updatedSchedules = state.schedules.map((schedule) =>
-        schedule._id === updatedSchedule._id
-          ? { ...schedule, schedule: updatedSchedule }
-          : schedule
-      );
+      const updatedSchedules = state.schedules
+        .map((schedule) =>
+          schedule._id === scheduleId
+            ? { ...schedule, status: newStatus }
+            : schedule
+        )
+        .filter((s) => s.status !== "completed" && s.status !== "cancelled");
 
-      return {
-        schedules: updatedSchedules,
-      };
+      return { schedules: updatedSchedules };
     });
   },
 
   getScheduleById: (id: string) => {
-    const schedules = get().schedules;
-    return schedules.find((schedule) => schedule._id === id);
+    return get().schedules.find((schedule) => schedule._id === id);
   },
 }));
 

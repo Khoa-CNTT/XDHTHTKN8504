@@ -8,7 +8,7 @@ import {
   Linking,
 } from "react-native";
 import { Button } from "react-native-paper";
-import { MapPin, Phone, MessageCircle } from "lucide-react-native";
+import { Phone, MessageCircle } from "lucide-react-native";
 
 import { useRoute, RouteProp } from "@react-navigation/native";
 
@@ -38,7 +38,10 @@ const MapScreen: React.FC = () => {
         nearestSchedule._id,
         newStatus
       );
-      updateSchedule(updatedSchedule); // cập nhật local store
+      updateSchedule({
+        scheduleId: nearestSchedule._id,
+        newStatus: newStatus,
+      }); // cập nhật local store
     } catch (error) {
       console.error("Không thể cập nhật trạng thái:", error);
     }
@@ -59,9 +62,10 @@ const MapScreen: React.FC = () => {
           <TouchableOpacity style={styles.actionButton}
              onPress={() => handleUpdateStatus("waiting_for_nurse")}
           >
-            <Text style={styles.actionButtonText}>Chờ khách hàng sẵn sàng</Text>
+            <Text style={styles.actionButtonText}>Sẵn sàng</Text>
           </TouchableOpacity>
         );
+        
       case "on_the_way":
         return (
           <TouchableOpacity

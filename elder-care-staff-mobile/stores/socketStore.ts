@@ -1,4 +1,3 @@
-// src/stores/socketStore.ts
 import { create } from "zustand";
 import socket from "../utils/socket";
 import { Booking } from "@/types/Booking";
@@ -60,10 +59,9 @@ export const useSocketStore = create<SocketStore>((set) => {
     newBooking: null,
 
     connect: () => {
+      listenToEvents();
       if (!socket.connected) {
-        console.log("Đang kết nối socket...");
         socket.connect();
-        listenToEvents();
         set({ isConnected: true });
       }
     },

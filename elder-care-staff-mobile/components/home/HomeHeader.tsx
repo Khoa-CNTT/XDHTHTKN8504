@@ -1,66 +1,93 @@
 import React from "react";
-import { View, Image, StyleSheet } from "react-native";
-import { Bell, MessageCircle } from "lucide-react-native"; // Import biểu tượng từ lucide-react-native
-import { router } from "expo-router";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
-const HomeHeader = () => {
+interface HeaderProps {
+  onMessagePress?: () => void;
+}
+
+const HomeHeader: React.FC<HeaderProps> = ({ onMessagePress }) => {
+  const router = useRouter(); // Sử dụng useRouter từ expo-router
+  const notificationCount = 0;
+
+  const handleNotificationPress = () => {
+    router.push("/screens/notification/notifications"); // Sử dụng router.push thay cho navigation.navigate
+  };
+
   return (
-    <View style={styles.header}>
-      <Image
-        source={require("../../assets/images/logo.png")}
-        style={styles.logo}
-      />
-      <View style={styles.headerButtons}>
-        <View style={styles.icon}>
-          <Bell
-            size={30}
-            color="#28A745"
-            onPress={() => router.push("/screens/notification/notifications")}
-          />
-        </View>
-        <View style={styles.icon}>
-          <MessageCircle
-            size={30}
-            color="#28A745"
-            onPress={() => router.push("../chat")}
-          />
-        </View>
+    <View style={styles.container}>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>
+          <Text style={{ color: "#37B44E" }}>Elder</Text>
+          <Text style={{ color: "#BBBFBC" }}>Care</Text>
+        </Text>
+      </View>
+      <View style={styles.iconsContainer}>
+        <TouchableOpacity
+          onPress={handleNotificationPress}
+          style={styles.iconContainer}
+        >
+          <Ionicons name="notifications-outline" size={26} color="#333" />
+          {notificationCount > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationText}>{notificationCount}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onMessagePress} style={styles.iconContainer}>
+          <Ionicons name="chatbubble-outline" size={26} color="#333" />
+        </TouchableOpacity>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  header: {
+  container: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: "white",
-    elevation: 3, // Thêm shadow cho toàn bộ header
-    shadowColor: "#000", // Màu shadow
-    shadowOffset: { width: 0, height: 2 }, // Độ lệch của shadow
-    shadowOpacity: 0.1, // Độ mờ của shadow
-    shadowRadius: 4, // Độ rộng của shadow
-    borderBottomWidth: 1, // Đường viền dưới header để phân biệt với phần còn lại của giao diện
-    borderBottomColor: "#ddd", // Màu của đường viền dưới
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 12,
+    backgroundColor: "#FFFFFF",
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#EEEEEE",
   },
-  headerButtons: {
+  titleContainer: {
+    flex: 1,
+    alignItems: "flex-start",
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#2C3E50",
+  },
+  iconsContainer: {
     flexDirection: "row",
-    gap: 20, // Khoảng cách giữa các nút
+    alignItems: "center",
   },
-  logo: {
-    width: 130,
-    height: 130,
-    resizeMode: "contain",
-    aspectRatio: 2, // Đảm bảo logo không bị méo
+  iconContainer: {
+    marginLeft: 20,
+    position: "relative",
   },
-  icon: {
-    padding: 10,
-    borderRadius: 50, // Hình tròn xung quanh các biểu tượng
-    backgroundColor: "#f0f0f0", // Màu nền nhạt cho các biểu tượng
-    elevation: 2, // Thêm hiệu ứng shadow nhẹ cho các nút
+  notificationBadge: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    backgroundColor: "#FF4500",
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  notificationText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "bold",
+    marginTop: -1,
   },
 });
 

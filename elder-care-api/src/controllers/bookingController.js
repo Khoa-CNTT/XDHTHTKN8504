@@ -335,7 +335,6 @@ const bookingController = {
                 ...booking.participants?.map(p => p.userId?.toString())
             ]);
 
-            console.log("Gửi socket đến các userId sau:", Array.from(allUserIds));
 
             allUserIds.forEach(userId => {
                 const socketId = getUserSocketId(userId);
