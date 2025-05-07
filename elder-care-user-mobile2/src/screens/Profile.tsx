@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView, Modal, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  SafeAreaView,
+  Modal,
+  Pressable,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Footer from '../components/Footer';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/StackNavigator';
-import useAuthStore from '../stores/authStore'; // Import useAuthStore
+import useAuthStore from '../stores/authStore';
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -18,28 +27,27 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   {
     id: 'notifications',
-    title: 'Notifications',
+    title: 'Thông báo',
     icon: 'chevron-forward',
   },
   {
     id: 'profile',
-    title: 'Danh sách Profile',
+    title: 'Danh sách Hồ sơ',
     icon: 'chevron-forward',
   },
-
   {
     id: 'help',
-    title: 'Help and Support',
+    title: 'Trợ giúp và Hỗ trợ',
     icon: 'chevron-forward',
   },
   {
     id: 'terms',
-    title: 'Terms and Conditions',
+    title: 'Điều khoản và Điều kiện',
     icon: 'chevron-forward',
   },
   {
     id: 'logout',
-    title: 'Log Out',
+    title: 'Đăng xuất',
     icon: 'chevron-forward',
   },
 ];
@@ -47,12 +55,12 @@ const menuItems: MenuItem[] = [
 const Profile: React.FC = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigation = useNavigation<NavigationProp>();
-  const { logout } = useAuthStore(); // Lấy hàm logout từ store
+  const { logout } = useAuthStore();
 
   const handleLogout = async () => {
     setShowLogoutModal(false);
-    await logout(); // Gọi hàm logout từ store
-    navigation.replace('Login'); // Điều hướng về trang đăng nhập
+    await logout();
+    navigation.replace('Login');
   };
 
   const handleMenuPress = (id: string) => {
@@ -62,7 +70,7 @@ const Profile: React.FC = () => {
       navigation.navigate('Favorites');
     } else if (id === 'notifications') {
       navigation.navigate('Notifications');
-    }else if (id === 'profile') {
+    } else if (id === 'profile') {
       navigation.navigate('ProfileList');
     }
   };
@@ -87,7 +95,7 @@ const Profile: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.headerTitle}>Profile</Text>
+        <Text style={styles.headerTitle}>Trang cá nhân</Text>
 
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
@@ -133,20 +141,20 @@ const Profile: React.FC = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Logout</Text>
-            <Text style={styles.modalText}>Are you sure you want to log out?</Text>
+            <Text style={styles.modalTitle}>Đăng xuất</Text>
+            <Text style={styles.modalText}>Bạn có chắc chắn muốn đăng xuất?</Text>
             <View style={styles.modalButtons}>
               <Pressable
                 style={[styles.button, styles.buttonCancel]}
                 onPress={() => setShowLogoutModal(false)}
               >
-                <Text style={styles.buttonText}>Cancel</Text>
+                <Text style={styles.buttonText}>Hủy</Text>
               </Pressable>
               <Pressable
                 style={[styles.button, styles.buttonLogout]}
                 onPress={handleLogout}
               >
-                <Text style={[styles.buttonText, styles.buttonLogoutText]}>Yes, Logout</Text>
+                <Text style={[styles.buttonText, styles.buttonLogoutText]}>Đồng ý</Text>
               </Pressable>
             </View>
           </View>
