@@ -20,6 +20,8 @@ const useInitService = () => {
         
         connect();
         if (user?._id) {
+          console.log("role from useInitService", user.role);
+          
           join({
             userId: user._id,
             role: user.role,
