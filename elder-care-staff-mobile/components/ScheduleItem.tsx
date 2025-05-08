@@ -2,17 +2,36 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { format } from "date-fns";
 import { Schedule } from "@/types/Schedule";
+import { Clock, User, Info, BadgeCheck} from "lucide-react-native";
+
 
 const getStatusLabel = (status: string) => {
   const statusMap: Record<string, string> = {
     scheduled: "Đang lên lịch",
-    pending: "Đang lên lịch",
-    waiting: "Đang lên lịch",
-    "in-progress": "Đang thực hiện",
-    started: "Đang thực hiện",
-    default: "Không thực hiện",
+    waiting_for_client: "Chờ bạn xác nhận",
+    waiting_for_nurse: "Chờ nhân viên xác nhận",
+    on_the_way: "Nhân viên đang di chuyển",
+    check_in: "Nhân viên đã đến nơi",
+    in_progress: "Đang chăm sóc",
+    check_out: "Hoàn tất, chờ xác nhận",
+    completed: "Đã hoàn tất",
+    cancelled: "Đã hủy",
+    default: "Không rõ trạng thái",
   };
   return statusMap[status] || statusMap["default"];
+};
+
+const statusStyles: Record<string, any> = {
+  in_progress: { color: "#34D399" },
+  scheduled: { color: "#FBBF24" },
+  waiting_for_client: { color: "#FBBF24" },
+  waiting_for_nurse: { color: "#34D399" },
+  on_the_way: { color: "#34D399" },
+  check_in: { color: "#34D399" },
+  check_out: { color: "#34D399" },
+  completed: { color: "#10B981" },
+  cancelled: { color: "#EF4444" },
+  default: { color: "#9CA3AF" },
 };
 
 interface ScheduleItemProps {
@@ -21,10 +40,9 @@ interface ScheduleItemProps {
 }
 
 const ScheduleItem: React.FC<ScheduleItemProps> = ({ schedule, onPress }) => {
-  const { _id, patientName, timeSlots, status, serviceName } = schedule;
+  const { patientName, timeSlots, status, serviceName } = schedule;
 
   let time = "Chưa rõ thời gian";
-
   if (Array.isArray(timeSlots)) {
     time = timeSlots
       .map((slot) => {
@@ -32,9 +50,8 @@ const ScheduleItem: React.FC<ScheduleItemProps> = ({ schedule, onPress }) => {
         try {
           const start = format(new Date(slot.start), "HH:mm");
           const end = format(new Date(slot.end), "HH:mm");
-          return `${start} - ${end}`;
-        } catch (err) {
-          console.warn("Lỗi chuyển đổi ngày giờ:", slot, err);
+          return `${start} ${end}`;
+        } catch {
           return null;
         }
       })
@@ -45,18 +62,37 @@ const ScheduleItem: React.FC<ScheduleItemProps> = ({ schedule, onPress }) => {
   const statusLabel = getStatusLabel(status);
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Text style={styles.time}>{time}</Text>
-      <View style={styles.content}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      <View style={styles.leftSection}>
+        {/* <BadgeCheck size={20} color="#6B7280" /> */}
+        <Text style={styles.time}>{time}</Text>
+      </View>
+
+      <View style={styles.rightSection}>
         <Text style={styles.title}>{serviceName}</Text>
-        {serviceName && (
-          <Text style={styles.service}>Khách hàng: {patientName}</Text>
-        )}
-        <Text
-          style={[styles.status, statusStyles[status] || styles.defaultStatus]}
-        >
-          {statusLabel}
-        </Text>
+        <View style={styles.row}>
+          <User size={16} color="#3B82F6" />
+          <Text style={styles.text}> {patientName}</Text>
+        </View>
+        <View style={styles.row}>
+          <BadgeCheck
+            size={16}
+            color={statusStyles[status]?.color || "#9CA3AF"}
+          />
+          <Text
+            style={[
+              styles.status,
+              { color: statusStyles[status]?.color || "#9CA3AF" },
+            ]}
+          >
+            {" "}
+            {statusLabel}
+          </Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -67,48 +103,52 @@ export default ScheduleItem;
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    padding: 15,
-    marginBottom: 10,
-    borderRadius: 12,
+    backgroundColor: "#F9FAFB",
+    padding: 16,
+    marginVertical: 8,
+    marginHorizontal: 5,
+    borderRadius: 16,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
+  },
+  leftSection: {
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 16,
+    width: 80,
   },
   time: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 18,
+    fontWeight: "600",
     color: "#28A745",
-    width: 100,
-    paddingRight: 15,
+    marginTop: 4,
   },
-  content: {
+  rightSection: {
     flex: 1,
-    gap: 4,
+    justifyContent: "center",
+    gap: 6,
   },
   title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 2,
   },
-  service: {
+  text: {
     fontSize: 14,
-    color: "#17A2B8",
+    color: "#374151",
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2,
   },
   status: {
     fontSize: 14,
     fontWeight: "600",
   },
-  defaultStatus: {
-    color: "#6C757D",
-  },
 });
-
-const statusStyles: Record<string, any> = {
-  "in-progress": { color: "#28A745" },
-  scheduled: { color: "#FFC107" },
-  pending: { color: "#FFC107" },
-  waiting: { color: "#FFC107" },
-};

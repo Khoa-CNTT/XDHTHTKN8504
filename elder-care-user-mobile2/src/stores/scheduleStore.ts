@@ -12,17 +12,22 @@ export type ScheduleUser = Schedule & {
 
 interface ScheduleStore {
   schedules: ScheduleUser[];
+  schedule: ScheduleUser;
   loading: boolean;
   error: string | null;
   hasFetched: boolean;
   fetchSchedules: () => Promise<void>;
   setSchedules: (schedules: ScheduleUser[]) => void;
-  updateSchedule: (data: { scheduleId: string; newStatus: ScheduleStatus }) => void;
+  updateSchedule: (data: {
+    scheduleId: string;
+    newStatus: ScheduleStatus;
+  }) => void;
   getScheduleById: (id: string) => ScheduleUser | undefined;
 }
 
 const useScheduleStore = create<ScheduleStore>((set, get) => ({
   schedules: [],
+  schedule: null,
   loading: false,
   error: null,
   hasFetched: false,
@@ -80,7 +85,11 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
   },
 
   getScheduleById: (id: string) => {
-    return get().schedules.find((schedule) => schedule._id === id);
+    const findSchedule = get().schedules.find((schedule) => schedule._id === id);
+    set({
+      schedule: findSchedule,
+    })
+    return findSchedule;
   },
 }));
 

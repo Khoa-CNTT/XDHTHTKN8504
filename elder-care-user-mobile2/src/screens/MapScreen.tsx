@@ -9,39 +9,36 @@ import {
 } from "react-native";
 import { Button } from "react-native-paper";
 import { Phone, MessageCircle } from "lucide-react-native";
-
 import { useRoute, RouteProp } from "@react-navigation/native";
 
 import useScheduleStore from "../stores/scheduleStore";
 import { ScheduleStatus } from "../types/ScheduleStatus";
 import { MapWithRoute } from "../components/MapWithRoute";
 import updateScheduleStatus from "../api/ScheduleStatusApi";
-
-type MapRouteParams = {
-  Map: { id: string };
-};
+import Footer from "../components/Footer";
 
 const MapScreen: React.FC = () => {
-
   const route = useRoute<RouteProp<{ Map: { id: string } }, "Map">>();
   const { id } = route.params;
-  const nearestSchedule = useScheduleStore((state) => state.getScheduleById(id));
+
+  const [loading, setLoading] = useState(true);
+  const nearestSchedule = useScheduleStore((state) =>
+    state.getScheduleById(id)
+  );
+
+  useEffect(() => {
+    if (nearestSchedule) {
+      setLoading(false);
+    }
+  }, [nearestSchedule]);
 
   const updateSchedule = useScheduleStore((state) => state.updateSchedule);
-  
 
-  // Hàm cập nhật trạng thái lịch
   const handleUpdateStatus = async (newStatus: ScheduleStatus) => {
     if (!nearestSchedule) return;
     try {
-      const updatedSchedule = await updateScheduleStatus(
-        nearestSchedule._id,
-        newStatus
-      );
-      updateSchedule({
-        scheduleId: nearestSchedule._id,
-        newStatus: newStatus,
-      }); // cập nhật local store
+      await updateScheduleStatus(nearestSchedule._id, newStatus);
+      updateSchedule({ scheduleId: nearestSchedule._id, newStatus });
     } catch (error) {
       console.error("Không thể cập nhật trạng thái:", error);
     }
@@ -51,49 +48,46 @@ const MapScreen: React.FC = () => {
     switch (status) {
       case "scheduled":
         return (
-          <TouchableOpacity
-            style={styles.actionButton}
-          >
-            <Text style={styles.actionButtonText}>Lịch chưa tới thời gian thực hiện</Text>
+          <TouchableOpacity style={styles.actionButton}>
+            <Text style={styles.actionButtonText}>
+              Lịch chưa tới thời gian thực hiện
+            </Text>
           </TouchableOpacity>
         );
       case "waiting_for_client":
         return (
-          <TouchableOpacity style={styles.actionButton}
-             onPress={() => handleUpdateStatus("waiting_for_nurse")}
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleUpdateStatus("waiting_for_nurse")}
           >
             <Text style={styles.actionButtonText}>Sẵn sàng</Text>
           </TouchableOpacity>
         );
-        
       case "on_the_way":
         return (
-          <TouchableOpacity
-            style={styles.actionButton}
-          >
-            <Text style={styles.actionButtonText}>Nhân viên đang trên đường tới</Text>
+          <TouchableOpacity style={styles.actionButton}>
+            <Text style={styles.actionButtonText}>
+              Nhân viên đang trên đường tới
+            </Text>
           </TouchableOpacity>
         );
       case "check_in":
         return (
-          <TouchableOpacity
-            style={styles.actionButton}
-          >
+          <TouchableOpacity style={styles.actionButton}>
             <Text style={styles.actionButtonText}>Nhân viên đã tới</Text>
           </TouchableOpacity>
         );
       case "in_progress":
         return (
-          <TouchableOpacity
-            style={styles.actionButton}
-          >
+          <TouchableOpacity style={styles.actionButton}>
             <Text style={styles.actionButtonText}>Đang chăm sóc</Text>
           </TouchableOpacity>
         );
       case "check_out":
         return (
-          <TouchableOpacity style={styles.actionButton}
-             onPress={() => handleUpdateStatus("completed")}
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleUpdateStatus("completed")}
           >
             <Text style={styles.actionButtonText}>Xác nhận hoàn thành</Text>
           </TouchableOpacity>
@@ -101,10 +95,7 @@ const MapScreen: React.FC = () => {
       case "completed":
       case "cancelled":
         return (
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => {}}
-          >
+          <TouchableOpacity style={styles.actionButton}>
             <Text style={styles.actionButtonText}>Kết thúc chăm sóc</Text>
           </TouchableOpacity>
         );
@@ -114,6 +105,10 @@ const MapScreen: React.FC = () => {
         );
     }
   };
+
+  if (loading) {
+    return <Text>Loading...</Text>;
+  }
 
   if (!nearestSchedule) {
     return (
@@ -125,57 +120,56 @@ const MapScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <MapWithRoute customerAddress={nearestSchedule.serviceName} />
-
+      <MapWithRoute customerAddress={nearestSchedule?.serviceName || ""} />
       <View style={styles.overlay}>
-        <View style={styles.arrivalInfo}>
-          <View style={styles.userInfo}>
-            <Image
-              source={{
-                uri: "https://via.placeholder.com/40", // Placeholder ảnh bệnh nhân
-              }}
-              style={styles.avatar}
-            />
-            <View>
-              <Text style={styles.userName}>
-                {nearestSchedule.staffFullName || "Tên khách hàng"}
-              </Text>
-              <Text style={styles.travelInfo}>
-                {nearestSchedule.staffPhone}
-              </Text>
+        <View style={styles.content}>
+          <View style={styles.arrivalInfo}>
+            <View style={styles.userInfo}>
+              <Image
+                source={{ uri: "https://via.placeholder.com/40" }}
+                style={styles.avatar}
+              />
+              <View>
+                <Text style={styles.userName}>
+                  {nearestSchedule.staffFullName || "Tên khách hàng"}
+                </Text>
+                <Text style={styles.travelInfo}>
+                  {nearestSchedule.staffPhone}
+                </Text>
+              </View>
             </View>
           </View>
+
+          <View style={styles.buttonRow}>
+            <Button
+              mode="outlined"
+              icon={() => <Phone size={20} />}
+              style={styles.button}
+              onPress={() => {
+                const phoneNumber = nearestSchedule.staffPhone;
+                if (phoneNumber) {
+                  Linking.openURL(`tel:${phoneNumber}`);
+                } else {
+                  console.log("Số điện thoại không hợp lệ");
+                }
+              }}
+            >
+              Call
+            </Button>
+            <Button
+              mode="outlined"
+              icon={() => <MessageCircle size={20} />}
+              style={styles.button}
+              onPress={() => {}}
+            >
+              Chat
+            </Button>
+          </View>
+
+          {renderActionButtonByStatus(nearestSchedule.status)}
         </View>
 
-        <View style={styles.buttonRow}>
-          <Button
-            mode="outlined"
-            icon={() => <Phone size={20} />}
-            style={styles.button}
-            onPress={() => {
-              const phoneNumber = nearestSchedule.staffPhone;
-              if (phoneNumber) {
-                Linking.openURL(`tel:${phoneNumber}`);
-              } else {
-                console.log("Số điện thoại không hợp lệ");
-              }
-            }}
-          >
-            Call
-          </Button>
-          <Button
-            mode="outlined"
-            icon={() => <MessageCircle size={20} />}
-            style={styles.button}
-            onPress={() => {
-              
-            }}
-          >
-            Chat
-          </Button>
-        </View>
-
-        {renderActionButtonByStatus(nearestSchedule.status)} 
+        <Footer />
       </View>
     </View>
   );
@@ -183,7 +177,6 @@ const MapScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F5F5F5" },
-  map: { ...StyleSheet.absoluteFillObject },
   overlay: {
     position: "absolute",
     bottom: 0,
@@ -196,16 +189,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 10,
+    flexDirection: "column",
+    justifyContent: "space-between",
+    maxHeight: "65%",
   },
-  showWayBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  showWayText: {
-    marginLeft: 6,
-    color: "#000",
-    fontWeight: "bold",
+  content: {
+    flexGrow: 1,
+    paddingBottom: 70,
   },
   arrivalInfo: {
     marginBottom: 16,

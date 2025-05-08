@@ -6,15 +6,12 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   FlatList,
-  ScrollView, // Đảm bảo ScrollView được sử dụng đúng cách
 } from "react-native";
 import { Card, Divider } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import useScheduleStore from "../../stores/scheduleStore";
 import { router } from "expo-router";
 import { Schedule } from "@/types/Schedule";
-
-
 
 const AvailableWorkList = () => {
   const schedules = useScheduleStore((state) => state.schedules);
@@ -34,68 +31,67 @@ const AvailableWorkList = () => {
   }
 
   const renderItem = ({ item }: { item: Schedule }) => (
-    <View key={item._id}>
-      <TouchableOpacity
-        onPress={() => router.push(`/screens/schedule-detail/${item._id}`)}
-      >
-        <View style={styles.jobItem}>
+    <TouchableOpacity
+      key={item._id}
+      onPress={() => router.push(`/screens/schedule-detail/${item._id}`)}
+    >
+      <View style={styles.jobItem}>
+        <Ionicons
+          name="location-outline"
+          size={20}
+          color="#007bff"
+          style={styles.icon}
+        />
+        <View style={styles.jobInfo}>
+          <Text style={styles.jobTitle}>{item.patientName}</Text>
+          <Text style={styles.jobSubtitle}>{item.serviceName}</Text>
+        </View>
+      </View>
+      <Divider style={styles.divider} />
+    </TouchableOpacity>
+  );
+
+  const ListHeader = () => (
+    <Card style={styles.card}>
+      <Card.Title
+        titleStyle={{ fontSize: 16, fontWeight: "bold" }}
+        title="Công việc hôm nay"
+        left={() => (
           <Ionicons
-            name="location-outline"
-            size={20}
+            name="calendar-outline"
+            size={24}
             color="#007bff"
             style={styles.icon}
           />
-          <View style={styles.jobInfo}>
-            <Text style={styles.jobTitle}>{item.patientName}</Text>
-            <Text style={styles.jobSubtitle}>{item.serviceName}</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-      <Divider style={styles.divider} />
-    </View>
+        )}
+      />
+      <Card.Content>
+        {todayJobs.length === 0 && (
+          <Text style={styles.emptyText}>Không có công việc trong hôm nay</Text>
+        )}
+      </Card.Content>
+    </Card>
   );
 
   return (
-    <ScrollView style={styles.scrollView}>
-      {" "}
-      {/* Thêm ScrollView vào đây */}
-      <Card style={styles.card}>
-        <Card.Title
-          titleStyle={{ fontSize: 16, fontWeight: "bold" }}
-          title="Công việc hôm nay"
-          left={() => (
-            <Ionicons
-              name="calendar-outline"
-              size={24}
-              color="#007bff"
-              style={styles.icon}
-            />
-          )}
-        />
-        <Card.Content>
-          {todayJobs.length === 0 ? (
-            <Text style={styles.emptyText}>
-              Không có công việc trong hôm nay
-            </Text>
-          ) : (
-            <FlatList
-              data={todayJobs}
-              renderItem={renderItem}
-              keyExtractor={(item) => item._id}
-              initialNumToRender={10}
-              maxToRenderPerBatch={5}
-              windowSize={5}
-            />
-          )}
-        </Card.Content>
-      </Card>
-    </ScrollView>
+    <View style={styles.container}>
+      <FlatList
+        data={todayJobs}
+        renderItem={renderItem}
+        keyExtractor={(item) => item._id}
+        ListHeaderComponent={ListHeader}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        initialNumToRender={10}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1, // Đảm bảo ScrollView chiếm toàn bộ không gian có sẵn
+  container: {
+    flex: 1,
   },
   card: {
     margin: 10,
@@ -112,6 +108,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 10,
+    paddingHorizontal: 16,
   },
   jobInfo: {
     marginLeft: 10,
@@ -122,12 +119,13 @@ const styles = StyleSheet.create({
   jobSubtitle: {
     fontSize: 14,
     color: "#666",
-    flexWrap: "wrap", // Cho phép text xuống dòng
+    flexWrap: "wrap",
     width: 300,
     flexShrink: 1,
   },
   divider: {
     marginVertical: 5,
+    marginHorizontal: 16,
   },
   emptyText: {
     textAlign: "center",

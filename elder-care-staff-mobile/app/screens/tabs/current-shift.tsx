@@ -13,23 +13,20 @@ import { MapWithRoute } from "@/components/MapWithRoute";
 const ShiftWorkScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const nearestSchedule = useScheduleStore((state) => state.nearestSchedule);
-  const getNearestSchedule = useScheduleStore(
-    (state) => state.getNearestSchedule
-  );
+  
   const updateSchedule = useScheduleStore((state) => state.updateSchedule);
-  // Kết nối socket với lịch hiện tại
+
   useScheduleSocket(nearestSchedule?.schedule._id || "");
 
   // Hàm cập nhật trạng thái lịch
   const handleUpdateStatus = async (newStatus: ScheduleStatus) => {
     if (!nearestSchedule) return;
     try {
-      const updatedSchedule = await ScheduleStatusApi.updateScheduleStatus(
+      await ScheduleStatusApi.updateScheduleStatus(
         nearestSchedule.schedule._id,
         newStatus
       );
-      updateSchedule(updatedSchedule); // cập nhật local store
-      getNearestSchedule();
+      updateSchedule(nearestSchedule.schedule._id, newStatus); 
     } catch (error) {
       console.error("Không thể cập nhật trạng thái:", error);
     }

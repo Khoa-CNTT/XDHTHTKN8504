@@ -14,7 +14,6 @@ import DoctorDetails from "../screens/DoctorDetails";
 import BookAppointment from "../screens/BookAppointment";
 import MyBookings from "../screens/MyBookings";
 import Profile from "../screens/Profile";
-// import Favorites from "../screens/Favorites";
 import Notifications from "../screens/Notifications";
 import MapScreen from "../screens/MapScreen";
 import FeaturedServiceScreen from '../screens/FeaturedServiceScreen';
@@ -30,6 +29,7 @@ import EditCareRecipientScreen from '../screens/EditCareRecipientScreen';
 import WorkScreen from '../screens/work-screen';
 import ServiceScreen from '../screens/ServiceScreen'; 
 import Seach from '../screens/Seach';
+import ChatScreen from '../screens/ChatSreen';
 
 
 export type RootStackParamList = {
@@ -46,7 +46,7 @@ export type RootStackParamList = {
   MyBookings: undefined;
   Favorites: undefined;
   Notifications: undefined;
-  Map: undefined;
+  Map: {id: string};
   FeaturedService: undefined;
   Booking: undefined;
   AddCareRecipient: undefined;
@@ -58,7 +58,7 @@ export type RootStackParamList = {
   WorkScreen: undefined;
   ServiceScreen: undefined;
   Seach: undefined;
-
+  Chat: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -69,49 +69,47 @@ const defaultScreenOptions: StackNavigationOptions = {
 
 const StackNavigator = (): JSX.Element => {
   return (
-      <Stack.Navigator
-          id = {undefined}
-          screenOptions={defaultScreenOptions}
-      >
-        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+    <Stack.Navigator id={undefined} screenOptions={defaultScreenOptions}>
+      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
 
-        <Stack.Screen
-          name="OTPVerification"
-          component={OTPVerificationScreen}
-        />
+      <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
 
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="DoctorDetails" component={DoctorDetails} />
-        <Stack.Screen name="BookAppointment" component={BookAppointment} />
-        <Stack.Screen name="Profile" component={Profile} />
-        <Stack.Screen name="MyBookings" component={MyBookings} />
-        <Stack.Screen name="WorkScreen" component={WorkScreen} />
-        {/* <Stack.Screen name="Favorites" component={Favorites} /> */}
-        <Stack.Screen name="Notifications" component={Notifications} />
-        <Stack.Screen name="Map" component={MapScreen} />
-        <Stack.Screen name="FeaturedService" component={FeaturedServiceScreen}/>
-        <Stack.Screen name="Booking" component={BookingScreen} />
-        <Stack.Screen name="AddCareRecipient" component={AddCareRecipientScreen}/>
-        <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
-        <Stack.Screen name="BookVisit" component={BookVisitScreen} />
-        <Stack.Screen name="ProfileList" component={ProfileListScreen} />
-        <Stack.Screen name="EditCareRecipient" component={EditCareRecipientScreen} />
-        <Stack.Screen name="ServiceScreen" component={ServiceScreen} />
-        <Stack.Screen name="Seach" component={Seach} />
-        
+      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="DoctorDetails" component={DoctorDetails} />
+      <Stack.Screen name="BookAppointment" component={BookAppointment} />
+      <Stack.Screen name="Profile" component={Profile} />
+      <Stack.Screen name="MyBookings" component={MyBookings} />
+      <Stack.Screen name="WorkScreen" component={WorkScreen} />
+      <Stack.Screen name="Notifications" component={Notifications} />
+      <Stack.Screen name="Map" component={MapScreen} />
+      <Stack.Screen name="Chat" component={ChatScreen} />
+      <Stack.Screen name="FeaturedService" component={FeaturedServiceScreen} />
+      <Stack.Screen name="Booking" component={BookingScreen} />
+      <Stack.Screen
+        name="AddCareRecipient"
+        component={AddCareRecipientScreen}
+      />
+      <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
+      <Stack.Screen name="BookVisit" component={BookVisitScreen} />
+      <Stack.Screen name="ProfileList" component={ProfileListScreen} />
+      <Stack.Screen
+        name="EditCareRecipient"
+        component={EditCareRecipientScreen}
+      />
+      <Stack.Screen name="ServiceScreen" component={ServiceScreen} />
+      <Stack.Screen name="Seach" component={Seach} />
 
-        <Stack.Screen name="BookingSuccess" component={BookingSuccessScreen} />
+      <Stack.Screen name="BookingSuccess" component={BookingSuccessScreen} />
 
-        {/* Add other screens here */}
-        {/* <Stack.Screen name="AddCareRecipient" component={AddCareRecipientScreen} /> */}
-        {/* Add other screens here */}
-        {/* <Stack.Screen name="AddCareRecipient" component={AddCareRecipientScreen} /> */}
-        {/* Add other screens here */}
-      </Stack.Navigator>
-
+      {/* Add other screens here */}
+      {/* <Stack.Screen name="AddCareRecipient" component={AddCareRecipientScreen} /> */}
+      {/* Add other screens here */}
+      {/* <Stack.Screen name="AddCareRecipient" component={AddCareRecipientScreen} /> */}
+      {/* Add other screens here */}
+    </Stack.Navigator>
   );
 };
 

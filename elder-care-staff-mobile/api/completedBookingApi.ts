@@ -7,10 +7,12 @@ interface ApiResponse {
   message: string;
   bookings: CompletedBooking[]; // Đảm bảo data trả về là mảng các CompletedBooking
 }
-
+interface CompletedBookingParams {
+  year?: number;
+  month?: number;
+}
 const getCompletedBookings = async (
-  year: number,
-  month: number
+  params: CompletedBookingParams
 ): Promise<CompletedBooking[]> => {
   try {
     const token = useAuthStore.getState().token; // Lấy token từ store
@@ -26,7 +28,7 @@ const getCompletedBookings = async (
           Authorization: `Bearer ${token}`,
           "Cache-Control": "no-cache",
         },
-        params: { year, month },
+        params: { ...params },
       }
     );
 
