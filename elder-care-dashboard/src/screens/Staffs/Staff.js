@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { MdOutlineCloudDownload } from "react-icons/md";
 import { toast } from "react-hot-toast";
 import { BiPlus } from "react-icons/bi";
@@ -9,10 +9,48 @@ import { doctorsData } from "../../components/Datas";
 import { useNavigate } from "react-router-dom";
 import AddDoctorModal from "../../components/Modals/AddDoctorModal";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchStaffList } from "../../store/staffSlice.js";
+import { getUserIdFromToken } from "../../utils/jwtHelper.js";
+import { io } from "socket.io-client";
 
-function Nurses() {
+const socket = io("http://localhost:5000");
+
+function Staffs() {
   const [isOpen, setIsOpen] = React.useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { staffList, loading, error } = useSelector((state) => state.staff);
+
+  useEffect(() => {
+    dispatch(fetchStaffList());
+
+    const user = getUserIdFromToken();
+
+    if (user) {
+      socket.emit("join", {
+        role: user.role,
+      })
+      // console.log("socket join", user);
+    }
+    socket.on("newStaffCreated", (newStaff) => {
+      console.log("📥 Staff mới! Gọi lại fetchStaffList");
+      dispatch(fetchStaffList());
+    });
+
+    return () => {
+      socket.off("newStaffCreated");
+    };
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (staffList.length > 0) {
+      console.log('staffList:', staffList);
+    }
+  }, [staffList]);
+
+  if (loading) return <p>Đang tải...</p>;
+  if (error) return <p>Lỗi: {error}</p>;
 
   const onCloseModal = () => {
     setIsOpen(false);
@@ -85,7 +123,7 @@ function Nurses() {
         <div className="mt-8 w-full overflow-x-scroll">
           <DoctorsTable
             doctor={true}
-            data={doctorsData}
+            data={staffList}
             functions={{
               preview: preview,
             }}
@@ -96,4 +134,4 @@ function Nurses() {
   );
 }
 
-export default Nurses;
+export default Staffs;

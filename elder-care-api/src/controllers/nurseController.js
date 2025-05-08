@@ -1,9 +1,11 @@
 import Nurse from "../models/Nurse.js";
 import User from "../models/User.js";
+import { getIO } from "../config/socketConfig.js";
 
 const nurseController = {
     // Create a new nurse
     createNurse: async (req, res) => {
+        const io = getIO();
         try {
             const { userId, firstName, lastName, email, specialization, licenseNumber, experience, isAvailable } = req.body;
 
@@ -30,6 +32,10 @@ const nurseController = {
             }
 
             await newNurse.save();
+
+            // Emit event to socket.io
+            io.to('staff_admin').emit('newStaffCreated', newNurse);
+
             return res.status(201).json({
                 message: "Successfully created nurse",
                 nurse: newNurse,

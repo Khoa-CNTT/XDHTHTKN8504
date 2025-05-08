@@ -11,6 +11,10 @@ import AddDoctorModal from "../components/Modals/AddDoctorModal";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBookings } from '../store/bookingSlice.js';
+import { getUserIdFromToken } from "../utils/jwtHelper.js";
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:5000')
 
 function Booking() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -21,10 +25,28 @@ function Booking() {
 
   useEffect(() => {
     dispatch(fetchBookings());
+
+    const user = getUserIdFromToken();
+    // console.log("user", user);
+
+    if (user) {
+      socket.emit("join", {
+        role: user.role,
+      });
+    }
+    socket.on("newBookingCreated", (newBooking) => {
+      console.log("📥 Booking mới! Gọi lại fetchBookings");
+      dispatch(fetchBookings());
+    });
+
+    // Cleanup khi component unmount
+    return () => {
+      socket.off("newBookingCreated");
+    };
+    
   }, [dispatch]);
 
   console.log("bookings", bookings);
-
 
   const onCloseModal = () => {
     setIsOpen(false);

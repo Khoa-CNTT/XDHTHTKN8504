@@ -20,8 +20,8 @@ import PreviewPayment from "./screens/Payments/PreviewPayment";
 // import Medicine from "./screens/Medicine";
 import PatientProfile from "./screens/Patients/PatientProfile";
 import CreatePatient from "./screens/Patients/CreatePatient";
-import Nurses from "./screens/Nurses/Nurses";
-import DoctorProfile from "./screens/Nurses/DoctorProfile";
+import Staffs from "./screens/Staffs/Staff";
+import DoctorProfile from "./screens/Staffs/DoctorProfile";
 import Receptions from "./screens/Receptions";
 import NewMedicalRecode from "./screens/Patients/NewMedicalRecode";
 import NotFound from "./screens/NotFound";
@@ -60,7 +60,7 @@ function App() {
             element={<NewMedicalRecode />}
           />
           {/* doctors */}
-          <Route path="/nurses" element={<Nurses />} />
+          <Route path="/staffs" element={<Staffs />} />
           <Route path="/nurses/preview/:id" element={<DoctorProfile />} />
 
           {/* reception */}
