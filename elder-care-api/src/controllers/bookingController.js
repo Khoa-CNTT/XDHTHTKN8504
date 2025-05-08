@@ -108,6 +108,8 @@ const bookingController = {
                 );
             }
 
+            io.to("staff_admin").emit("newBookingCreated", populatedBooking);
+
             return res.status(201).json({
                 message: "Booking created successfully",
                 booking: newBooking,

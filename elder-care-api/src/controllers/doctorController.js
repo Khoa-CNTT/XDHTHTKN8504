@@ -1,9 +1,11 @@
 import Doctor from "../models/Doctor.js"
 import User from "../models/User.js";
+import { getIO } from "../config/socketConfig.js";
 
 const docterController = {
     // create docter
     createDoctor: async (req, res) => {
+        const io = getIO();
         try {
             const { userId, firstName, lastName, email, specialization, licenseNumber, experience, isAvailable } = req.body
 
@@ -32,6 +34,10 @@ const docterController = {
             }
 
             await newDoctor.save()
+
+            //emit event to socket.io
+            io.to('staff_admin').emit('newStaffCreated', newDoctor);
+
             return res.status(201).json({
                 message: "Tạo bác sĩ thành công",
                 doctor: newDoctor,

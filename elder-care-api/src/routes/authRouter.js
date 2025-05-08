@@ -31,4 +31,10 @@ router.patch(
     authController.updateAvailabilityStatus
 )
 
+// Get Staff
+router.get(
+    "/get-staff",
+    authController.getAllStaff
+)
+
 export default router;
