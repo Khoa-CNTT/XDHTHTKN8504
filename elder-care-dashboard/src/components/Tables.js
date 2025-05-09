@@ -492,7 +492,7 @@ export function DoctorsTable({ data, functions, doctor }) {
             <td className={tdclass}>{item.user.email}</td>
             <td className={tdclass}>
               <Link
-                to={`/nurses/payroll/${data.id}`}
+                to={`/nurses/nurse-salary`}
                 className="bg-blue-500 text-white px-3 py-1 rounded"
               >
                 Xem lương

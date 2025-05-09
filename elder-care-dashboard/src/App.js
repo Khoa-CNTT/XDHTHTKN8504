@@ -21,6 +21,7 @@ import PreviewPayment from "./screens/Payments/PreviewPayment";
 import PatientProfile from "./screens/Patients/PatientProfile";
 import CreatePatient from "./screens/Patients/CreatePatient";
 import Nurses from "./screens/Nurses/Nurses";
+import NurseSalary from "./screens/Nurses/NursesSalary";
 import DoctorProfile from "./screens/Nurses/DoctorProfile";
 import Receptions from "./screens/Receptions";
 import NewMedicalRecode from "./screens/Patients/NewMedicalRecode";
@@ -61,6 +62,7 @@ function App() {
           />
           {/* doctors */}
           <Route path="/nurses" element={<Nurses />} />
+          <Route path="/nurses/nurse-salary" element={<NurseSalary />} />
           <Route path="/nurses/preview/:id" element={<DoctorProfile />} />
 
           {/* reception */}
