@@ -16,8 +16,16 @@ import { ScheduleStatus } from "../types/ScheduleStatus";
 import { MapWithRoute } from "../components/MapWithRoute";
 import updateScheduleStatus from "../api/ScheduleStatusApi";
 import Footer from "../components/Footer";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+
+type RootStackParamList = {
+  Home: undefined;
+};
+type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 const MapScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProp<{ Map: { id: string } }, "Map">>();
   const { id } = route.params;
 
@@ -32,12 +40,19 @@ const MapScreen: React.FC = () => {
     }
   }, [nearestSchedule]);
 
+  useEffect(() => {
+    if (nearestSchedule?.status === "completed") {
+      navigation.navigate("Home");
+    }
+  }, [nearestSchedule?.status]); // Watch for status changes to navigate to Home
+
   const updateSchedule = useScheduleStore((state) => state.updateSchedule);
 
   const handleUpdateStatus = async (newStatus: ScheduleStatus) => {
     if (!nearestSchedule) return;
     try {
       await updateScheduleStatus(nearestSchedule._id, newStatus);
+      // Update the schedule in the store
       updateSchedule({ scheduleId: nearestSchedule._id, newStatus });
     } catch (error) {
       console.error("Không thể cập nhật trạng thái:", error);
@@ -168,7 +183,6 @@ const MapScreen: React.FC = () => {
 
           {renderActionButtonByStatus(nearestSchedule.status)}
         </View>
-
         <Footer />
       </View>
     </View>

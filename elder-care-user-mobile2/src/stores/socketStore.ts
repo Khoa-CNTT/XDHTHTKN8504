@@ -2,6 +2,8 @@ import { create } from "zustand";
 import socket from "../utils/socket";
 import useScheduleStore from "./scheduleStore";
 import { useModalStore } from "./modalStore";
+import { useNavigation } from "@react-navigation/native";
+
 
 const getStatusLabel = (status: string) => {
   const statusMap: Record<string, string> = {

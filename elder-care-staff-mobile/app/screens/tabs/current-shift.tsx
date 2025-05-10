@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import {log} from "../../../utils/logger"
 import { View, Text, Image, StyleSheet, TouchableOpacity, Linking } from "react-native";
 import { Button } from "react-native-paper";
 import { MapPin, Phone, MessageCircle } from "lucide-react-native";
@@ -9,6 +10,7 @@ import { ScheduleStatus } from "../../../types/ScheduleStatus";
 import { useScheduleSocket } from "../../../hooks/useScheduleSocket";
 import ScheduleStatusApi from "../../../api/ScheduleStatusApi";
 import { MapWithRoute } from "@/components/MapWithRoute";
+import canStartSchedule from "@/utils/canStartSchedule";
 
 const ShiftWorkScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -32,15 +34,27 @@ const ShiftWorkScreen = () => {
     }
   };
 
-  const renderActionButtonByStatus = (status: ScheduleStatus) => {
+  const renderActionButtonByStatus = (
+    status: ScheduleStatus,
+    start: Date
+  ) => {
+    console.log("🔍 start time", start);
+    const isTimeReady = canStartSchedule(start);
+    console.log("✅ isTimeReady", isTimeReady);
     switch (status) {
       case "scheduled":
         return (
           <TouchableOpacity
-            style={styles.actionButton}
+            style={[
+              styles.actionButton,
+              !isTimeReady && { backgroundColor: "#ccc" }, // màu xám nếu chưa sẵn sàng
+            ]}
+            disabled={!isTimeReady} // không cho bấm nếu chưa sẵn sàng
             onPress={() => handleUpdateStatus("waiting_for_client")}
           >
-            <Text style={styles.actionButtonText}>Bắt đầu</Text>
+            <Text style={styles.actionButtonText}>
+              {isTimeReady ? "Bắt đầu" : "Chưa đến thời gian"}
+            </Text>
           </TouchableOpacity>
         );
       case "waiting_for_client":
@@ -87,10 +101,10 @@ const ShiftWorkScreen = () => {
         );
       case "check_out":
         return (
-          <TouchableOpacity
-            style={styles.actionButton}
-          >
-            <Text style={styles.actionButtonText}>Chờ khách hàng xác nhận hoàn thành</Text>
+          <TouchableOpacity style={styles.actionButton}>
+            <Text style={styles.actionButtonText}>
+              Chờ khách hàng xác nhận hoàn thành
+            </Text>
           </TouchableOpacity>
         );
       case "completed":
@@ -128,9 +142,7 @@ const ShiftWorkScreen = () => {
 
   return (
     <View style={styles.container}>
-      <MapWithRoute 
-        customerAddress={nearestSchedule.customerAddress}
-      />
+      <MapWithRoute customerAddress={nearestSchedule.customerAddress} />
 
       <View style={styles.overlay}>
         <View style={styles.arrivalInfo}>
@@ -145,7 +157,9 @@ const ShiftWorkScreen = () => {
               <Text style={styles.userName}>
                 {nearestSchedule.schedule.patientName || "Tên khách hàng"}
               </Text>
-              <Text style={styles.travelInfo}>{nearestSchedule.serviceName}</Text>
+              <Text style={styles.travelInfo}>
+                {nearestSchedule.serviceName}
+              </Text>
             </View>
           </View>
         </View>
@@ -183,7 +197,12 @@ const ShiftWorkScreen = () => {
           onClose={() => setModalVisible(false)}
         />
 
-        {renderActionButtonByStatus(nearestSchedule.schedule.status)}
+        {nearestSchedule && nearestSchedule.schedule.timeSlots[0]?.start
+          ? renderActionButtonByStatus(
+              nearestSchedule.schedule.status,
+              new Date(nearestSchedule.schedule.timeSlots[0].start)
+            )
+          : null}
       </View>
     </View>
   );

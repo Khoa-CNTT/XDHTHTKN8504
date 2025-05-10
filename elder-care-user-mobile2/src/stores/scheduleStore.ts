@@ -12,7 +12,7 @@ export type ScheduleUser = Schedule & {
 
 interface ScheduleStore {
   schedules: ScheduleUser[];
-  schedule: ScheduleUser;
+  // schedule: ScheduleUser;
   loading: boolean;
   error: string | null;
   hasFetched: boolean;
@@ -27,7 +27,6 @@ interface ScheduleStore {
 
 const useScheduleStore = create<ScheduleStore>((set, get) => ({
   schedules: [],
-  schedule: null,
   loading: false,
   error: null,
   hasFetched: false,
@@ -85,11 +84,7 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
   },
 
   getScheduleById: (id: string) => {
-    const findSchedule = get().schedules.find((schedule) => schedule._id === id);
-    set({
-      schedule: findSchedule,
-    })
-    return findSchedule;
+    return get().schedules.find((schedule) => schedule._id === id);
   },
 }));
 

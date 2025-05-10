@@ -3,6 +3,7 @@ import useAuthStore from "@/stores/authStore";
 import { useSocketStore } from "@/stores/socketStore";
 import initService from "@/utils/initService"; // Hàm khởi tạo dịch vụ
 import { loadAllSounds } from "@/utils/soundService";
+import {log} from "../utils/logger";
 
 const useInitService = () => {
   const { restoreSession } = useAuthStore.getState();
@@ -20,6 +21,7 @@ const useInitService = () => {
       // Nếu đã có token, kết nối socket
       if (token) {
         connect();
+        log('Tokem from init:', token )
         if (user?._id) {
           join({
             userId: user._id,
