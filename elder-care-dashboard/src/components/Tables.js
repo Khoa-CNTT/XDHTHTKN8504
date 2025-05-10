@@ -365,6 +365,8 @@ export function PatientTable({ data, functions, used }) {
     ];
   const thclasse = "text-start text-sm font-medium py-3 px-2 whitespace-nowrap";
   const tdclasse = "text-start text-xs py-4 px-2 whitespace-nowrap";
+
+
   return (
     <table className="table-auto w-full">
       <thead className="bg-dry rounded-md overflow-hidden">
@@ -384,58 +386,75 @@ export function PatientTable({ data, functions, used }) {
         </tr>
       </thead>
       <tbody>
-        {data.map((item, index) => (
-          <tr
-            key={item.id}
-            className="border-b border-border hover:bg-greyed transitions"
-          >
-            <td className={tdclasse}>{index + 1}</td>
-            <td className={tdclasse}>
-              <div className="flex gap-4 items-center">
-                {!used && (
-                  <span className="w-12">
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-full h-12 rounded-full object-cover border border-border"
-                    />
-                  </span>
-                )}
+        {data?.map((item, index) => {
+          let firstName = "Không rõ";
+          let lastName;
+        
+          if (item.profiles && item.profiles.length > 0) {
+            firstName = item.profiles[0].firstName || "Không rõ";
+            lastName = item.profiles[0].lastName || "Không rõ";
+          }
+          
+          const phoneNumber = item.phone || "Không rõ";
+          const createdDate = new Date(item.createdAt).toLocaleDateString("vi-VN") || "Không rõ";
+          const gender = 'Male';
+          const bloodType = "Không rõ";
+          const age = "Không rõ";
 
-                <div>
-                  <h4 className="text-sm font-medium">{item.title}</h4>
-                  <p className="text-xs mt-1 text-textGray">{item.phone}</p>
+
+          return (
+            <tr
+              key={item.id}
+              className="border-b border-border hover:bg-greyed transitions"
+            >
+              <td className={tdclasse}>{index + 1}</td>
+              <td className={tdclasse}>
+                <div className="flex gap-4 items-center">
+                  {/* {!used && (
+                    <span className="w-12">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-12 rounded-full object-cover border border-border"
+                      />
+                    </span>
+                  )} */}
+
+                  <div>
+                    <h4 className="text-sm font-medium">{firstName} {lastName}</h4>
+                    <p className="text-xs mt-1 text-textGray">{phoneNumber}</p>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td className={tdclasse}>{item.date}</td>
+              </td>
+              <td className={tdclasse}>{createdDate}</td>
 
-            <td className={tdclasse}>
-              <span
-                className={`py-1 px-4 ${item.gender === "Male"
-                  ? "bg-subMain text-subMain"
-                  : "bg-orange-500 text-orange-500"
-                  } bg-opacity-10 text-xs rounded-xl`}
-              >
-                {item.gender === "Male" ? "Nam" : "Nữ"}
-              </span>
-            </td>
-            {!used && (
-              <>
-                <td className={tdclasse}>{item.blood}</td>
-                <td className={tdclasse}>{item.age}</td>
-              </>
-            )}
+              <td className={tdclasse}>
+                <span
+                  className={`py-1 px-4 ${gender === "Male"
+                    ? "bg-subMain text-subMain"
+                    : "bg-orange-500 text-orange-500"
+                    } bg-opacity-10 text-xs rounded-xl`}
+                >
+                  {gender === "Male" ? "Nam" : "Nữ"}
+                </span>
+              </td>
+              {!used && (
+                <>
+                  <td className={tdclasse}>{bloodType}</td>
+                  <td className={tdclasse}>{age}</td>
+                </>
+              )}
 
-            <td className={tdclasse}>
-              <MenuSelect datas={DropDown1} item={item}>
-                <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
-                  <BiDotsHorizontalRounded />
-                </div>
-              </MenuSelect>
-            </td>
-          </tr>
-        ))}
+              <td className={tdclasse}>
+                <MenuSelect datas={DropDown1} item={item}>
+                  <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
+                    <BiDotsHorizontalRounded />
+                  </div>
+                </MenuSelect>
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );
@@ -486,7 +505,7 @@ export function DoctorsTable({ data, functions, doctor }) {
           }
           const email = item.email || "Không rõ";
 
-          
+
           return (
             <tr
               key={item.id}

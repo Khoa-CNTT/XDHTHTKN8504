@@ -13,6 +13,7 @@ dotenv.config();
 const authController = {
   // Đăng ký tài khoản mới
   registerUser: async (req, res) => {
+    const io = getIO(); 
     try {
       const { phone, password, role } = req.body;
 
@@ -56,6 +57,10 @@ const authController = {
 
       const savedUser = await newUser.save();
 
+      if (role === "family_member") {
+        io.to("staff_admin").emit("newFamilyMember", savedUser._id);
+      }
+
       // Xóa mật khẩu khỏi dữ liệu trả về
       const userToReturn = savedUser.toObject();
       delete userToReturn.password;
@@ -92,7 +97,7 @@ const authController = {
       }
 
       const token = jwt.sign(
-        { _id: user._id, role: user.role },
+        { _id: user._id, role: user.role, avatar: user.avatar },
         process.env.SECRET_KEY,
         { expiresIn: "7d" }
       );
@@ -277,7 +282,7 @@ const authController = {
 
   getAllUsers: async (req, res) => {
     try {
-      const users = await User.find({ role: 'family_member' }).select("-password").sort({ createdAt: -1 });
+      const users = await User.find({ role: 'family_member' }).select("-password").sort({ createdAt: -1 }).populate('profiles');
       res.status(200).json({ message: "Lấy danh sách người dùng thành công", data: users });
     } catch (error) {
       console.error("Lỗi khi lấy danh sách người dùng:", error);

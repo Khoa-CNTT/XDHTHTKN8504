@@ -37,4 +37,9 @@ router.get(
     authController.getAllStaff
 )
 
+router.get(
+    '/get-customer',
+    authController.getAllUsers,
+)
+
 export default router;
