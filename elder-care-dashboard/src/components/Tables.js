@@ -493,6 +493,8 @@ export function DoctorsTable({ data, functions, doctor }) {
         </tr>
       </thead>
       <tbody>
+
+
         {data.map((item, index) => {
           const fullName = `${item.firstName} ${item.lastName}`;
           const createdDate = new Date(item.createdAt).toLocaleDateString("vi-VN");
@@ -522,6 +524,7 @@ export function DoctorsTable({ data, functions, doctor }) {
                     />
                   </span> */}
                   <h4 className="text-sm font-medium">{fullName}</h4>
+
                 </div>
               </td>
               <td className={tdclass}>{createdDate}</td>

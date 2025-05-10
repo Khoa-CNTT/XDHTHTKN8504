@@ -20,8 +20,14 @@ import PreviewPayment from "./screens/Payments/PreviewPayment";
 // import Medicine from "./screens/Medicine";
 import PatientProfile from "./screens/Patients/PatientProfile";
 import CreatePatient from "./screens/Patients/CreatePatient";
+// <<<<<<< nghia-admin-dashboard
+// import Nurses from "./screens/Nurses/Nurses";
+// import NurseSalary from "./screens/Nurses/NursesSalary";
+import DoctorProfile from "./screens/Nurses/DoctorProfile";
+=======
 import Staffs from "./screens/Staffs/Staff";
 import DoctorProfile from "./screens/Staffs/DoctorProfile";
+// >>>>>>> main
 import Receptions from "./screens/Receptions";
 import NewMedicalRecode from "./screens/Patients/NewMedicalRecode";
 import NotFound from "./screens/NotFound";
@@ -60,7 +66,12 @@ function App() {
             element={<NewMedicalRecode />}
           />
           {/* doctors */}
+// <<<<<<< nghia-admin-dashboard
+//           <Route path="/nurses" element={<Nurses />} />
+//           <Route path="/nurses/nurse-salary" element={<NurseSalary />} />
+// =======
           <Route path="/staffs" element={<Staffs />} />
+// >>>>>>> main
           <Route path="/nurses/preview/:id" element={<DoctorProfile />} />
 
           {/* reception */}
