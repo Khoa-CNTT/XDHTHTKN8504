@@ -30,6 +30,8 @@ function Header() {
       title: "Logout",
       icon: AiOutlinePoweroff,
       onClick: () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         navigate("/login");
       },
     },
@@ -78,7 +80,9 @@ function Header() {
                     alt="user"
                     className="w-12 border border-border object-cover h-12 rounded-full"
                   />
-                  <p className="text-sm text-textGray font-medium">{userName}</p>
+                  <p className="text-sm text-textGray font-medium">
+                    {userName}
+                  </p>
                 </div>
               </MenuSelect>
             </div>
