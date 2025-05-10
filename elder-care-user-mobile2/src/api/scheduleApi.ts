@@ -2,12 +2,13 @@ import API from "../utils/api";
 import useAuthStore from "../stores/authStore";
 import { Schedule } from "../types/schedule";
 
-interface ApiResponse<T> {
-  message: string;
-  data: T;
-}
+export type ScheduleUser = Schedule & {
+  staffFullName: string;
+  staffPhone: string;
+  staffAvatar?: string;
+};
 
-const getSchedules = async (): Promise<Schedule[]> => {
+const getSchedules = async (): Promise<ScheduleUser[]> => {
   const token = useAuthStore.getState().token;
 
   if (!token) {
@@ -16,8 +17,8 @@ const getSchedules = async (): Promise<Schedule[]> => {
   }
 
   try {
-    const response = await API.get<ApiResponse<Schedule[]>>(
-      "schedules/getSchedulesForUserToday",
+    const response = await API.get<ScheduleUser[]>(
+      "schedules/getTodaySchedulesByUser",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -25,7 +26,9 @@ const getSchedules = async (): Promise<Schedule[]> => {
         },
       }
     );
-    return response.data.data;
+
+    // Trả về mảng ScheduleUser[] từ response.data
+    return response.data || []; // Nếu response.data có mảng, trả về nó, nếu không thì trả về mảng rỗng
   } catch (error) {
     console.error("Error fetching schedules:", error);
     return [];

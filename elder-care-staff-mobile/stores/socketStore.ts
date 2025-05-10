@@ -1,14 +1,14 @@
-// src/stores/socketStore.ts
 import { create } from "zustand";
 import socket from "../utils/socket";
 import { Booking } from "@/types/Booking";
 import useAuthStore from "./authStore";
+import useScheduleStore from "./scheduleStore";
 
-type Payload = {
+type Payload =  Partial<{
   userId: string;
   role?: string; // optional
   scheduleId?: string; // optional
-};
+}>;
 interface SocketStore {
   socket: typeof socket;
   isConnected: boolean;
@@ -24,19 +24,21 @@ export const useSocketStore = create<SocketStore>((set) => {
   const currentUser = useAuthStore.getState().user;
     const listenToEvents = () => {
       socket.on("newBookingSignal", (booking) => {
-        console.log("😋: Nhận được booking mới:");
         set({ newBooking: booking });
       });
 
       socket.on("bookingAccepted", (bookingId: string) => {
         console.log(`😋: Booking được chấp thuận: ${bookingId}`);
+        useScheduleStore.getState().fetchSchedules();
+        useScheduleStore.getState().getNearestSchedule();
       });
 
       socket.on("connect", () => {
         console.log("✅ Socket connected:", socket.id);
         set({ isConnected: true });
         const userId = currentUser?._id;
-        socket.emit("join", { userId });
+        const role = currentUser?.role;
+        socket.emit("join", { userId, role });
         listenToEvents(); // Lắng nghe sự kiện sau khi kết nối
       });
 
@@ -57,10 +59,9 @@ export const useSocketStore = create<SocketStore>((set) => {
     newBooking: null,
 
     connect: () => {
+      listenToEvents();
       if (!socket.connected) {
-        console.log("Đang kết nối socket...");
         socket.connect();
-        listenToEvents();
         set({ isConnected: true });
       }
     },

@@ -5,6 +5,8 @@ import moment from "moment-timezone";
 import Service from "../models/Service.js";
 import { getIO } from "../config/socketConfig.js";
 import { getUserSocketId } from '../controllers/socketController.js';
+import Doctor from "../models/Doctor.js";
+import Nurse from "../models/Nurse.js";
 
 const bookingController = {
     // create new booking
@@ -105,6 +107,8 @@ const bookingController = {
                     populatedBooking
                 );
             }
+
+            io.to("staff_admin").emit("newBookingCreated", populatedBooking);
 
             return res.status(201).json({
                 message: "Booking created successfully",
@@ -300,10 +304,26 @@ const bookingController = {
                 p.userId.toString() === staff._id.toString()
             );
 
+            let fullName = "Không rõ";
+
+            if (staff.role === 'doctor') {
+                const doctor = await Doctor.findOne({ userId: staff._id });
+                if (doctor) {
+                    fullName = `${doctor.firstName} ${doctor.lastName}`;
+                }
+            } else if (staff.role === 'nurse') {
+                const nurse = await Nurse.findOne({ userId: staff._id });
+                if (nurse) {
+                    fullName = `${nurse.firstName} ${nurse.lastName}`;
+                }
+            }
+
+            // Thêm participant nếu chưa có
             if (!alreadyParticipant) {
                 booking.participants.push({
                     userId: staff._id,
                     role: staff.role,
+                    fullName: fullName,
                     acceptedAt: new Date(),
                 });
             }
@@ -313,16 +333,22 @@ const bookingController = {
 
             // Gửi thông báo socket cho người tạo và tất cả người tham gia
             const allUserIds = new Set([
-                booking.createdBy.toString(),
-                ...booking.participants.map(p => p.userId.toString())
+                booking.createdBy?.toString(),
+                ...booking.participants?.map(p => p.userId?.toString())
             ]);
+
 
             allUserIds.forEach(userId => {
                 const socketId = getUserSocketId(userId);
-                console.log("Socket ID:", socketId);
+                console.log(`UserId: ${userId} - SocketId: ${socketId}`);
 
                 if (socketId) {
-                    io.to(socketId).emit("bookingAccepted", { bookingId });
+                    io.to(socketId).emit("bookingAccepted", {
+                        bookingId: booking._id,
+                        message: "Lịch đặt đã được chấp nhận"
+                    });
+                } else {
+                    console.log(`⚠️ Không tìm thấy socket cho userId: ${userId}`);
                 }
             });
 
@@ -336,6 +362,7 @@ const bookingController = {
             return res.status(500).json({ message: 'Lỗi server', error: error.message });
         }
     },
+
     getBookingById: async (req, res) => {
         try {
             const { staffId } = req.user._id;
@@ -517,7 +544,7 @@ const bookingController = {
                 .then((bookings) => {
                     return res.status(200).json({
                         message: 'Lấy tất cả booking thành công!',
-                        data: bookings
+                        bookings
                     });
                 })
                 .catch((error) => {

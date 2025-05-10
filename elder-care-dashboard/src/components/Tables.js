@@ -77,19 +77,18 @@ export function Transactiontable({ data, action, functions }) {
             <td className={tdclass}>{item.date}</td>
             <td className={tdclass}>
               <span
-                className={`py-1 px-4 ${
-                  item.status === "Paid"
-                    ? "bg-subMain text-subMain"
-                    : item.status === "Pending"
+                className={`py-1 px-4 ${item.status === "Paid"
+                  ? "bg-subMain text-subMain"
+                  : item.status === "Pending"
                     ? "bg-orange-500 text-orange-500"
                     : item.status === "Cancel" && "bg-red-600 text-red-600"
-                } bg-opacity-10 text-xs rounded-xl`}
+                  } bg-opacity-10 text-xs rounded-xl`}
               >
                 {item.status === "Paid"
                   ? "Đã thanh toán"
                   : item.status === "Pending"
-                  ? "Đang chờ xử lý"
-                  : item.status === "Cancel" && "Đã hủy"}
+                    ? "Đang chờ xử lý"
+                    : item.status === "Cancel" && "Đã hủy"}
               </span>
             </td>
             <td className={`${tdclass} font-semibold`}>{item.amount}</td>
@@ -236,11 +235,10 @@ export function MedicineTable({ data, onEdit }) {
             <td className={`${tdclass} font-semibold`}>{item?.price}</td>
             <td className={tdclass}>
               <span
-                className={`text-xs font-medium ${
-                  item?.status === "Out of stock"
-                    ? "text-red-600"
-                    : "text-green-600"
-                }`}
+                className={`text-xs font-medium ${item?.status === "Out of stock"
+                  ? "text-red-600"
+                  : "text-green-600"
+                  }`}
               >
                 {item?.status === "Out of stock" ? "Hết hàng" : "Còn hàng"}
               </span>
@@ -293,34 +291,45 @@ export function ServiceTable({ data, onEdit }) {
         </tr>
       </thead>
       <tbody>
-        {data.map((item, index) => (
-          <tr
-            key={item.id}
-            className="border-b border-border hover:bg-greyed transitions"
-          >
-            <td className={tdclass}>
-              <h4 className="text-sm font-medium">{item?.name}</h4>
-            </td>
-            <td className={tdclass}>{item?.date}</td>
-            <td className={`${tdclass} font-semibold`}>{item?.price}</td>
-            <td className={tdclass}>
-              <span
-                className={`text-xs font-medium ${
-                  !item?.status ? "text-red-600" : "text-green-600"
-                }`}
-              >
-                {!item?.status ? "Tắt" : "Bật"}
-              </span>
-            </td>
-            <td className={tdclass}>
-              <MenuSelect datas={DropDown1} item={item}>
-                <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
-                  <BiDotsHorizontalRounded />
-                </div>
-              </MenuSelect>
-            </td>
-          </tr>
-        ))}
+        {data.map((item, index) => {
+          const serviceName = item?.name || "Không rõ";
+          const serviceDate = new Date(item?.createdAt).toLocaleDateString("vi-VN");
+          const servicePrice = item?.price || "Không rõ";
+          let serviceStatus;
+          if (item?.isActive === true) {
+            serviceStatus = "Bật";
+          } else if (item?.isActive === false) {
+            serviceStatus = "Tắt";
+          }
+
+          return (
+            <tr
+              key={item._id}
+              className="border-b border-border hover:bg-greyed transitions"
+            >
+              <td className={tdclass}>
+                <h4 className="text-sm font-medium">{serviceName}</h4>
+              </td>
+              <td className={tdclass}>{serviceDate}</td>
+              <td className={`${tdclass} font-semibold`}>{servicePrice}</td>
+              <td className={tdclass}>
+                <span
+                  className={`text-xs font-medium ${!serviceStatus ? "text-red-600" : "text-green-600"
+                    }`}
+                >
+                  {serviceStatus}
+                </span>
+              </td>
+              <td className={tdclass}>
+                <MenuSelect datas={DropDown1} item={item}>
+                  <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
+                    <BiDotsHorizontalRounded />
+                  </div>
+                </MenuSelect>
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );
@@ -330,30 +339,30 @@ export function ServiceTable({ data, onEdit }) {
 export function PatientTable({ data, functions, used }) {
   const DropDown1 = !used
     ? [
-        {
-          title: "Xem",
-          icon: FiEye,
-          onClick: (data) => {
-            functions.preview(data.id);
-          },
+      {
+        title: "Xem",
+        icon: FiEye,
+        onClick: (data) => {
+          functions.preview(data.id);
         },
-        {
-          title: "Xóa",
-          icon: RiDeleteBin6Line,
-          onClick: () => {
-            toast.error("Tính năng này chưa được hỗ trợ");
-          },
+      },
+      {
+        title: "Xóa",
+        icon: RiDeleteBin6Line,
+        onClick: () => {
+          toast.error("Tính năng này chưa được hỗ trợ");
         },
-      ]
+      },
+    ]
     : [
-        {
-          title: "Xem",
-          icon: FiEye,
-          onClick: (data) => {
-            functions.preview(data.id);
-          },
+      {
+        title: "Xem",
+        icon: FiEye,
+        onClick: (data) => {
+          functions.preview(data.id);
         },
-      ];
+      },
+    ];
   const thclasse = "text-start text-sm font-medium py-3 px-2 whitespace-nowrap";
   const tdclasse = "text-start text-xs py-4 px-2 whitespace-nowrap";
   return (
@@ -403,11 +412,10 @@ export function PatientTable({ data, functions, used }) {
 
             <td className={tdclasse}>
               <span
-                className={`py-1 px-4 ${
-                  item.gender === "Male"
-                    ? "bg-subMain text-subMain"
-                    : "bg-orange-500 text-orange-500"
-                } bg-opacity-10 text-xs rounded-xl`}
+                className={`py-1 px-4 ${item.gender === "Male"
+                  ? "bg-subMain text-subMain"
+                  : "bg-orange-500 text-orange-500"
+                  } bg-opacity-10 text-xs rounded-xl`}
               >
                 {item.gender === "Male" ? "Nam" : "Nữ"}
               </span>
@@ -456,7 +464,7 @@ export function DoctorsTable({ data, functions, doctor }) {
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
           <th className={thclass}>#</th>
-          <th className={thclass}>{doctor ? "Điều dưỡng" : "Y Tá"}</th>
+          <th className={thclass}>Họ và tên</th>
           <th className={thclass}>Ngày Tạo</th>
           <th className={thclass}>Điện Thoại</th>
           <th className={thclass}>Chức Danh</th>
@@ -466,52 +474,75 @@ export function DoctorsTable({ data, functions, doctor }) {
         </tr>
       </thead>
       <tbody>
-        {data.map((item, index) => (
-          <tr
-            key={item.id}
-            className="border-b border-border hover:bg-greyed transitions"
-          >
-            <td className={tdclass}>{index + 1}</td>
-            <td className={tdclass}>
-              <div className="flex gap-4 items-center">
-                <span className="w-12">
-                  <img
-                    src={item.user.image}
-                    alt={item.user.title}
-                    className="w-full h-12 rounded-full object-cover border border-border"
-                  />
-                </span>
-                <h4 className="text-sm font-medium">{item.user.title}</h4>
-              </div>
-            </td>
-            <td className={tdclass}>12 Tháng 5, 2021</td>
-            <td className={tdclass}>
-              <p className="text-textGray">{item.user.phone}</p>
-            </td>
-            <td className={tdclass}>{item.title}</td>
-            <td className={tdclass}>{item.user.email}</td>
-            <td className={tdclass}>
-              <Link
-                to={`/nurses/nurse-salary`}
-                className="bg-blue-500 text-white px-3 py-1 rounded"
-              >
-                Xem lương
-              </Link>
-            </td>
-            <td className={tdclass}>
-              <MenuSelect datas={DropDown1} item={item}>
-                <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
-                  <BiDotsHorizontalRounded />
+
+
+        {data.map((item, index) => {
+          const fullName = `${item.firstName} ${item.lastName}`;
+          const createdDate = new Date(item.createdAt).toLocaleDateString("vi-VN");
+          const phone = item.userId.phone || "Không rõ";
+          let title;
+          if (item.type === "doctor") {
+            title = "Bác sĩ"
+          } else if (item.type === "nurse") {
+            title = "Điều dưỡng"
+          }
+          const email = item.email || "Không rõ";
+
+          
+          return (
+            <tr
+              key={item.id}
+              className="border-b border-border hover:bg-greyed transitions"
+            >
+              <td className={tdclass}>{index + 1}</td>
+              <td className={tdclass}>
+                <div className="flex gap-4 items-center">
+                  {/* <span className="w-12">
+                    <img
+                      src={item.user.image}
+                      alt={item.user.title}
+                      className="w-full h-12 rounded-full object-cover border border-border"
+                    />
+                  </span> */}
+                  <h4 className="text-sm font-medium">{fullName}</h4>
+
                 </div>
-              </MenuSelect>
-            </td>
-          </tr>
-        ))}
+              </td>
+              <td className={tdclass}>{createdDate}</td>
+              <td className={tdclass}>
+                <p className="text-textGray">{phone}</p>
+              </td>
+              <td className={tdclass}>{title}</td>
+              <td className={tdclass}>{email}</td>
+              <td className={tdclass}>
+                <Link
+                  to={`/nurses/payroll/${data.id}`}
+                  className="bg-blue-500 text-white px-3 py-1 rounded"
+                >
+                  Xem lương
+                </Link>
+              </td>
+              <td className={tdclass}>
+                <MenuSelect datas={DropDown1} item={item}>
+                  <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
+                    <BiDotsHorizontalRounded />
+                  </div>
+                </MenuSelect>
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );
 }
 export function BookingTable({ data, functions, doctor }) {
+  const statusMap = {
+    pending: "Chưa nhận",
+    accepted: "Đã được nhận",
+    completed: "Hoàn thành",
+    cancelled: "Đã hủy",
+  };
   const DropDown1 = [
     {
       title: "Xem",
@@ -535,7 +566,7 @@ export function BookingTable({ data, functions, doctor }) {
           <th className={thclass}>#</th>
           {/* <th className={thclass}>{doctor ? "Điều dưỡng" : "Y Tá"}</th> */}
           <th className={thclass}>Khách hàng</th>
-          <th className={thclass}>Điều dưỡng</th>
+          <th className={thclass}>Người thực hiện</th>
           <th className={thclass}>Ngày bắt đầu</th>
           <th className={thclass}>Ngày kết thúc</th>
           <th className={thclass}>Dịch vụ</th>
@@ -544,42 +575,56 @@ export function BookingTable({ data, functions, doctor }) {
         </tr>
       </thead>
       <tbody>
-        {data.map((item, index) => (
-          <tr
-            key={item.id}
-            className="border-b border-border hover:bg-greyed transitions"
-          >
-            <td className={tdclass}>{index + 1}</td>
-            <td className={tdclass}>
-              <div className="flex gap-4 items-center">
-                <span className="w-12">
-                  <img
-                    src={item.user.image}
-                    alt={item.user.title}
-                    className="w-full h-12 rounded-full object-cover border border-border"
-                  />
-                </span>
-                <h4 className="text-sm font-medium">{item.user.title}</h4>
-              </div>
-            </td>
-            <td className={tdclass}>Tên người điều dưỡng</td>
-            <td className={tdclass}>12 Tháng 5, 2021</td>
-            <td className={tdclass}>12 Tháng 5, 2021</td>
-            <td className={tdclass}>Vật lý trị liệu</td>
-            <td className={tdclass}>
-              <span class="py-1 px-4 bg-subMain text-subMain bg-opacity-10 text-xs rounded-xl">
-                Đã thanh toán
-              </span>
-            </td>
-            <td className={tdclass}>
-              <MenuSelect datas={DropDown1} item={item}>
-                <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
-                  <BiDotsHorizontalRounded />
+        {data.map((item, index) => {
+          const userFullName = `${item?.profileId?.firstName || "Ẩn"} ${item?.profileId?.lastName || ""}`;
+          const staffFullName = item?.participants?.[0]?.fullName || "Chưa có";
+          const serviceName = item?.serviceId?.name || "Không rõ";
+          const startDate = new Date(item?.repeatFrom).toLocaleDateString("vi-VN");
+          const endDate = new Date(item?.repeatTo).toLocaleDateString("vi-VN");
+          const statusText = statusMap[item.status] || "Không xác định";
+
+          return (
+            <tr
+              key={item._id}
+              className="border-b border-border hover:bg-greyed transitions"
+            >
+              <td className={tdclass}>{index + 1}</td>
+
+              <td className={tdclass}>
+                <div className="flex gap-4 items-center">
+                  {/* <span className="w-12">
+                    <img
+                      src={"https://via.placeholder.com/150"} // Hoặc lấy từ profile nếu có
+                      alt={userFullName}
+                      className="w-full h-12 rounded-full object-cover border border-border"
+                    />
+                  </span> */}
+                  <h4 className="text-sm font-medium">{userFullName}</h4>
                 </div>
-              </MenuSelect>
-            </td>
-          </tr>
-        ))}
+              </td>
+
+              <td className={tdclass}>{staffFullName}</td>
+
+              <td className={tdclass}>{startDate}</td>
+              <td className={tdclass}>{endDate}</td>
+              <td className={tdclass}>{serviceName}</td>
+
+              <td className={tdclass}>
+                <span className="py-1 px-4 bg-subMain text-subMain bg-opacity-10 text-xs rounded-xl">
+                  {statusText}
+                </span>
+              </td>
+
+              <td className={tdclass}>
+                <MenuSelect datas={DropDown1} item={item}>
+                  <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
+                    <BiDotsHorizontalRounded />
+                  </div>
+                </MenuSelect>
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );
@@ -618,19 +663,18 @@ export function AppointmentTable({ data, functions, doctor }) {
             </td>
             <td className={tdclass}>
               <span
-                className={`py-1 px-4 ${
-                  item.status === "Approved"
-                    ? "bg-subMain text-subMain"
-                    : item.status === "Pending"
+                className={`py-1 px-4 ${item.status === "Approved"
+                  ? "bg-subMain text-subMain"
+                  : item.status === "Pending"
                     ? "bg-orange-500 text-orange-500"
                     : item.status === "Cancel" && "bg-red-600 text-red-600"
-                } bg-opacity-10 text-xs rounded-xl`}
+                  } bg-opacity-10 text-xs rounded-xl`}
               >
                 {item.status === "Approved"
                   ? "Đã chấp thuận"
                   : item.status === "Pending"
-                  ? "Đang chờ xử lý"
-                  : "Đã hủy"}
+                    ? "Đang chờ xử lý"
+                    : "Đã hủy"}
               </span>
             </td>
 
@@ -685,19 +729,18 @@ export function PaymentTable({ data, functions, doctor }) {
             </td>
             <td className={tdclass}>
               <span
-                className={`py-1 px-4 ${
-                  item.status === "Paid"
-                    ? "bg-subMain text-subMain"
-                    : item.status === "Pending"
+                className={`py-1 px-4 ${item.status === "Paid"
+                  ? "bg-subMain text-subMain"
+                  : item.status === "Pending"
                     ? "bg-orange-500 text-orange-500"
                     : item.status === "Cancel" && "bg-red-600 text-red-600"
-                } bg-opacity-10 text-xs rounded-xl`}
+                  } bg-opacity-10 text-xs rounded-xl`}
               >
                 {item.status === "Paid"
                   ? "Đã thanh toán"
                   : item.status === "Pending"
-                  ? "Đang chờ xử lý"
-                  : "Đã hủy"}
+                    ? "Đang chờ xử lý"
+                    : "Đã hủy"}
               </span>
             </td>
             <td className={tdclass}>
@@ -724,7 +767,6 @@ export function PaymentTable({ data, functions, doctor }) {
 }
 
 // invoice used table
-
 export function InvoiceUsedTable({ data, functions }) {
   return (
     <table className="table-auto w-full">

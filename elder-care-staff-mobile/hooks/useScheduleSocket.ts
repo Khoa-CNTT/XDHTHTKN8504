@@ -12,15 +12,13 @@ export function useScheduleSocket(scheduleId: string,) {
 
   useEffect(() => {
     if (!scheduleId || !socket) return;
-    join(`schedule_${scheduleId}`);
-    
-    socket.on("schedule:statusUpdated", (data: Schedule) => {
-      updateSchedule(data);
+    join({
+      scheduleId: scheduleId,
     });
-
     return () => {
-      leave(scheduleId);
-      socket.off("schedule:statusUpdated");
+      leave({
+        scheduleId: scheduleId,
+      });
     };
   }, [scheduleId, socket]);
 }

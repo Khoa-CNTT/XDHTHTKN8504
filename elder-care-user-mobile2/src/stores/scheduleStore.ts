@@ -1,26 +1,28 @@
 import { create } from "zustand";
 import { Schedule } from "../types/schedule";
-import getNearestSchedule from "../utils/getNearestSchedule";
 import getSchedules from "../api/scheduleApi";
+import { ScheduleStatus } from "../types/ScheduleStatus";
+import { useSocketStore } from "./socketStore";
+
+export type ScheduleUser = Schedule & {
+  staffFullName: string;
+  staffPhone: string;
+  staffAvatar?: string;
+};
 
 interface ScheduleStore {
-  schedules: Schedule[];
-  nearestSchedule: Schedule | null;
-
+  schedules: ScheduleUser[];
   loading: boolean;
   error: string | null;
   hasFetched: boolean;
-
   fetchSchedules: () => Promise<void>;
-  setSchedules: (schedules: Schedule[]) => void;
-  setNearestSchedule: () => void;
-  updateSchedule: (updatedSchedule: Schedule) => void;
+  setSchedules: (schedules: ScheduleUser[]) => void;
+  updateSchedule: (data: { scheduleId: string; newStatus: ScheduleStatus }) => void;
+  getScheduleById: (id: string) => ScheduleUser | undefined;
 }
 
 const useScheduleStore = create<ScheduleStore>((set, get) => ({
   schedules: [],
-  nearestSchedule: null,
-
   loading: false,
   error: null,
   hasFetched: false,
@@ -29,11 +31,8 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const filtered = schedules.filter(
       (s) => s.status !== "completed" && s.status !== "cancelled"
     );
-    const nearest = getNearestSchedule(filtered);
-    // Cập nhật state bằng cách truyền một hàm cập nhật
-    set((state) => ({
+    set(() => ({
       schedules: filtered,
-      nearestSchedule: nearest,
     }));
   },
 
@@ -42,15 +41,16 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
     try {
       const schedules = await getSchedules();
-      
+      if (!Array.isArray(schedules)) {
+        throw new Error("Dữ liệu không hợp lệ");
+      }
+
       const filtered = schedules.filter(
         (s) => s.status !== "completed" && s.status !== "cancelled"
       );
-      const nearest = getNearestSchedule(filtered);
 
       set({
         schedules: filtered,
-        nearestSchedule: nearest,
         loading: false,
         error: null,
         hasFetched: true,
@@ -58,7 +58,6 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
     } catch (err: any) {
       set({
         schedules: [],
-        nearestSchedule: null,
         loading: false,
         error: err?.message || "Lỗi khi tải dữ liệu",
         hasFetched: true,
@@ -66,23 +65,22 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }
   },
 
-  setNearestSchedule: () => {
-    const schedules = get().schedules;
-    const nearest = getNearestSchedule(schedules);
-    set({ nearestSchedule: nearest });
+  updateSchedule: ({ scheduleId, newStatus }) => {
+    set((state) => {
+      const updatedSchedules = state.schedules
+        .map((schedule) =>
+          schedule._id === scheduleId
+            ? { ...schedule, status: newStatus }
+            : schedule
+        )
+        .filter((s) => s.status !== "completed" && s.status !== "cancelled");
+
+      return { schedules: updatedSchedules };
+    });
   },
 
-  updateSchedule: (updatedSchedule: Schedule) => {
-    set((state) => {
-      const updatedSchedules = state.schedules.map((schedule) =>
-        schedule._id === updatedSchedule._id ? updatedSchedule : schedule
-      );
-      const nearest = getNearestSchedule(updatedSchedules);
-      return {
-        schedules: updatedSchedules,
-        nearestSchedule: nearest,
-      };
-    });
+  getScheduleById: (id: string) => {
+    return get().schedules.find((schedule) => schedule._id === id);
   },
 }));
 

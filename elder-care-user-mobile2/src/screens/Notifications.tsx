@@ -17,34 +17,34 @@ const notifications: NotificationItem[] = [
   {
     id: '1',
     type: 'success',
-    title: 'Appointment Success',
-    message: 'You have successfully booked your appointment with Dr. Emily Walker.',
-    time: '1h',
-    date: 'TODAY'
+    title: 'Đặt lịch thành công',
+    message: 'Bạn đã đặt lịch hẹn thành công với bác sĩ Emily Walker.',
+    time: '1 giờ trước',
+    date: 'HÔM NAY'
   },
   {
     id: '2',
     type: 'cancelled',
-    title: 'Appointment Cancelled',
-    message: 'You have successfully cancelled your appointment with Dr. David Patel.',
-    time: '2h',
-    date: 'TODAY'
+    title: 'Lịch hẹn đã hủy',
+    message: 'Bạn đã hủy thành công lịch hẹn với bác sĩ David Patel.',
+    time: '2 giờ trước',
+    date: 'HÔM NAY'
   },
   {
     id: '3',
     type: 'changed',
-    title: 'Scheduled Changed',
-    message: 'You have successfully changes your appointment with Dr. Jessica Turner.',
-    time: '8h',
-    date: 'TODAY'
+    title: 'Lịch hẹn đã thay đổi',
+    message: 'Bạn đã thay đổi thành công lịch hẹn với bác sĩ Jessica Turner.',
+    time: '8 giờ trước',
+    date: 'HÔM NAY'
   },
   {
     id: '4',
     type: 'success',
-    title: 'Appointment success',
-    message: 'You have successfully booked your appointment with Dr. David Patel.',
-    time: '1d',
-    date: 'YESTERDAY'
+    title: 'Đặt lịch thành công',
+    message: 'Bạn đã đặt lịch hẹn thành công với bác sĩ David Patel.',
+    time: '1 ngày trước',
+    date: 'HÔM QUA'
   }
 ];
 
@@ -74,7 +74,7 @@ const Notifications: React.FC = () => {
       <View style={styles.dateHeader}>
         <Text style={styles.dateText}>{date}</Text>
         <TouchableOpacity>
-          <Text style={styles.markAsReadText}>Mark all as read</Text>
+          <Text style={styles.markAsReadText}>Đánh dấu tất cả là đã đọc</Text>
         </TouchableOpacity>
       </View>
       {items.map(notification => (
@@ -106,14 +106,14 @@ const Notifications: React.FC = () => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#2E3A59" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Notification</Text>
+        <Text style={styles.headerTitle}>Thông báo</Text>
         <View style={styles.newBadge}>
-          <Text style={styles.newBadgeText}>1 New</Text>
+          <Text style={styles.newBadgeText}>1 Mới</Text>
         </View>
       </View>
 
       <ScrollView style={styles.content}>
-        {Object.entries(groupedNotifications).map(([date, items]) => 
+        {Object.entries(groupedNotifications).map(([date, items]) =>
           renderNotificationGroup(date, items)
         )}
       </ScrollView>
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 40,
-    
+
     paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#EDF1F7',

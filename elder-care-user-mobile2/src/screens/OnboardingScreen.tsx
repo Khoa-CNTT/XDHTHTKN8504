@@ -1,139 +1,166 @@
 import React, { useRef, useMemo } from "react";
-import {
+ import {
   View,
   Text,
   Image,
   StyleSheet,
   TouchableOpacity,
   Dimensions,
-} from "react-native";
-import Swiper from "react-native-swiper";
-import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
+ } from "react-native";
+ import Swiper from "react-native-swiper";
+ import { useNavigation } from "@react-navigation/native";
+ import { StackNavigationProp } from "@react-navigation/stack";
 
-const { width, height } = Dimensions.get("window");
+ const { width, height } = Dimensions.get("window");
 
-// Define the type for the navigation prop
-type OnboardingScreenNavigationProp = StackNavigationProp<
+ type OnboardingScreenNavigationProp = StackNavigationProp<
   {
-    Login: undefined;
+   Login: undefined;
   },
   "Login"
->;
+ >;
 
-const slides = [
+ const slides = [
   {
-    id: 1,
-    image: require("../asset/img/hinh1.png"),
-    title: "Connect with Specialists",
-    description:
-      "Connect with Specialized Doctors Online for Convenient and Comprehensive Medical Consultations.",
+   id: 1,
+   image: require("../asset/img/Onboarding3.png"),
+   title: "Kết nối với Chuyên gia",
+   description:
+    "Kết nối với các Bác sĩ Chuyên khoa trực tuyến để được tư vấn y tế thuận tiện và toàn diện.",
   },
   {
-    id: 2,
-    image: require("../asset/img/hinh1.png"),
-    title: "Thousands of Online Specialists",
-    description:
-      "Explore a Vast Array of Online Medical Specialists, Offering an Extensive Range of Expertise Tailored to Your Healthcare Needs.",
+   id: 2,
+   image: require("../asset/img/Onboarding2.png"),
+   title: "Hàng ngàn Chuyên gia Trực tuyến",
+   description:
+    "Khám phá vô số các Chuyên gia Y tế trực tuyến, cung cấp nhiều lĩnh vực chuyên môn đa dạng phù hợp với nhu cầu chăm sóc sức khỏe của bạn.",
   },
   {
-    id: 3,
-    image: require("../asset/img/hinh1.png"),
-    title: "Get Started Easily",
-    description:
-      "Book your first online consultation today and experience top-notch medical care from the comfort of your home.",
+   id: 3,
+   image: require("../asset/img/Onboarding1.png"),
+   title: "Bắt đầu Dễ dàng",
+   description:
+    "Đặt lịch tư vấn trực tuyến đầu tiên của bạn ngay hôm nay và trải nghiệm dịch vụ chăm sóc y tế hàng đầu ngay tại nhà.",
   },
-];
+ ];
 
-const OnboardingScreen: React.FC<{}> = () => {
+ const OnboardingScreen: React.FC<{}> = () => {
   const navigation = useNavigation<OnboardingScreenNavigationProp>();
   const swiperRef = useRef<Swiper | null>(null);
 
   const renderSlides = useMemo(
-    () =>
-      slides.map((slide, index) => (
-        <View key={slide.id} style={styles.slide}>
-          <Image source={slide.image} style={styles.image} />
-          <View style={styles.textContainer}>
-            <Text style={styles.title}>{slide.title}</Text>
-            <Text style={styles.description}>{slide.description}</Text>
+   () =>
+    slides.map((slide, index) => (
+     <View key={slide.id} style={styles.slide}>
+      <Image source={slide.image} style={styles.image} />
+      <View style={styles.textContainer}>
+       <Text style={styles.title}>{slide.title}</Text>
+       <Text style={styles.description}>{slide.description}</Text>
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() =>
-                index === slides.length - 1
-                  ? navigation.navigate("Login")
-                  : swiperRef.current?.scrollBy(1)
-              }
-            >
-              <Text style={styles.buttonText}>
-                {index === slides.length - 1 ? "Get Started" : "Next"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )),
-    []
+       <TouchableOpacity
+        style={styles.button}
+        onPress={() =>
+         index === slides.length - 1
+          ? navigation.navigate("Login")
+          : swiperRef.current?.scrollBy(1)
+        }
+       >
+        <Text style={styles.buttonText}>
+         {index === slides.length - 1 ? "Bắt đầu" : "Tiếp tục"}
+        </Text>
+       </TouchableOpacity>
+
+       <View style={styles.paginationDots}>
+        {slides.map((_, i) => (
+         <View
+          key={i}
+          style={[styles.dot, index === i && styles.activeDot]}
+         />
+        ))}
+       </View>
+
+       <Text style={styles.skipText} onPress={() => navigation.navigate("Login")}>
+        Bỏ qua
+       </Text>
+      </View>
+     </View>
+    )),
+   []
   );
 
   return (
-    <Swiper ref={swiperRef} loop={false} showsPagination={false}>
-      {renderSlides}
-    </Swiper>
+   <Swiper ref={swiperRef} loop={false} showsPagination={false}>
+    {renderSlides}
+   </Swiper>
   );
-};
+ };
 
-const styles = StyleSheet.create({
+ const styles = StyleSheet.create({
   slide: {
-    flex: 1,
-    backgroundColor: "#fff",
+   flex: 1,
+   backgroundColor: "#fff",
+   alignItems: "center",
+   justifyContent: "center",
   },
   image: {
-    width: "100%",
-    height: height * 0.6,
-    resizeMode: "cover",
+   width: 250,
+   height: 250,
+   borderRadius: 125,
+   marginTop: 60,
+   marginBottom: 30,
+   resizeMode: "cover",
   },
   textContainer: {
-    flex: 1,
-    backgroundColor: "#fff",
-    padding: 20,
-    marginTop: -40,
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
+   paddingHorizontal: 30,
+   alignItems: "center",
   },
   title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 10,
+   fontSize: 22,
+   fontWeight: "bold",
+   textAlign: "center",
+   marginBottom: 10,
+   color: "#000",
   },
   description: {
-    fontSize: 16,
-    textAlign: "center",
-    color: "gray",
-    marginBottom: 20,
+   fontSize: 15,
+   textAlign: "center",
+   color: "#666",
+   marginBottom: 30,
   },
   button: {
-    backgroundColor: "#28A745", // ✅ Tông màu theo yêu cầu
-    width: 180,
-    height: 50,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 10,
+   backgroundColor: "#0D1C2E",
+   width: 200,
+   height: 50,
+   borderRadius: 25,
+   alignItems: "center",
+   justifyContent: "center",
+   marginBottom: 15,
   },
   buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
+   color: "#fff",
+   fontSize: 16,
+   fontWeight: "bold",
   },
-});
+  paginationDots: {
+   flexDirection: "row",
+   justifyContent: "center",
+   marginBottom: 10,
+  },
+  dot: {
+   width: 8,
+   height: 8,
+   borderRadius: 4,
+   backgroundColor: "#ccc",
+   marginHorizontal: 4,
+  },
+  activeDot: {
+   backgroundColor: "#0D1C2E",
+  },
+  skipText: {
+   fontSize: 14,
+   color: "#888",
+   marginBottom: 10,
+  },
+ });
 
-export default OnboardingScreen;
+ export default OnboardingScreen;

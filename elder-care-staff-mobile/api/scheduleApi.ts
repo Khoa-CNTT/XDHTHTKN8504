@@ -40,7 +40,7 @@ const getSchedules = async (): Promise<Schedule[]> => {
     // Không xử lý thời gian, trả về dữ liệu gốc
     return rawData;
   } catch (error) {
-    console.error("Error fetching schedules:", error);
+    console.log("Lỗi khi lấy lịch làm việc:", error);
     return [];
   }
 };

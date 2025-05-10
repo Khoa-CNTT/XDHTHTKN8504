@@ -29,9 +29,9 @@ router.patch(
 
 router.get('/get-schedule-by-profileId/:profileId', scheduleController.getInfoSchedule)
 router.get(
-  "/getSchedulesForUserToday",
+  "/getTodaySchedulesByUser",
   auth,
-  scheduleController.getSchedulesForUserToday
+  scheduleController.getTodaySchedulesByUser
 );
 
 router.delete('/delete', scheduleController.deleteAllSchedules)

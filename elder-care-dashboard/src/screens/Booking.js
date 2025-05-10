@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { MdOutlineCloudDownload } from "react-icons/md";
 import { toast } from "react-hot-toast";
 import { BiPlus } from "react-icons/bi";
@@ -9,10 +9,44 @@ import { doctorsData } from "../components/Datas";
 import { useNavigate } from "react-router-dom";
 import AddDoctorModal from "../components/Modals/AddDoctorModal";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchBookings } from '../store/bookingSlice.js';
+import { getUserIdFromToken } from "../utils/jwtHelper.js";
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:5000')
 
 function Booking() {
   const [isOpen, setIsOpen] = React.useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { bookings, loading, error } = useSelector((state) => state.booking);
+
+  useEffect(() => {
+    dispatch(fetchBookings());
+
+    const user = getUserIdFromToken();
+    // console.log("user", user);
+
+    if (user) {
+      socket.emit("join", {
+        role: user.role,
+      });
+    }
+    socket.on("newBookingCreated", (newBooking) => {
+      console.log("📥 Booking mới! Gọi lại fetchBookings");
+      dispatch(fetchBookings());
+    });
+
+    // Cleanup khi component unmount
+    return () => {
+      socket.off("newBookingCreated");
+    };
+    
+  }, [dispatch]);
+
+  console.log("bookings", bookings);
 
   const onCloseModal = () => {
     setIsOpen(false);
@@ -76,10 +110,8 @@ function Booking() {
         <div className="mt-8 w-full overflow-x-scroll">
           <BookingTable
             doctor={true}
-            data={doctorsData}
-            functions={{
-              preview: preview,
-            }}
+            data={bookings}
+            functions={{ preview }}
           />
         </div>
       </div>

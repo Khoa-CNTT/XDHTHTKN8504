@@ -10,7 +10,6 @@ const socketController = (io) => {
   io.on("connection", (socket) => {
     console.log("A user connected: ", socket.id);
 
-
     socket.on("join", ({ userId, scheduleId, role }) => {
       if (userId) {
         socket.join(userId);
@@ -60,7 +59,7 @@ const socketController = (io) => {
 
         console.log(`💬 Message from ${senderId} to ${receiverId}: ${message}`);
       } catch (error) {
-        console.error("❌ Error sending message:", error);
+        console.error("Error sending message:", error);
         socket.emit("messageError", "Lỗi server khi gửi tin nhắn");
       }
     });

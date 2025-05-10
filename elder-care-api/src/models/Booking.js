@@ -24,6 +24,7 @@ const bookingSchema = new Schema(
       {
         userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
         role: { type: String, enum: ["doctor", "nurse"], required: true },
+        fullName: { type: String, required: true },
         acceptedAt: { type: Date, default: Date.now },
       },
     ],

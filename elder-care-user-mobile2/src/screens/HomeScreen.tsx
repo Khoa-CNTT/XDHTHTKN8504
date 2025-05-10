@@ -17,7 +17,8 @@ import { useServicesStore } from "../stores/serviceStore";
 
 type RootStackParamList = {
   Home: undefined;
-  AllDoctors: undefined;
+  ServiceScreen: { serviceId: string };
+  Seach: undefined;
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -31,13 +32,13 @@ const HomeScreen: React.FC = () => {
   }, []);
 
   const handleSearchPress = () => {
-    navigation.navigate("AllDoctors");
+    navigation.navigate("Seach");
   };
 
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Đang tải dịch vụ...</Text>
+        <Text style={styles.loadingText}>Đang tải dịch vụ...</Text>
       </View>
     );
   }
@@ -45,16 +46,16 @@ const HomeScreen: React.FC = () => {
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <Text>Lỗi: {error}</Text>
+        <Text style={styles.errorText}>Lỗi: {error}</Text>
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <Header />
       <TouchableOpacity onPress={handleSearchPress} activeOpacity={0.7}>
-        <SearchBox editable={false} placeholder="Tìm kiếm ..." />
+        <SearchBox editable={false} placeholder="Tìm kiếm dịch vụ ..." />
       </TouchableOpacity>
       <Banner />
 
@@ -64,97 +65,103 @@ const HomeScreen: React.FC = () => {
 
       <FlatList
         data={services}
-        numColumns={2}
+        horizontal={true} // Để cuộn ngang
         keyExtractor={(item) => item._id}
-        renderItem={({ item, index }) => (
+
+        renderItem={({ item , index}) => (
+
           <TouchableOpacity
-            style={[
-              styles.serviceItem,
-              index % 2 === 0 ? { marginRight: 10 } : { marginLeft: 10 },
-            ]}
-            onPress={() => {
-              console.log(`Đã nhấn vào: ${item.name}`);
-            }}
-            activeOpacity={0.8}
-          >
-            <View style={styles.imageContainer}>
-              <Image
-                source={require("../asset/img/hinh1.png")}
-                style={styles.serviceImage}
-                resizeMode="cover"
-              />
-            </View>
-            <Text style={styles.serviceName}>{item.name}</Text>
-          </TouchableOpacity>
+          style={[
+            styles.serviceItem,
+            index % 2 === 0 ? { marginRight: 12 } : { marginLeft: 12 },
+          ]}
+          onPress={() => {
+            navigation.navigate("ServiceScreen", { serviceId: item._id });
+          }}
+          activeOpacity={0.8}
+        >
+          <View style={styles.imageContainer}>
+            <Image
+              source={require("../asset/img/hinh2.jpeg")}
+              style={styles.serviceImage}
+              resizeMode="cover"
+            />
+          </View>
+          <Text style={styles.serviceName}>{item.name}</Text>
+        </TouchableOpacity>
+
         )}
-        ListFooterComponent={
-          services.length > 6 && (
-            <TouchableOpacity
-              style={styles.seeAllContainer}
-              onPress={() => {
-                // Xử lý khi nhấn vào "Xem tất cả"
-              }}
-            >
-              {/* <Text style={styles.seeAll}>Xem tất cả</Text> */}
-            </TouchableOpacity>
-          )
-        }
-        contentContainerStyle={[styles.listContent, { paddingBottom: 100 }]} // Đệm để không che bởi Footer
-        style={{ flexGrow: 0 }}
+        contentContainerStyle={[styles.listContent, { paddingBottom: 5 }]}
+        style={{ flex: 1 }}
+        snapToAlignment="center"
+        decelerationRate="fast"
       />
 
-      {/* Footer cố định */}
-      <View style={styles.footerContainer}>
-        <Footer />
-      </View>
+      <Footer />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f9f9f9",
+  },
+  loadingText: {
+    fontSize: 18,
+    color: "#7f8c8d",
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f9f9f9",
+  },
+  errorText: {
+    fontSize: 18,
+    color: "#red",
   },
   sectionContainer: {
-    paddingHorizontal: 16,
-    marginTop: 20,
+    paddingHorizontal: 20,
+    marginTop: 25,
+    
+
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#2c3e50",
+    fontSize: 24,
+    fontWeight: "700",
+    color: "black",
     marginBottom: 20,
+
+    letterSpacing: -0.5,
   },
   listContent: {
     paddingHorizontal: 16,
   },
   serviceItem: {
-    flex: 0.5,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 15,
+    width: 380, // Mỗi item chiếm 300px
+    backgroundColor: "#F7FFF9",
+    borderRadius: 20,
     alignItems: "center",
-    marginBottom: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-    elevation: 3,
+    marginRight: 5, // Khoảng cách giữa các item
+    elevation: 6,
+    borderColor: "#ecf0f1",
+    borderWidth: 1,
+    overflow: "hidden",
+    marginBottom: 50,
   },
   imageContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: "100%",
+    height: 180, // Chiều cao hình ảnh
     overflow: "hidden",
-    marginBottom: 10,
-    backgroundColor: "#e0e0e0",
+    backgroundColor: "#f0f0f0",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -163,28 +170,29 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   serviceName: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#34495e",
+
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#black",
     textAlign: "center",
   },
   seeAllContainer: {
-    marginTop: 15,
+    marginTop: 20,
     alignItems: "center",
   },
   seeAll: {
+
     fontSize: 16,
-    color: "#3498db",
-    fontWeight: "bold",
+    fontWeight: "600",
+    color: "#2c3e50",
+    // textAlign: "center",
+    paddingHorizontal: 10,
+    paddingBottom: 15,
+    marginTop: 10,
   },
   footerContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff",
-    zIndex: 10,
-    elevation: 10,
+    marginTop: 30,
+    marginBottom: 30,
   },
 });
 
