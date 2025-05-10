@@ -31,7 +31,7 @@ function Staffs() {
     if (user) {
       socket.emit("join", {
         role: user.role,
-      })
+      });
       // console.log("socket join", user);
     }
     socket.on("newStaffCreated", (newStaff) => {
@@ -46,7 +46,7 @@ function Staffs() {
 
   useEffect(() => {
     if (staffList.length > 0) {
-      console.log('staffList:', staffList);
+      console.log("staffList:", staffList);
     }
   }, [staffList]);
 
