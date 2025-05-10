@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, use } from "react";
 import Layout from "../../Layout";
 import { memberData, sortsDatas } from "../../components/Datas";
 import { Link, useNavigate } from "react-router-dom";
@@ -8,6 +8,12 @@ import { MdFilterList, MdOutlineCalendarMonth } from "react-icons/md";
 import { toast } from "react-hot-toast";
 import { Button, FromToDate, Select } from "../../components/Form";
 import { PatientTable } from "../../components/Tables";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCustomers } from "../../store/customerSlice.js";
+import { getUserIdFromToken } from "../../utils/jwtHelper.js";
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:5000')
 
 function Patients() {
   const [status, setStatus] = useState(sortsDatas.filterPatient[0]);
@@ -60,6 +66,38 @@ function Patients() {
     navigate(`/customers/preview/${id}`);
   };
 
+  const { data, loading, error } = useSelector(state => state.customers);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    // console.log("useEffect is running");
+    dispatch(fetchCustomers());
+
+    const user = getUserIdFromToken();
+    // console.log("user", user);
+
+    if (user) {
+      socket.emit("join", {
+        role: user.role,
+      });
+    }
+
+    socket.on("newFamilyMember", (newFamilyMember) => {
+      console.log("📥 Family member mới! Gọi lại fetchCustomers");
+      dispatch(fetchCustomers());
+    });
+
+    // Cleanup để tránh leak và gọi trùng
+    return () => {
+      socket.off("newFamilyMember");
+    };
+  }, [dispatch]);
+
+  // console.log("data", data);
+
+  if (loading) return <p>Đang tải...</p>;
+  if (error) return <p>Lỗi: {error}</p>;
+
   return (
     <Layout>
       {/* add button */}
@@ -86,8 +124,8 @@ function Patients() {
                 {box.title === "Khách hàng hôm nay"
                   ? "hôm nay"
                   : box.title === "Khách hàng hàng tháng"
-                  ? "tháng này"
-                  : "năm này"}
+                    ? "tháng này"
+                    : "năm này"}
               </p>
             </div>
             <div
@@ -144,7 +182,7 @@ function Patients() {
         </div>
         <div className="mt-8 w-full overflow-x-scroll">
           <PatientTable
-            data={memberData}
+            data={data}
             functions={{
               preview: previewPayment,
             }}

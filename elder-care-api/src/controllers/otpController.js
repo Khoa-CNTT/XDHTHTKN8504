@@ -45,7 +45,7 @@ const otpController = {
             return res.status(400).json({ success: false, message: 'Sai mã OTP hoặc đã hết hạn' });
         }
 
-        // Nếu đúng thì xóa OTP (hoặc có thể giữ lại)
+        // Nếu đúng thì xóa OTP
         await Otp.deleteOne({ _id: otpRecord._id });
 
         res.json({ success: true, message: 'Xác thực thành công' });

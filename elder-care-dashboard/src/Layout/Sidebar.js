@@ -22,7 +22,7 @@ function Sidebar() {
           className="w-3/4 h-25 ml-4 object-contain"
         />
       </Link>
-      <div className="flex-colo gap-2 mt-12">
+      <div className="flex-colo gap-2">
         {MenuDatas.map((item, index) => (
           <Link
             to={item.path}

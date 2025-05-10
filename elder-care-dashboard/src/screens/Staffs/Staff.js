@@ -83,7 +83,7 @@ function Staffs() {
       {/* payroll */}
 
       {/*  */}
-      <h1 className="text-xl font-semibold">Điều dưỡng</h1>
+      <h1 className="text-xl font-semibold">Nhân viên</h1>
       <div
         data-aos="fade-up"
         data-aos-duration="1000"

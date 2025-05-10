@@ -27,6 +27,9 @@ const profileController = {
             })
 
             await newProfile.save();
+
+            await User.findByIdAndUpdate(userId, { $push: { profiles: newProfile._id } }, { new: true });
+
             return res.status(201).json({
                 message: "Thêm mới hồ sơ thành công!",
                 profile: newProfile,

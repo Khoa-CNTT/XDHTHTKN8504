@@ -12,7 +12,8 @@ export const getUserIdFromToken = () => {
         const decoded = jwtDecode(token);
         return {
             _id: decoded._id,
-            role: decoded.role
+            role: decoded.role,
+            avatar: decoded.avatar,
         };
     } catch (error) {
         console.error('Lỗi giải mã token:', error);
