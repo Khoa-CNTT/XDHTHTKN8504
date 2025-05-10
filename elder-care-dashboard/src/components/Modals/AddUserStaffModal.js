@@ -12,10 +12,35 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas }) {
   const [instraction, setInstraction] = useState(sortsDatas.title[0]);
   const [access, setAccess] = useState({});
   const [role, setRole] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState({});
+
   const color = true;
 
+  const validateFields = () => {
+    const newErrors = {};
+    if (!phone.trim()) newErrors.phone = "Số điện thoại không được để trống";
+    if (!password.trim()) newErrors.password = "Mật khẩu không được để trống";
+    if (!confirmPassword.trim()) {
+      newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu";
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
+    }
+    if (!role) newErrors.role = "Vui lòng chọn vai trò";
+    return newErrors;
+  };
+
   const onSubmit = () => {
-    toast.error("This feature is not available yet");
+    const validationErrors = validateFields();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    // Nếu dữ liệu hợp lệ, xử lý tiếp theo
+    toast.success("Dữ liệu hợp lệ. Đang xử lý...");
   };
 
   return (
@@ -32,11 +57,42 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas }) {
 
       <div className="flex-colo gap-6">
         <div className="grid sm:grid-cols-1 gap-4 w-full">
-          <Input label="Số điện thoại" color={true} />
+          <Input
+            label="Số điện thoại"
+            color={true}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+          {errors.phone && (
+            <p className="text-sm text-red-500 ">{errors.phone}</p>
+          )}
         </div>
-        {/* password */}
-        <Input label="Mật khẩu" color={true} />
-        <Input label="Xác nhận mật khẩu" color={true} />
+
+        <Input
+          label="Mật khẩu"
+          type="password"
+          color={true}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        {errors.password && (
+          <p className="text-sm text-red-500  text-left w-full">
+            {errors.password}
+          </p>
+        )}
+
+        <Input
+          label="Xác nhận mật khẩu"
+          type="password"
+          color={true}
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        />
+        {errors.confirmPassword && (
+          <p className="text-sm text-red-500  text-left w-full">
+            {errors.confirmPassword}
+          </p>
+        )}
 
         <div className="grid sm:grid-cols-1 gap-4 w-full">
           <div className="flex flex-col gap-2 w-full">
@@ -67,10 +123,13 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas }) {
                 Điều dưỡng
               </option>
             </select>
+            {errors.role && (
+              <p className="text-sm text-red-500 ">{errors.role}</p>
+            )}
           </div>
         </div>
 
-        {/* buttones */}
+        {/* buttons */}
         <div className="grid sm:grid-cols-2 gap-4 w-full">
           <button
             onClick={closeModal}
