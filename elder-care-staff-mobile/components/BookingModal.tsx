@@ -1,9 +1,17 @@
 import React, { useEffect } from "react";
-import { Modal, View, Text, Button, StyleSheet, Vibration } from "react-native";
+import {
+  Modal,
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  Vibration,
+  TouchableOpacity,
+} from "react-native";
 import { useSocketStore } from "@/stores/socketStore";
 import { acceptBooking } from "@/api/BookingApi";
 import { Booking } from "@/types/Booking";
-import { formatTime } from "@/utils/dateHelper"; // Đảm bảo đường dẫn đúng với cấu trúc dự án của bạn
+import { formatTime } from "@/utils/dateHelper";
 import {
   CalendarDays,
   Clock,
@@ -11,6 +19,7 @@ import {
   User,
   Stethoscope,
 } from "lucide-react-native";
+import { playNotificationSound } from "@/utils/soundService";
 
 const BookingModal = () => {
   const { newBooking, setNewBooking } = useSocketStore((state) => state);
@@ -18,8 +27,9 @@ const BookingModal = () => {
 
   useEffect(() => {
     if (newBooking) {
-      setVisible(true); // Hiển thị modal khi có booking mới
-      Vibration.vibrate([300, 100, 300], true); 
+      setVisible(true);
+      Vibration.vibrate(300);
+      playNotificationSound("dialog");
     }
   }, [newBooking]);
 
@@ -29,7 +39,7 @@ const BookingModal = () => {
       return;
     }
     try {
-      await acceptBooking(newBooking._id); // Chấp nhận booking
+      await acceptBooking(newBooking._id);
       closeModal();
     } catch (error) {
       alert("Không thể chấp nhận booking");
@@ -41,16 +51,16 @@ const BookingModal = () => {
   };
 
   const closeModal = () => {
-    setNewBooking(null); // Đặt lại trạng thái sau khi xử lý
-    setVisible(false); // Đóng modal
+    setNewBooking(null);
+    setVisible(false);
     Vibration.cancel();
   };
 
-  if (!newBooking) return null; // Nếu không có booking, không hiển thị gì
+  if (!newBooking) return null;
 
   return (
     <Modal
-      animationType="slide"
+      animationType="fade"
       transparent={true}
       visible={visible}
       onRequestClose={closeModal}
@@ -60,8 +70,18 @@ const BookingModal = () => {
           <Text style={styles.title}>Công Việc Mới!</Text>
           <BookingDetails booking={newBooking} />
           <View style={styles.buttons}>
-            <Button title="Chấp nhận" onPress={handleAccept} />
-            <Button title="Từ chối" onPress={handleReject} />
+            <TouchableOpacity
+              style={styles.acceptButton}
+              onPress={handleAccept}
+            >
+              <Text style={styles.buttonText}>Chấp nhận</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.rejectButton}
+              onPress={handleReject}
+            >
+              <Text style={styles.buttonText}>Từ chối</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -69,42 +89,39 @@ const BookingModal = () => {
   );
 };
 
-// Tách component hiển thị thông tin booking
 const BookingDetails = ({ booking }: { booking: Booking }) => (
   <View style={styles.details}>
     <DetailRow
-      label="Khách hàng"
+      label=""
       value={`${booking.profileId.firstName} ${booking.profileId.lastName}`}
       icon={<User size={22} color="#4f46e5" />}
     />
     <DetailRow
-      label="Dịch vụ"
+      label=""
       value={booking.serviceId.name}
       icon={<Stethoscope size={22} color="#4f46e5" />}
     />
     <DetailRow
-      label="Ngày thực hiện"
-      value={`${formatTime(
-        booking.repeatFrom,
+      label=""
+      value={`${formatTime(booking.repeatFrom, "date")} - ${formatTime(
+        booking.repeatTo,
         "date"
-      )} - ${formatTime(booking.repeatTo, "date")}`}
+      )}`}
       icon={<CalendarDays size={22} color="#4f46e5" />}
     />
     <DetailRow
-      label="Thời Gian"
+      label=""
       value={`${booking.timeSlot.start} - ${booking.timeSlot.end}`}
       icon={<Clock size={22} color="#4f46e5" />}
     />
-
     <DetailRow
-      label="Tiền nhận được"
+      label=""
       value={`${booking.totalDiscount.toLocaleString()}đ`}
       icon={<DollarSign size={22} color="#4f46e5" />}
     />
   </View>
 );
 
-// Component hiển thị một dòng thông tin
 const DetailRow = ({
   label,
   value,
@@ -126,40 +143,68 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Màu nền mờ
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    width: 350, // Đã tăng kích thước modal
-    padding: 25, // Thêm padding để không gian rộng rãi
+    width: 350,
+    padding: 25,
     backgroundColor: "white",
-    borderRadius: 15, // Góc bo tròn lớn hơn
+    borderRadius: 20,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   title: {
-    fontSize: 24, // Tăng cỡ chữ tiêu đề
+    fontSize: 26,
     fontWeight: "bold",
-    marginBottom: 15, // Khoảng cách lớn hơn giữa tiêu đề và thông tin
+    marginBottom: 20,
+    color: "#333",
   },
   details: {
     width: "100%",
-    marginBottom: 25, // Tăng khoảng cách dưới thông tin
+    marginBottom: 20,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 10, // Khoảng cách giữa các dòng thông tin
+    marginVertical: 12,
   },
   bold: {
     fontWeight: "bold",
-    marginRight: 10, // Khoảng cách giữa icon và chữ
-    fontSize: 16, // Tăng cỡ chữ của label
+    marginRight: 12,
+    fontSize: 16,
+    color: "#333",
   },
   value: {
-    fontSize: 16, // Tăng cỡ chữ của value
+    fontSize: 16,
+    color: "#666",
   },
   buttons: {
     marginTop: 20,
     width: "100%",
+  },
+  acceptButton: {
+    backgroundColor: "#4caf50",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  rejectButton: {
+    backgroundColor: "#f44336",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    alignItems: "center",
+  },
+  buttonText: {
+    fontSize: 18,
+    color: "white",
+    fontWeight: "bold",
   },
 });
 

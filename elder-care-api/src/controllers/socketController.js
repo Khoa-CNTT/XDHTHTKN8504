@@ -29,39 +29,13 @@ const socketController = (io) => {
       }
     });
 
-    socket.on("sendMessage", async (data) => {
-      try {
-        const { senderId, receiverId, message } = data;
-        const isAllowed = await checkPermissions(senderId, receiverId);
-        if (!isAllowed) {
-          socket.emit(
-            "messageError",
-            "Bạn không có quyền nhắn tin với người này"
-          );
-          return;
-        }
-
-        const timestamp = new Date();
-
-        io.to(`chat_room_${receiverId}`).emit("receiveMessage", {
-          senderId,
-          receiverId,
-          message,
-          timestamp,
-        });
-
-        io.to(`chat_room_${senderId}`).emit("messageSent", {
-          senderId,
-          receiverId,
-          message,
-          timestamp,
-        });
-
-        console.log(`💬 Message from ${senderId} to ${receiverId}: ${message}`);
-      } catch (error) {
-        console.error("Error sending message:", error);
-        socket.emit("messageError", "Lỗi server khi gửi tin nhắn");
-      }
+    socket.on("send-message", ({ roomId, senderId, message }) => {
+      console.log(`Message from ${senderId}: ${message}`);
+      io.to(`schedule_${roomId}`).emit("receive-message", {
+        senderId,
+        message,
+        timestamp: new Date().toISOString(),
+      });
     });
 
     socket.on("disconnect", () => {

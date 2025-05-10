@@ -4,6 +4,7 @@ import {StyleSheet } from "react-native";
 import { Stack } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import BookingModal from "@/components/BookingModal";
+import GlobalModal from "@/components/GlobalModal";
 
 
 
@@ -18,6 +19,7 @@ export default function RootLayout() {
       <SafeAreaView style={{ flex: 1 }}>
           <Stack screenOptions={{ headerShown: false }} />
           <BookingModal/>
+          <GlobalModal/>
       </SafeAreaView>
     </SafeAreaProvider>
   );

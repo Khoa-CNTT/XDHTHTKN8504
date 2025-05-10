@@ -8,21 +8,23 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
+  Linking
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useSocketStore } from "@/stores/socketStore";
-import useScheduleStore from "@/stores/scheduleStore";
-import useAuthStore from "@/stores/authStore";
+import { useSocketStore } from "../stores/socketStore";
+import useScheduleStore from "../stores/scheduleStore";
+import useAuthStore from "../stores/authStore";
 import { Ionicons, Feather } from "@expo/vector-icons"; // Expo icon library
+
 
 const ChatScreen = () => {
   const router = useRouter();
   const { messages, sendMessage } = useSocketStore();
   const currentUser = useAuthStore((state) => state.user);
-  const profile = useScheduleStore((state) => state.nearestSchedule);
+  const profile = useScheduleStore((state) => state.schedule);
 
 
-  const roomId = profile?.schedule._id;
+  const roomId = profile._id;
   const roomMessages = roomId ? messages[roomId] || [] : [];
   const [input, setInput] = useState("");
   const scrollViewRef = useRef<ScrollView>(null);
@@ -39,8 +41,10 @@ const ChatScreen = () => {
   }, [roomMessages.length]);
 
   const callCustomer = () => {
-    // Bạn có thể thay thế bằng Linking.openURL(`tel:${profile.phone}`)
-    alert(`Gọi ${profile?.schedule.patientName || "khách hàng"}...`);
+     Linking.openURL(`tel:${profile?.staffPhone}`).catch((err) =>
+       console.error("Failed to make a call", err)
+     );
+  
   };
 
   if (!roomId || !profile) {
@@ -76,21 +80,21 @@ const ChatScreen = () => {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
 
-        {profile.avatar ? (
+        {profile.staffAvatar ? (
           <Image
-            source={{ uri: profile.avatar }}
+            source={{ uri: profile.staffAvatar }}
             style={{ width: 36, height: 36, borderRadius: 18, marginRight: 10 }}
           />
         ) : (
           <Image
-            source={require("../../../assets/images/unknownAvatar.png")}
+            source={require("../asset/img/unknownAvatar.png")}
             style={{ width: 28, height: 28, borderRadius: 14, marginRight: 8 }}
           />
         )}
 
         <View style={{ flex: 1 }}>
           <Text style={{ fontSize: 16, fontWeight: "600", color: "#fff" }}>
-            {profile.schedule.patientName}
+            {profile.staffFullName}
           </Text>
           <Text style={{ fontSize: 12, color: "#fff" }}>{"Không có SĐT"}</Text>
         </View>
@@ -120,7 +124,7 @@ const ChatScreen = () => {
               >
                 {!isMe && (
                   <Image
-                    source={{ uri: profile.avatar }}
+                    source={{ uri: profile.staffAvatar }}
                     style={{
                       width: 28,
                       height: 28,

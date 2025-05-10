@@ -29,8 +29,8 @@ const WorkScreen: React.FC = () => {
           />
         ))
       ) : (
-        <Text style={{ textAlign: "center", marginTop: 20 }}>
-          Không có công việc nào
+        <Text style={{ textAlign: "center", marginTop: 15 }}>
+          Không có lịch hẹn nào hôm nay!
         </Text>
       )}
       {/* <WorkTabs /> */}
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   container: { 
     flex: 1, 
     backgroundColor: "#f5f5f5",
-    paddingTop: 40,
+    paddingTop: 50,
     paddingHorizontal: 10,
     },
   headerTitle: {

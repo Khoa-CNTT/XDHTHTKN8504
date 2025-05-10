@@ -2,6 +2,8 @@ import { create } from "zustand";
 import socket from "../utils/socket";
 import useScheduleStore from "./scheduleStore";
 import { useModalStore } from "./modalStore";
+import { useNavigation } from "@react-navigation/native";
+
 
 const getStatusLabel = (status: string) => {
   const statusMap: Record<string, string> = {
@@ -30,10 +32,13 @@ interface SocketStore {
   socket: typeof socket;
   isConnected: boolean;
   hasSetupListeners: boolean;
+  messages: Record<string, any[]>;
   connect: () => void;
   disconnect: () => void;
   join: (payload: Payload) => void;
   leave: (payload: Payload) => void;
+  sendMessage: (roomId: string, message: string) => void;
+  receiveMessage: (roomId: string, message: string) => void;
 }
 
 export const useSocketStore = create<SocketStore>((set, get) => {
@@ -41,7 +46,7 @@ export const useSocketStore = create<SocketStore>((set, get) => {
   const { showModal } = useModalStore.getState();
 
   const listenToEvents = () => {
-    if (get().hasSetupListeners) return; // Tránh trùng lặp
+    if (get().hasSetupListeners) return;
 
     console.log("🧩 Đăng ký các sự kiện socket...");
 
@@ -89,16 +94,22 @@ export const useSocketStore = create<SocketStore>((set, get) => {
       });
     });
 
-    set({ hasSetupListeners: true }); // Đánh dấu đã đăng ký
+    socket.on("receive-message", (roomId: string, message: string) => {
+      console.log(`📩 Tin nhắn nhận được trong phòng ${roomId}:`, message);
+      get().receiveMessage(roomId, message);
+    });
+
+    set({ hasSetupListeners: true });
   };
 
   return {
     socket,
     isConnected: false,
     hasSetupListeners: false,
+    messages: {},
 
     connect: () => {
-      listenToEvents(); // GỌI luôn
+      listenToEvents();
       if (!socket.connected) {
         console.log("🔌 Đang kết nối socket...");
         socket.connect();
@@ -112,8 +123,8 @@ export const useSocketStore = create<SocketStore>((set, get) => {
     },
 
     join: ({ userId, role, scheduleId }: Payload) => {
-        socket.emit("join", { userId, role, scheduleId });
-        console.log("✅ Gửi yêu cầu join phòng:", { userId, role, scheduleId });
+      socket.emit("join", { userId, role, scheduleId });
+      console.log("✅ Gửi yêu cầu join phòng:", { userId, role, scheduleId });
     },
 
     leave: ({ userId, role, scheduleId }: Payload) => {
@@ -121,6 +132,20 @@ export const useSocketStore = create<SocketStore>((set, get) => {
         socket.emit("leave", { userId, role, scheduleId });
         console.log("👋 Rời phòng:", { userId, role, scheduleId });
       }
+    },
+
+    sendMessage: (roomId: string, message: string) => {
+      socket.emit("sendMessage", roomId, message);
+      console.log(`✅ Gửi tin nhắn tới phòng ${roomId}:`, message);
+    },
+
+    receiveMessage: (roomId: string, message: string) => {
+      set((state) => ({
+        messages: {
+          ...state.messages,
+          [roomId]: [...(state.messages[roomId] || []), { message }],
+        },
+      }));
     },
   };
 });

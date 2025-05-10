@@ -2,7 +2,9 @@ import { create } from "zustand";
 import getSchedules from "@/api/scheduleApi"; // API fetch lịch trình
 import { Schedule } from "../types/Schedule";
 import ScheduleStatusApi from "../api/ScheduleStatusApi"; // API lấy lịch trình gần nhất
+import { ScheduleStatus } from "@/types/ScheduleStatus";
 interface nearestSchedule {
+  avatar?: string;
   serviceName: string;
   customerAddress: string;
   phoneNumber: string;
@@ -19,11 +21,14 @@ interface ScheduleStore {
 
   setSchedules: (schedules: Schedule[]) => void;
   setSelectedDay: (day: Date) => void;
-  updateSchedule: (updated: Schedule) => void;
   addSchedule: (schedule: Schedule) => void;
   removeSchedule: (scheduleId: string) => void;
   getNearestSchedule: () => Promise<void>;
   fetchSchedules: () => Promise<void>;
+  updateSchedule: (
+    scheduleId: string,
+    newStatus: ScheduleStatus
+  ) => void;
 }
 
 const useScheduleStore = create<ScheduleStore>((set, get) => ({
@@ -36,12 +41,7 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
   setSchedules: (schedules) => set({ schedules }),
   setSelectedDay: (date) => set({ selectedDay: date }),
 
-  updateSchedule: (updated) =>
-    set((state) => ({
-      schedules: state.schedules.map((s) =>
-        s._id === updated._id ? updated : s
-      ),
-    })),
+
 
   addSchedule: (schedule) =>
     set((state) => ({
@@ -82,6 +82,30 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
       });
       console.error("Lỗi fetchSchedules:", error);
     }
+  },
+
+  updateSchedule: (scheduleId, newStatus) => {
+    set((state) => {
+      const updatedSchedules = state.schedules.map((s) =>
+        s._id === scheduleId ? { ...s, status: newStatus } : s
+      );
+
+      let updatedNearest = state.nearestSchedule;
+      if (state.nearestSchedule?.schedule._id === scheduleId) {
+        updatedNearest = {
+          ...state.nearestSchedule,
+          schedule: {
+            ...state.nearestSchedule.schedule,
+            status: newStatus,
+          },
+        };
+      }
+
+      return {
+        schedules: updatedSchedules,
+        nearestSchedule: updatedNearest,
+      };
+    });
   },
 }));
 

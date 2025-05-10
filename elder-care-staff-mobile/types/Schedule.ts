@@ -1,6 +1,7 @@
 import { TimeSlot } from "./TimeSlot";
 import { ScheduleStatus } from "./ScheduleStatus";
 
+
 export type Schedule = {
   _id: string;
   staffId: string;
@@ -9,7 +10,7 @@ export type Schedule = {
   patientName: string;
   serviceName: string;
   date: Date;
-  timeSlots: TimeSlot;
+  timeSlots: TimeSlot[];
   status: ScheduleStatus;
   createdAt: Date;
   updatedAt: Date;
