@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { MdOutlineCloudDownload } from "react-icons/md";
 import { toast } from "react-hot-toast";
 import { BiPlus } from "react-icons/bi";
@@ -18,10 +18,23 @@ import { io } from "socket.io-client";
 const socket = io("http://localhost:5000");
 
 function Staffs() {
-  const [isOpen, setIsOpen] = React.useState(false);
+
+  const [isOpen, setIsOpen] = React.useState(true);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [showModal1, setShowModal1] = React.useState(false);
+  const [showModal2, setShowModal2] = React.useState(false);
+
+  const handleOpenModal1 = () => setShowModal1(true);
+  const handleCloseModal2 = () => setShowModal2(false);
+  const [selectedId, setSelectedId] = useState(null); 
   const { staffList, loading, error } = useSelector((state) => state.staff);
+
+  const handleSuccessFromModal1 = (idFromModal1) => {
+    setSelectedId(idFromModal1);        // lưu id
+    setShowModal1(false);               // đóng modal 1
+    setShowModal2(true);                // mở modal 2
+  };
 
   useEffect(() => {
     dispatch(fetchStaffList());
@@ -65,18 +78,28 @@ function Staffs() {
     <Layout>
       {
         // add doctor modal
-        isOpen && (
+
+        <div>
           <AddUserStaffModal
-            closeModal={onCloseModal}
-            isOpen={isOpen}
+            closeModal={() => setShowModal1(false)}
+            isOpen={showModal1}
             doctor={true}
             datas={null}
+            onSuccess={handleSuccessFromModal1}
           />
-        )
+
+          <AddDoctorModal
+            closeModal={handleCloseModal2}
+            isOpen={showModal2}
+            doctor={true}
+            datas={null}
+            id={selectedId}
+          />
+        </div>
       }
       {/* add button */}
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={handleOpenModal1}
         className="w-16 animate-bounce h-16 border border-border z-50 bg-subMain text-white rounded-full flex-colo fixed bottom-8 right-12 button-fb"
       >
         <BiPlus className="text-2xl" />
