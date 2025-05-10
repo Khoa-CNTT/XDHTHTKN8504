@@ -13,9 +13,9 @@ dotenv.config();
 const authController = {
   // Đăng ký tài khoản mới
   registerUser: async (req, res) => {
-    const io = getIO(); 
+    const io = getIO();
     try {
-      const { phone, password, role } = req.body;
+      const { phone, password, role, avatar } = req.body;
 
       // Kiểm tra dữ liệu bắt buộc
       if (!phone || !password || !role) {
@@ -53,6 +53,7 @@ const authController = {
         phone,
         password: hashedPassword,
         role,
+        avatar
       });
 
       const savedUser = await newUser.save();
@@ -158,6 +159,26 @@ const authController = {
 
     } catch (err) {
       res.status(500).json({ message: err.message });
+    }
+  },
+
+  uploadAvatarByAdmin: async (req, res) => {
+    try {
+      const file = req.file;
+
+      if (!file) return res.status(400).json({ message: "No file uploaded" });
+
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'elder-care/avatar', 
+      });
+      
+      fs.unlinkSync(file.path); // Xoá file tạm
+
+      // Trả về URL của ảnh đã upload
+      res.json({ url: result.secure_url });
+    } catch (error) {
+      console.error('Error uploading image: ', error);
+      res.status(500).send('Error uploading image');
     }
   },
 

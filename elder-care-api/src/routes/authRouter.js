@@ -17,6 +17,12 @@ router.post(
     authController.uploadAvatar
 );
 
+router.post(
+    "/uploads",
+    upload.single("file"),
+    authController.uploadAvatarByAdmin
+)
+
 // Đếm số người dùng trong 12 tháng
 router.get(
     "/count-users-per-month",

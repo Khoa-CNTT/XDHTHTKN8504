@@ -8,6 +8,7 @@ import { DoctorsTable } from "../../components/Tables";
 import { doctorsData } from "../../components/Datas";
 import { useNavigate } from "react-router-dom";
 import AddDoctorModal from "../../components/Modals/AddDoctorModal";
+import AddUserStaffModal from "../../components/Modals/AddUserStaffModal.js";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchStaffList } from "../../store/staffSlice.js";
@@ -65,7 +66,7 @@ function Staffs() {
       {
         // add doctor modal
         isOpen && (
-          <AddDoctorModal
+          <AddUserStaffModal
             closeModal={onCloseModal}
             isOpen={isOpen}
             doctor={true}
