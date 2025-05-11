@@ -72,6 +72,8 @@ const Profile: React.FC = () => {
       navigation.navigate('Notifications');
     } else if (id === 'profile') {
       navigation.navigate('ProfileList');
+    }else if (id === 'help') {
+      navigation.navigate('ReviewScreen');
     }
   };
 

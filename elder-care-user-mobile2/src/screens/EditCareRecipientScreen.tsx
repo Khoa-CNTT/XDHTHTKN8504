@@ -42,6 +42,15 @@ const EditCareRecipientScreen: React.FC = () => {
     const [emergencyContact, setEmergencyContact] = useState({ name: '', phone: '' });
     const [healthConditions, setHealthConditions] = useState([{ condition: '', notes: '' }]);
 
+    // State để theo dõi lỗi của từng trường
+    const [firstNameError, setFirstNameError] = useState('');
+    const [lastNameError, setLastNameError] = useState('');
+    const [relationshipError, setRelationshipError] = useState('');
+    const [addressError, setAddressError] = useState('');
+    const [emergencyNameError, setEmergencyNameError] = useState('');
+    const [emergencyPhoneError, setEmergencyPhoneError] = useState('');
+    const [healthConditionError, setHealthConditionError] = useState('');
+
     useEffect(() => {
         if (profileToEdit) {
             setFirstName(profileToEdit.firstName || '');
@@ -59,9 +68,60 @@ const EditCareRecipientScreen: React.FC = () => {
         healthConditions[0].condition;
 
     const handleUpdateProfile = async () => {
-        if (!isFormValid) {
-            Alert.alert("Thiếu thông tin", "Vui lòng điền đầy đủ các trường bắt buộc.");
-            return;
+        let isValid = true;
+
+        // Kiểm tra và cập nhật trạng thái lỗi cho từng trường
+        if (!firstName) {
+            setFirstNameError("Vui lòng nhập họ");
+            isValid = false;
+        } else {
+            setFirstNameError('');
+        }
+
+        if (!lastName) {
+            setLastNameError("Vui lòng nhập tên");
+            isValid = false;
+        } else {
+            setLastNameError('');
+        }
+
+        if (!relationship) {
+            setRelationshipError("Vui lòng nhập mối quan hệ");
+            isValid = false;
+        } else {
+            setRelationshipError('');
+        }
+
+        if (!address) {
+            setAddressError("Vui lòng nhập địa chỉ");
+            isValid = false;
+        } else {
+            setAddressError('');
+        }
+
+        if (!emergencyContact.name) {
+            setEmergencyNameError("Vui lòng nhập tên người liên hệ");
+            isValid = false;
+        } else {
+            setEmergencyNameError('');
+        }
+
+        if (!emergencyContact.phone) {
+            setEmergencyPhoneError("Vui lòng nhập số điện thoại liên hệ");
+            isValid = false;
+        } else {
+            setEmergencyPhoneError('');
+        }
+
+        if (!healthConditions[0].condition) {
+            setHealthConditionError("Vui lòng nhập tình trạng sức khỏe");
+            isValid = false;
+        } else {
+            setHealthConditionError('');
+        }
+
+        if (!isValid) {
+            return; // Không tiến hành cập nhật hồ sơ nếu có lỗi
         }
 
         try {
@@ -118,43 +178,89 @@ const EditCareRecipientScreen: React.FC = () => {
                     <Text style={styles.headerTitle}>Chỉnh Sửa Hồ Sơ</Text>
 
                     <Text style={styles.inputTitle}>Họ</Text>
-                    <TextInput style={styles.input} placeholder="Nhập họ" value={firstName} onChangeText={setFirstName} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nhập họ"
+                        value={firstName}
+                        onChangeText={(text) => {
+                            setFirstName(text);
+                            setFirstNameError('');
+                        }}
+                    />
+                    {firstNameError ? <Text style={styles.errorText}>{firstNameError}</Text> : null}
 
                     <Text style={styles.inputTitle}>Tên</Text>
-                    <TextInput style={styles.input} placeholder="Nhập tên" value={lastName} onChangeText={setLastName} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nhập tên"
+                        value={lastName}
+                        onChangeText={(text) => {
+                            setLastName(text);
+                            setLastNameError('');
+                        }}
+                    />
+                    {lastNameError ? <Text style={styles.errorText}>{lastNameError}</Text> : null}
 
                     <Text style={styles.inputTitle}>Mối quan hệ</Text>
-                    <TextInput style={styles.input} placeholder="Nhập mối quan hệ" value={relationship} onChangeText={setRelationship} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nhập mối quan hệ"
+                        value={relationship}
+                        onChangeText={(text) => {
+                            setRelationship(text);
+                            setRelationshipError('');
+                        }}
+                    />
+                    {relationshipError ? <Text style={styles.errorText}>{relationshipError}</Text> : null}
 
                     <Text style={styles.inputTitle}>Địa chỉ</Text>
-                    <TextInput style={styles.input} placeholder="Nhập địa chỉ" value={address} onChangeText={setAddress} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nhập địa chỉ"
+                        value={address}
+                        onChangeText={(text) => {
+                            setAddress(text);
+                            setAddressError('');
+                        }}
+                    />
+                    {addressError ? <Text style={styles.errorText}>{addressError}</Text> : null}
 
                     <Text style={styles.inputTitle}>Tên người liên hệ khẩn cấp</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="Nhập tên người liên hệ"
                         value={emergencyContact.name}
-                        onChangeText={(text) => setEmergencyContact({ ...emergencyContact, name: text })}
+                        onChangeText={(text) => {
+                            setEmergencyContact({ ...emergencyContact, name: text });
+                            setEmergencyNameError('');
+                        }}
                     />
+                    {emergencyNameError ? <Text style={styles.errorText}>{emergencyNameError}</Text> : null}
 
                     <Text style={styles.inputTitle}>Số điện thoại liên hệ khẩn cấp</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="Nhập số điện thoại"
                         value={emergencyContact.phone}
-                        onChangeText={(text) => setEmergencyContact({ ...emergencyContact, phone: text })}
+                        onChangeText={(text) => {
+                            setEmergencyContact({ ...emergencyContact, phone: text });
+                            setEmergencyPhoneError('');
+                        }}
                         keyboardType="phone-pad"
                     />
+                    {emergencyPhoneError ? <Text style={styles.errorText}>{emergencyPhoneError}</Text> : null}
 
                     <Text style={styles.inputTitle}>Tình trạng sức khỏe</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="Nhập tình trạng sức khỏe"
                         value={healthConditions[0].condition}
-                        onChangeText={(text) =>
-                            setHealthConditions([{ condition: text, notes: healthConditions[0].notes }])
-                        }
+                        onChangeText={(text) => {
+                            setHealthConditions([{ condition: text, notes: healthConditions[0].notes }]);
+                            setHealthConditionError('');
+                        }}
                     />
+                    {healthConditionError ? <Text style={styles.errorText}>{healthConditionError}</Text> : null}
 
                     <Text style={styles.inputTitle}>Ghi chú về sức khỏe</Text>
                     <TextInput
@@ -209,7 +315,7 @@ const styles = StyleSheet.create({
         borderColor: '#cbd5e0',
         borderRadius: 8,
         padding: width * 0.04,
-        marginBottom: 15,
+        marginBottom: 5, // Giảm margin bottom để có chỗ cho thông báo lỗi
         backgroundColor: '#fff',
         shadowColor: 'rgba(0, 0, 0, 0.1)',
         shadowOffset: { width: 0, height: 2 },
@@ -256,6 +362,11 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    errorText: {
+        color: 'red',
+        fontSize: 12,
+        marginBottom: 10,
     },
 });
 
