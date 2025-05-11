@@ -3,13 +3,37 @@ import { useDropzone } from 'react-dropzone';
 import { toast } from 'react-hot-toast';
 import { BiLoaderCircle } from 'react-icons/bi';
 import { FiUploadCloud } from 'react-icons/fi';
+import axios from 'axios';
 
 const Uploader = ({ setImage, image }) => {
   const [loading, setLoading] = useState(false);
 
   // upload file
   const onDrop = useCallback(async (acceptedFiles) => {
-    toast.error('This feature is not available yet');
+    // toast.error('This feature is not available yet');
+    const file = acceptedFiles[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file); // 'file' phải trùng tên field Multer backend mong đợi
+
+    try {
+      setLoading(true);
+      const res = await axios.post('http://localhost:5000/api/v1/auth/uploads', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setImage(res.data.url); 
+      console.log('Uploaded image URL:', res.data.url);
+      toast.success('Upload successful');
+    } catch (error) {
+      console.error('Upload failed:', error);
+      toast.error('Upload failed');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -41,7 +65,7 @@ const Uploader = ({ setImage, image }) => {
           </div>
         ) : (
           <img
-            src={image ? image : 'http://placehold.it/300x300'}
+            src={image ? image : 'https://via.placeholder.com/300'}
             alt="preview"
             className=" w-full h-32 rounded object-cover"
           />

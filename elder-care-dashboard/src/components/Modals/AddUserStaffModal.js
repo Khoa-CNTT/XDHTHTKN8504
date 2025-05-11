@@ -7,41 +7,64 @@ import { HiOutlineCheckCircle } from "react-icons/hi";
 import { toast } from "react-hot-toast";
 import Access from "../Access";
 import Uploader from "../Uploader";
+import axios from "axios";
 
-function AddUserStaffModal({ closeModal, isOpen, doctor, datas }) {
+function AddUserStaffModal({ closeModal, isOpen, doctor, datas, onSuccess }) {
   const [instraction, setInstraction] = useState(sortsDatas.title[0]);
   const [access, setAccess] = useState({});
+  const [phoneNumber, setPhoneNumber] = useState("");
+
   const [role, setRole] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState({});
+
+  const [image, setImage] = useState("");
 
   const color = true;
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const validateFields = () => {
-    const newErrors = {};
-    if (!phone.trim()) newErrors.phone = "Số điện thoại không được để trống";
-    if (!password.trim()) newErrors.password = "Mật khẩu không được để trống";
-    if (!confirmPassword.trim()) {
-      newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu";
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
+  const handleSubmitUser = async (e) => {
+    e.preventDefault();
+    // if (!phoneNumber || !password || !role) {
+    //   toast.error("Vui lòng điền đầy đủ thông tin");
+    //   return;
+    // }
+
+    // if (password !== confirmPassword) {
+    //   toast.error("Mật khẩu và xác nhận mật khẩu không khớp");
+    //   return;
+    // }
+
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        "http://localhost:5000/api/v1/auth/signup",
+        {
+          phone: phoneNumber,
+          password,
+          role,
+          avatar: image,
+        }
+      );
+      const newId = response.data._id;
+      toast.success("User created successfully");
+      // console.log('Đăng ký thành công:', newId);
+      setError(null);
+      onSuccess(newId);
+    } catch (error) {
+      console.error(
+        "Error:",
+        error.response ? error.response.data : error.message
+      );
+      setError("An error occurred while creating the user");
+      toast.error("Đăng ký thất bại!");
     }
-    if (!role) newErrors.role = "Vui lòng chọn vai trò";
-    return newErrors;
   };
 
-  const onSubmit = () => {
-    const validationErrors = validateFields();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    // Nếu dữ liệu hợp lệ, xử lý tiếp theo
-    toast.success("Dữ liệu hợp lệ. Đang xử lý...");
-  };
+  // console.log("image", image);
+  // console.log("dhhhh", role);
+  // console.log("phoneNumber", phoneNumber);
+  // console.log("password", password);
+  // console.log("confirmPassword", confirmPassword);
 
   return (
     <Modal
@@ -52,7 +75,7 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas }) {
     >
       <div className="flex gap-3 flex-col col-span-6 mb-6">
         <p className="text-sm">Profile Image</p>
-        <Uploader />
+        <Uploader setImage={setImage} image={image} />
       </div>
 
       <div className="flex-colo gap-6">
@@ -60,39 +83,25 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas }) {
           <Input
             label="Số điện thoại"
             color={true}
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
           />
-          {errors.phone && (
-            <p className="text-sm text-red-500 ">{errors.phone}</p>
-          )}
         </div>
-
+        {/* password */}
         <Input
-          label="Mật khẩu"
           type="password"
+          label="Mật khẩu"
           color={true}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        {errors.password && (
-          <p className="text-sm text-red-500  text-left w-full">
-            {errors.password}
-          </p>
-        )}
-
         <Input
-          label="Xác nhận mật khẩu"
           type="password"
+          label="Xác nhận mật khẩu"
           color={true}
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
-        {errors.confirmPassword && (
-          <p className="text-sm text-red-500  text-left w-full">
-            {errors.confirmPassword}
-          </p>
-        )}
 
         <div className="grid sm:grid-cols-1 gap-4 w-full">
           <div className="flex flex-col gap-2 w-full">
@@ -137,7 +146,11 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas }) {
           >
             Cancel
           </button>
-          <Button label="Save" Icon={HiOutlineCheckCircle} onClick={onSubmit} />
+          <Button
+            label="Tiếp"
+            Icon={HiOutlineCheckCircle}
+            onClick={handleSubmitUser}
+          />
         </div>
       </div>
     </Modal>

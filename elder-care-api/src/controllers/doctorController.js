@@ -7,7 +7,7 @@ const docterController = {
     createDoctor: async (req, res) => {
         const io = getIO();
         try {
-            const { userId, firstName, lastName, email, specialization, licenseNumber, experience, isAvailable } = req.body
+            const { userId, firstName, lastName, email, specialization, licenseNumber, experience } = req.body
 
             const existingDoctor = await Doctor.findOne({ userId })
             if (existingDoctor) {
@@ -24,7 +24,6 @@ const docterController = {
                 specialization,
                 licenseNumber,
                 experience,
-                isAvailable
             })
 
             const user = await User.findById(userId)
