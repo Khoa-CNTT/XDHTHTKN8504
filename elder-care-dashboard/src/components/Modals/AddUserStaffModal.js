@@ -13,6 +13,8 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas, onSuccess }) {
   const [instraction, setInstraction] = useState(sortsDatas.title[0]);
   const [access, setAccess] = useState({});
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [role, setRole] = useState("");
 
