@@ -31,6 +31,8 @@ import ServiceScreen from '../screens/ServiceScreen';
 import Seach from '../screens/Seach';
 
 import ChatScreen from '../screens/ChatSreen';
+import ReviewScreen from '../screens/ReviewScreen';
+
 
 
 
@@ -62,6 +64,7 @@ export type RootStackParamList = {
   Seach: undefined;
 
   Chat: undefined;
+  ReviewScreen: undefined;
 
 };
 
@@ -106,6 +109,7 @@ const StackNavigator = (): JSX.Element => {
       />
       <Stack.Screen name="ServiceScreen" component={ServiceScreen} />
       <Stack.Screen name="Seach" component={Seach} />
+      <Stack.Screen name="ReviewScreen" component={ReviewScreen} />
 
       <Stack.Screen name="BookingSuccess" component={BookingSuccessScreen} />
 
