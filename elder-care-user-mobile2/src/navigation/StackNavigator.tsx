@@ -30,6 +30,7 @@ import EditCareRecipientScreen from '../screens/EditCareRecipientScreen';
 import WorkScreen from '../screens/work-screen';
 import ServiceScreen from '../screens/ServiceScreen'; 
 import Seach from '../screens/Seach';
+import ReviewScreen from '../screens/ReviewScreen';
 
 
 export type RootStackParamList = {
@@ -58,7 +59,7 @@ export type RootStackParamList = {
   WorkScreen: undefined;
   ServiceScreen: undefined;
   Seach: undefined;
-
+  ReviewScreen: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -101,6 +102,7 @@ const StackNavigator = (): JSX.Element => {
         <Stack.Screen name="EditCareRecipient" component={EditCareRecipientScreen} />
         <Stack.Screen name="ServiceScreen" component={ServiceScreen} />
         <Stack.Screen name="Seach" component={Seach} />
+        <Stack.Screen name="ReviewScreen" component={ReviewScreen} />
         
 
         <Stack.Screen name="BookingSuccess" component={BookingSuccessScreen} />
