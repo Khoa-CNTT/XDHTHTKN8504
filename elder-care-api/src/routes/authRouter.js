@@ -17,6 +17,12 @@ router.post(
     authController.uploadAvatar
 );
 
+router.post(
+    "/uploads",
+    upload.single("file"),
+    authController.uploadAvatarByAdmin
+)
+
 // Đếm số người dùng trong 12 tháng
 router.get(
     "/count-users-per-month",
@@ -29,6 +35,17 @@ router.patch(
     auth,
     authorizeRoles("doctor", "nurse"),
     authController.updateAvailabilityStatus
+)
+
+// Get Staff
+router.get(
+    "/get-staff",
+    authController.getAllStaff
+)
+
+router.get(
+    '/get-customer',
+    authController.getAllUsers,
 )
 
 export default router;

@@ -13,8 +13,9 @@ dotenv.config();
 const authController = {
   // Đăng ký tài khoản mới
   registerUser: async (req, res) => {
+    const io = getIO();
     try {
-      const { phone, password, role } = req.body;
+      const { phone, password, role, avatar } = req.body;
 
       // Kiểm tra dữ liệu bắt buộc
       if (!phone || !password || !role) {
@@ -52,9 +53,14 @@ const authController = {
         phone,
         password: hashedPassword,
         role,
+        avatar
       });
 
       const savedUser = await newUser.save();
+
+      if (role === "family_member") {
+        io.to("staff_admin").emit("newFamilyMember", savedUser._id);
+      }
 
       // Xóa mật khẩu khỏi dữ liệu trả về
       const userToReturn = savedUser.toObject();
@@ -72,56 +78,57 @@ const authController = {
 
   // Đăng nhập
   loginUser: async (req, res) => {
-  try {
-    const { phone, password } = req.body;
+    try {
+      const { phone, password } = req.body;
 
-    if (!phone || !password) {
-      return res
-        .status(400)
-        .json({ message: "Vui lòng nhập đầy đủ phone và password" });
+      if (!phone || !password) {
+        return res
+          .status(400)
+          .json({ message: "Vui lòng nhập đầy đủ phone và password" });
+      }
+
+      const user = await User.findOne({ phone });
+      if (!user) {
+        return res.status(400).json({ message: "Số điện thoại này chưa được đăng ký" });
+      }
+
+      const isMatch = await bcryptjs.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Mật khẩu không đúng" });
+      }
+
+      const token = jwt.sign(
+        { _id: user._id, role: user.role, avatar: user.avatar },
+        process.env.SECRET_KEY,
+        { expiresIn: "7d" }
+      );
+
+      const userToReturn = user.toObject();
+      delete userToReturn.password;
+
+      // ✅ Thêm bước: Lấy thêm thông tin doctor/nurse nếu cần
+      let extraInfo = null;
+
+      if (user.role === "doctor") {
+        extraInfo = await Doctor.findOne({ userId: user._id });
+      } else if (user.role === "nurse") {
+        extraInfo = await Nurse.findOne({ userId: user._id });
+      }
+
+      res.status(200).json({
+        message: "Đăng nhập thành công",
+        token,
+        user: userToReturn,
+        extraInfo, // có thể là doctor hoặc nurse hoặc null
+      });
+    } catch (error) {
+      console.error("Lỗi khi đăng nhập:", error);
+      res.status(500).json({
+        message: "Lỗi server, vui lòng thử lại",
+        error: error.message,
+      });
     }
-
-    const user = await User.findOne({ phone });
-    if (!user) {
-      return res.status(400).json({ message: "Số điện thoại này chưa được đăng ký" });
-    }
-
-    const isMatch = await bcryptjs.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Mật khẩu không đúng" });
-    }
-
-    const token = jwt.sign(
-      { _id: user._id, role: user.role },
-      process.env.SECRET_KEY,
-      { expiresIn: "7d" }
-    );
-
-    const userToReturn = user.toObject();
-    delete userToReturn.password;
-
-    // ✅ Thêm bước: Lấy thêm thông tin doctor/nurse nếu cần
-    let extraInfo = null;
-
-    if (user.role === "doctor") {
-      extraInfo = await Doctor.findOne({ userId: user._id });
-    } else if (user.role === "nurse") {
-      extraInfo = await Nurse.findOne({ userId: user._id });
-    }
-
-    res.status(200).json({
-      message: "Đăng nhập thành công",
-      token,
-      user: userToReturn,
-      extraInfo, // có thể là doctor hoặc nurse hoặc null
-    });
-  } catch (error) {
-    console.error("Lỗi khi đăng nhập:", error);
-    res.status(500).json({
-      message: "Lỗi server, vui lòng thử lại",
-      error: error.message,
-    });
-  }},
+  },
 
   uploadAvatar: async (req, res) => {
     try {
@@ -152,6 +159,26 @@ const authController = {
 
     } catch (err) {
       res.status(500).json({ message: err.message });
+    }
+  },
+
+  uploadAvatarByAdmin: async (req, res) => {
+    try {
+      const file = req.file;
+
+      if (!file) return res.status(400).json({ message: "No file uploaded" });
+
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'elder-care/avatar', 
+      });
+      
+      fs.unlinkSync(file.path); // Xoá file tạm
+
+      // Trả về URL của ảnh đã upload
+      res.json({ url: result.secure_url });
+    } catch (error) {
+      console.error('Error uploading image: ', error);
+      res.status(500).send('Error uploading image');
     }
   },
 
@@ -230,9 +257,53 @@ const authController = {
     }
   },
 
+  getAllStaff: async (req, res) => {
+    try {
+      // Lấy danh sách bác sĩ
+      const doctors = await Doctor.find()
+        .populate('userId', 'phone role avatar')
+        .sort({ createdAt: -1 })
+        .lean(); // Chuyển sang object JS thuần
+
+      // Gắn thêm type để phân biệt
+      const doctorsWithType = doctors.map((doc) => ({
+        ...doc,
+        type: 'doctor',
+      }));
+
+      // Lấy danh sách điều dưỡng
+      const nurses = await Nurse.find()
+        .populate('userId', 'phone role avatar')
+        .sort({ createdAt: -1 })
+        .lean();
+
+      const nursesWithType = nurses.map((nurse) => ({
+        ...nurse,
+        type: 'nurse',
+      }));
+
+      // Gộp 2 danh sách
+      const staffList = [...doctorsWithType, ...nursesWithType];
+
+      // Sắp xếp chung theo createdAt mới nhất
+      staffList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      res.status(200).json({
+        message: 'Lấy danh sách nhân viên thành công',
+        data: staffList,
+      });
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách nhân viên:", error);
+      res.status(500).json({
+        message: "Lỗi server",
+        error: error.message,
+      });
+    }
+  },
+
   getAllUsers: async (req, res) => {
     try {
-      const users = await User.find({ role: 'family_member'}).select("-password").sort({ createdAt: -1 });
+      const users = await User.find({ role: 'family_member' }).select("-password").sort({ createdAt: -1 }).populate('profiles');
       res.status(200).json({ message: "Lấy danh sách người dùng thành công", data: users });
     } catch (error) {
       console.error("Lỗi khi lấy danh sách người dùng:", error);

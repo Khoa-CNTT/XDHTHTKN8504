@@ -1,8 +1,10 @@
 import Service from '../models/Service.js';
+import { getIO } from "../config/socketConfig.js";
 
 const serviceController = {
     // ceate service
     createService: async (req, res) => {
+        const io = getIO();
         try {
             const { name, description, price, percentage, role } = req.body;
 
@@ -24,6 +26,9 @@ const serviceController = {
             })
 
             await newService.save();
+
+            io.to("staff_admin").emit("newServiceCreated", newService);
+
             return res.status(201).json({
                 message: "Thêm mới dịch vụ thành công!",
                 service: newService,

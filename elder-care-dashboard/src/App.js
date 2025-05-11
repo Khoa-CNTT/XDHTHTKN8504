@@ -20,8 +20,13 @@ import PreviewPayment from "./screens/Payments/PreviewPayment";
 // import Medicine from "./screens/Medicine";
 import PatientProfile from "./screens/Patients/PatientProfile";
 import CreatePatient from "./screens/Patients/CreatePatient";
-import Nurses from "./screens/Nurses/Nurses";
-import DoctorProfile from "./screens/Nurses/DoctorProfile";
+// <<<<<<< nghia-admin-dashboard
+// import Nurses from "./screens/Nurses/Nurses";
+// import NurseSalary from "./screens/Nurses/NursesSalary";
+
+import Staffs from "./screens/Staffs/Staff";
+import DoctorProfile from "./screens/Staffs/DoctorProfile";
+// >>>>>>> main
 import Receptions from "./screens/Receptions";
 import NewMedicalRecode from "./screens/Patients/NewMedicalRecode";
 import NotFound from "./screens/NotFound";
@@ -30,7 +35,7 @@ import ForgotPassword from "./screens/ForgotPassword";
 import Register from "./screens/Register";
 import Chat from "./screens/Chats/Chat";
 import Booking from "./screens/Booking";
-
+import RequireAuth from "./components/RequireAuth";
 function App() {
   Aos.init();
 
@@ -41,42 +46,57 @@ function App() {
       {/* Routes */}
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          {/* invoce */}
-          <Route path="/invoices" element={<Invoices />} />
-          <Route path="/invoices/create" element={<CreateInvoice />} />
-          <Route path="/invoices/edit/:id" element={<EditInvoice />} />
-          <Route path="/invoices/preview/:id" element={<PreviewInvoice />} />
-          {/* payments */}
-          <Route path="/payments" element={<Payments />} />
-          <Route path="/payments/edit/:id" element={<EditPayment />} />
-          <Route path="/payments/preview/:id" element={<PreviewPayment />} />
-          {/* patient */}
-          <Route path="/customers" element={<Patients />} />
-          <Route path="/customers/preview/:id" element={<PatientProfile />} />
-          <Route path="/customers/create" element={<CreatePatient />} />
-          <Route
-            path="/customers/visiting/:id"
-            element={<NewMedicalRecode />}
-          />
-          {/* doctors */}
-          <Route path="/nurses" element={<Nurses />} />
-          <Route path="/nurses/preview/:id" element={<DoctorProfile />} />
-
-          {/* reception */}
-          <Route path="/receptions" element={<Receptions />} />
-          {/* others */}
+          {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgotpassword" element={<ForgotPassword />} />
-          <Route path="/appointments" element={<Appointments />} />
-          <Route path="/bookings" element={<Booking />} />
-          {/* <Route path="/campaigns" element={<Campaings />} /> */}
-          <Route path="/chat" element={<Chat />} />
-          {/* <Route path="/medicine" element={<Medicine />} /> */}
-          <Route path="/services" element={<Services />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<NotFound />} />
+
+          {/* Protected routes */}
+          <Route
+            path="*"
+            element={
+              <RequireAuth>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/invoices" element={<Invoices />} />
+                  <Route path="/invoices/create" element={<CreateInvoice />} />
+                  <Route path="/invoices/edit/:id" element={<EditInvoice />} />
+                  <Route
+                    path="/invoices/preview/:id"
+                    element={<PreviewInvoice />}
+                  />
+                  <Route path="/payments" element={<Payments />} />
+                  <Route path="/payments/edit/:id" element={<EditPayment />} />
+                  <Route
+                    path="/payments/preview/:id"
+                    element={<PreviewPayment />}
+                  />
+                  <Route path="/customers" element={<Patients />} />
+                  <Route
+                    path="/customers/preview/:id"
+                    element={<PatientProfile />}
+                  />
+                  <Route path="/customers/create" element={<CreatePatient />} />
+                  <Route
+                    path="/customers/visiting/:id"
+                    element={<NewMedicalRecode />}
+                  />
+                  <Route path="/staffs" element={<Staffs />} />
+                  <Route
+                    path="/nurses/preview/:id"
+                    element={<DoctorProfile />}
+                  />
+                  <Route path="/receptions" element={<Receptions />} />
+                  <Route path="/appointments" element={<Appointments />} />
+                  <Route path="/bookings" element={<Booking />} />
+                  <Route path="/chat" element={<Chat />} />
+                  <Route path="/services" element={<Services />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </RequireAuth>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </>

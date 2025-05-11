@@ -12,12 +12,16 @@ export type ScheduleUser = Schedule & {
 
 interface ScheduleStore {
   schedules: ScheduleUser[];
+  // schedule: ScheduleUser;
   loading: boolean;
   error: string | null;
   hasFetched: boolean;
   fetchSchedules: () => Promise<void>;
   setSchedules: (schedules: ScheduleUser[]) => void;
-  updateSchedule: (data: { scheduleId: string; newStatus: ScheduleStatus }) => void;
+  updateSchedule: (data: {
+    scheduleId: string;
+    newStatus: ScheduleStatus;
+  }) => void;
   getScheduleById: (id: string) => ScheduleUser | undefined;
 }
 

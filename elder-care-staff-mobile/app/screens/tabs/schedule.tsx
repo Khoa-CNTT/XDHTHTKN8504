@@ -134,7 +134,7 @@ export default function ScheduleScreen() {
     <View
       style={styles.container}
     >
-      <Text style={styles.headerTitle}>Lịch làm việc</Text>
+      <Text style={styles.headerTitle}>Lịch Làm Việc</Text>
 
       {selectedDay && (
         <DaySelector
@@ -175,11 +175,11 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   headerTitle: {
-    fontSize: 25,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#28A745",
     textAlign: "center",
-    marginBottom: 15,
+    marginBottom: 10,
+    color: "#black",
   },
   emptyText: {
     textAlign: "center",

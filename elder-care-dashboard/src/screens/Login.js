@@ -8,35 +8,47 @@ function Login() {
   const navigate = useNavigate();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({}); // Thêm state errors để lưu các lỗi
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    try {
-      console.log("Đăng nhập với:", phone, password); // Kiểm tra xem có dữ liệu không
+    const newErrors = {};
+    if (!phone) newErrors.phone = "Vui lòng nhập số điện thoại";
+    if (!password) newErrors.password = "Vui lòng nhập mật khẩu";
 
-      const response = await axios.post("http://localhost:5000/api/v1/auth/login",
-        { 
-          phone, 
-          password 
-        }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors); // Lưu lỗi vào state
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/v1/auth/login",
+        { phone, password }
       );
 
       const { token, user } = response.data;
 
-      // Kiểm tra role
-      if (user.role !== 'admin') {
-        alert('Chỉ admin mới được phép đăng nhập!');
+      if (user.role !== "admin") {
+        setErrors({ general: "Chỉ admin mới được phép đăng nhập!" });
         return;
       }
 
-      //Lưu token và cho vào trang admin
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
       navigate("/");
-      console.log("Login response:", response.data);
     } catch (error) {
-      console.error("Login error:", error.response?.data || error.message);
-      alert(error.response?.data?.message || "Đăng nhập thất bại!");
+      // Xử lý lỗi khi server trả về thông báo "Số điện thoại này chưa được đăng ký"
+      if (
+        error.response?.data?.message === "Số điện thoại này chưa được đăng ký"
+      ) {
+        setErrors({ phone: "Số điện thoại này chưa được đăng ký" });
+      } else {
+        setErrors({
+          general: error.response?.data?.message || "Đăng nhập thất bại!",
+        });
+      }
     }
   };
 
@@ -49,33 +61,41 @@ function Login() {
           className="w-48 h-25 object-contain"
         />
         <div className="flex flex-col gap-4 w-full mb-6">
-          <Input
-            label="Số điện thoại"
-            type="text"
-            color={true}
-            placeholder={"Nhập số điện thoại của bạn"}
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-          <Input
-            label="Mật khẩu"
-            type="password"
-            color={true}
-            placeholder={"*********"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div>
+            <Input
+              label="Số điện thoại"
+              type="text"
+              color={true}
+              placeholder={"Nhập số điện thoại của bạn"}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+            {errors.phone && (
+              <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+            )}
+          </div>
+
+          <div>
+            <Input
+              label="Mật khẩu"
+              type="password"
+              color={true}
+              placeholder={"*********"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            )}
+          </div>
         </div>
 
-        {/* Button for Login */}
-        <Button
-          label="Login"
-          Icon={BiLogInCircle}
-          // onClick={() => navigate("/")}
-          onClick={handleLogin}
-        />
+        {errors.general && (
+          <p className="text-red-500 text-sm mb-4">{errors.general}</p>
+        )}
 
-        {/* Links for Forgot Password and Register, centered */}
+        <Button label="Login" Icon={BiLogInCircle} onClick={handleLogin} />
+
         <div className="mt-4 text-sm text-gray-600 flex flex-col items-center">
           <p>
             <span
@@ -85,15 +105,6 @@ function Login() {
               Quên mật khẩu?
             </span>
           </p>
-          {/* <p className="mt-2">
-            Bạn chưa có tài khoản?{" "}
-            <span
-              className="text-blue-500 cursor-pointer hover:underline"
-              onClick={() => navigate("/register")}
-            >
-              Đăng ký tại đây
-            </span>
-          </p> */}
         </div>
       </form>
     </div>

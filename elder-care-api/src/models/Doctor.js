@@ -31,7 +31,6 @@ const doctorSchema = new Schema(
     licenseNumber: {
       type: String,
       required: true,
-      unique: true,
     },
     // Số năm kinh nghiệm
     experience: {
