@@ -46,11 +46,11 @@ export const MenuDatas = [
     path: "/customers",
     icon: TbUsers,
   },
-  {
-    title: "Receptions",
-    path: "/receptions",
-    icon: HiOutlineUsers,
-  },
+  // {
+  //   title: "Receptions",
+  //   path: "/receptions",
+  //   icon: HiOutlineUsers,
+  // },
   {
     title: "Staff",
     path: "/staffs",

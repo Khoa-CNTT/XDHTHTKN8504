@@ -48,12 +48,12 @@ function DoctorProfile() {
     <Layout>
       <div className="flex items-center gap-4">
         <Link
-          to="/doctors"
+          to="/staffs"
           className="bg-white border border-subMain border-dashed rounded-lg py-3 px-4 text-md"
         >
           <IoArrowBackOutline />
         </Link>
-        <h1 className="text-xl font-semibold">Dr. Daudi Mburuge</h1>
+        <h1 className="text-xl font-semibold">Jos Nghĩa</h1>
       </div>
       <div className=" grid grid-cols-12 gap-6 my-8 items-start">
         <div
