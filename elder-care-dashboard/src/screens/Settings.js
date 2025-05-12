@@ -4,7 +4,7 @@ import { BiUserPlus } from "react-icons/bi";
 import { RiLockPasswordLine } from "react-icons/ri";
 import PersonalInfo from "../components/UsedComp/PersonalInfo";
 import ChangePassword from "../components/UsedComp/ChangePassword";
-
+import { getUserIdFromToken } from "../utils/jwtHelper";
 function Settings() {
   const [activeTab, setActiveTab] = React.useState(1);
   const tabs = [
@@ -31,6 +31,11 @@ function Settings() {
     }
   };
 
+  const user = getUserIdFromToken();
+  const userAvatar = user?.avatar || "/images/123.jpg";
+  const userName = user?.role || "Jos Nghia";
+  const userPhone = user?.phone || "0123456789";
+
   return (
     <Layout>
       <h1 className="text-xl font-semibold">Settings</h1>
@@ -43,14 +48,14 @@ function Settings() {
           className="col-span-12 flex-colo gap-6 lg:col-span-4 bg-white rounded-xl border-[1px] border-border p-6 lg:sticky top-28"
         >
           <img
-            src="/images/123.jpg"
+            src={userAvatar}
             alt="setting"
             className="w-40 h-40 rounded-full object-cover border border-dashed border-subMain"
           />
           <div className="gap-2 flex-colo">
-            <h2 className="text-sm font-semibold">Nr. Trần Minh Nghĩa</h2>
+            <h2 className="text-sm font-semibold"> {userName}</h2>
             <p className="text-xs text-textGray">12345678@gmail.com</p>
-            <p className="text-xs">+84 1234 567 890</p>
+            <p className="text-xs">{userPhone}</p>
           </div>
           {/* tabs */}
           <div className="flex-colo gap-3 px-2 xl:px-12 w-full">

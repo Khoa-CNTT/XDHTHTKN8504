@@ -83,7 +83,7 @@ function App() {
                   />
                   <Route path="/staffs" element={<Staffs />} />
                   <Route
-                    path="/nurses/preview/:id"
+                    path="/staffs/preview/:id"
                     element={<DoctorProfile />}
                   />
                   <Route path="/receptions" element={<Receptions />} />

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../../Layout";
 import PersonalInfo from "../../components/UsedComp/PersonalInfo";
 import ChangePassword from "../../components/UsedComp/ChangePassword";
@@ -10,11 +10,19 @@ import { doctorTab } from "../../components/Datas";
 import PaymentsUsed from "../../components/UsedComp/PaymentUsed";
 import InvoiceUsed from "../../components/UsedComp/InvoiceUsed";
 import Access from "../../components/Access";
-
+import { useLocation } from "react-router-dom";
 function DoctorProfile() {
+  const location = useLocation();
   const [activeTab, setActiveTab] = React.useState(1);
   const [access, setAccess] = React.useState({});
+  //===========
 
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const tabFromQuery = parseInt(queryParams.get("tab")) || 1;
+    setActiveTab(tabFromQuery);
+  }, [location.search]);
+  //=======
   const tabPanel = () => {
     switch (activeTab) {
       case 1:
@@ -27,8 +35,8 @@ function DoctorProfile() {
         return <PaymentsUsed doctor={true} />;
       case 5:
         return <InvoiceUsed />;
-      case 6:
-        return <Access setAccess={setAccess} />;
+      // case 6:
+      //   return <Access setAccess={setAccess} />;
       case 7:
         return <ChangePassword />;
       default:
