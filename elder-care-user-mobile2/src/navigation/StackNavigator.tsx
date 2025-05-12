@@ -35,6 +35,7 @@ import ReviewScreen from '../screens/ReviewScreen';
 import PaymentInfoScreen from '../screens/PaymentInfoScreen';
 import TopUpScreen from '../screens/TopUpScreen';
 import PaymentMethodScreen from '../screens/PaymentMethodScreen';
+import TransferGuideScreen from '../screens/TransferGuideScreen';
 
 
 
@@ -71,6 +72,8 @@ export type RootStackParamList = {
   PaymentInfoScreen: undefined;
   TopUpScreen: undefined;
   PaymentMethodScreen: undefined;
+  TransferGuideScreen: undefined;
+
 
 };
 
@@ -119,7 +122,7 @@ const StackNavigator = (): JSX.Element => {
       <Stack.Screen name="PaymentInfoScreen" component={PaymentInfoScreen} />
       <Stack.Screen name="TopUpScreen" component={TopUpScreen} />
       <Stack.Screen name="PaymentMethodScreen" component={PaymentMethodScreen} />
-
+      <Stack.Screen name="TransferGuideScreen" component={TransferGuideScreen} />
       
 
       <Stack.Screen name="BookingSuccess" component={BookingSuccessScreen} />

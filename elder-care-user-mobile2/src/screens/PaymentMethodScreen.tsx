@@ -50,7 +50,7 @@ const PaymentMethodScreen: React.FC = () => {
             {/* ATM */}
             <Text style={styles.sectionTitle}>Thẻ ATM nội địa</Text>
             <TouchableOpacity style={styles.methodCard} onPress={() => handleMethodPress('atm')}>
-                <FontAwesome5 name="credit-card" size={28} color="#7B61FF" />
+                <FontAwesome5 name="credit-card" size={28} color="#37B44E" />
                 <Text style={styles.methodText}>Thẻ ATM nội địa</Text>
             </TouchableOpacity>
 
@@ -68,7 +68,7 @@ const PaymentMethodScreen: React.FC = () => {
             {/* Bank Transfer */}
             <Text style={styles.sectionTitle}>Chuyển khoản</Text>
             <TouchableOpacity style={styles.methodCard} onPress={() => handleMethodPress('bank')}>
-                <FontAwesome5 name="money-check-alt" size={28} color="#7B61FF" />
+                <FontAwesome5 name="money-check-alt" size={28} color="#37B44E" />
                 <Text style={styles.methodText}>Chuyển khoản</Text>
             </TouchableOpacity>
         </ScrollView>

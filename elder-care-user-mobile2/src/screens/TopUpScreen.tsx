@@ -9,7 +9,8 @@ type RootStackParamList = {
     ServiceScreen: { serviceId: string };
     Seach: undefined;
     PaymentMethodScreen: { onSelectMethod: (method: string) => void };
-    TopUpScreen: undefined;
+    TopUpScreen: { goToStep?: number; amount?: string };
+    TransferGuideScreen: { amount: string; selectedMethod?: string }; // Đã thêm 'selectedMethod'
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -24,43 +25,31 @@ const paymentMethodDisplay: Record<string, string> = {
 
 const TopUpScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
-    const [amount, setAmount] = React.useState<string>('');
-    const [selectedMethod, setSelectedMethod] = React.useState<string | undefined>();
-    const [step, setStep] = React.useState<1 | 2 | 3>(1); // 1: Phương thức, 2: Xác nhận, 3: Kết quả
-    const [paymentSuccess, setPaymentSuccess] = React.useState<boolean>(false); // State cho kết quả
+    const route = useRoute<TopUpScreenRouteProp>();
+    const [amount, setAmount] = React.useState('');
+    const [selectedMethod, setSelectedMethod] = React.useState<string | undefined>(undefined);
+    const [step, setStep] = React.useState(1);
 
-    const handlePaymentMethodSelect = (method: string) => {
+    // Callback to receive selected method from PaymentMethodScreen
+    const handleSelectMethod = (method: string) => {
         setSelectedMethod(method);
     };
 
-    const handleConfirmPayment = () => {
-        // Gọi API nạp tiền ở đây (ví dụ: sau 3 giây giả lập thành công)
-        setTimeout(() => {
-            setPaymentSuccess(true);
-            setStep(3); // Chuyển sang bước kết quả
-        }, 3000);
-    };
-
-    const handleGoBack = () => {
-        if (step > 1) {
-            setStep(prevStep => (prevStep === 3 ? 2 : 1));
-        } else {
-            navigation.goBack();
+    // Handle navigation param to jump to step 3
+    React.useEffect(() => {
+        if (route.params?.goToStep === 3) {
+            setStep(3);
         }
-    };
-
-    const handleStartOver = () => {
-        setStep(1);
-        setAmount('');
-        setSelectedMethod(undefined);
-        setPaymentSuccess(false);
-    };
+        if (route.params?.amount) {
+            setAmount(route.params.amount);
+        }
+    }, [route.params]);
 
     return (
         <ScrollView style={styles.container}>
             {/* Header */}
             <View style={styles.headerRow}>
-                <TouchableOpacity onPress={handleGoBack}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
                     <MaterialIcons name="arrow-back-ios" size={24} color="#222" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Nạp tiền</Text>
@@ -69,24 +58,24 @@ const TopUpScreen: React.FC = () => {
 
             {/* Stepper */}
             <View style={styles.stepperRow}>
-                <View style={[styles.stepItem, step >= 1 && styles.stepItemActive]}>
-                    <FontAwesome5 name="wallet" size={18} color={step >= 1 ? '#fff' : '#7B61FF'} />
-                    <Text style={[styles.stepText, step >= 1 && styles.stepTextActive]}>Phương thức</Text>
+                <View style={step === 1 ? styles.stepItemActive : styles.stepItem}>
+                    <FontAwesome5 name="wallet" size={18} color={step === 1 ? "#fff" : "#7B61FF"} />
+                    <Text style={step === 1 ? styles.stepTextActive : styles.stepText}>Phương thức</Text>
                 </View>
-                <View style={[styles.stepDivider, step > 1 && styles.stepDividerActive]} />
-                <View style={[styles.stepItem, step >= 2 && styles.stepItemActive]}>
-                    <FontAwesome5 name="file-alt" size={18} color={step >= 2 ? '#fff' : '#7B61FF'} />
-                    <Text style={[styles.stepText, step >= 2 && styles.stepTextActive]}>Xác nhận</Text>
+                <View style={styles.stepDivider} />
+                <View style={step === 2 ? styles.stepItemActive : styles.stepItem}>
+                    <FontAwesome5 name="file-alt" size={18} color={step === 2 ? "#fff" : "#7B61FF"} />
+                    <Text style={step === 2 ? styles.stepTextActive : styles.stepText}>Xác nhận</Text>
                 </View>
-                <View style={[styles.stepDivider, step > 2 && styles.stepDividerActive]} />
-                <View style={[styles.stepItem, step >= 3 && styles.stepItemActive]}>
-                    <FontAwesome5 name="check-circle" size={18} color={step >= 3 ? '#fff' : '#7B61FF'} />
-                    <Text style={[styles.stepText, step >= 3 && styles.stepTextActive]}>Kết quả</Text>
+                <View style={styles.stepDivider} />
+                <View style={step === 3 ? styles.stepItemActive : styles.stepItem}>
+                    <FontAwesome5 name="check-circle" size={18} color={step === 3 ? "#fff" : "#7B61FF"} />
+                    <Text style={step === 3 ? styles.stepTextActive : styles.stepText}>Kết quả</Text>
                 </View>
             </View>
 
             {step === 1 && (
-                <View>
+                <>
                     {/* Input Amount */}
                     <TextInput
                         style={styles.input}
@@ -95,11 +84,16 @@ const TopUpScreen: React.FC = () => {
                         value={amount}
                         onChangeText={setAmount}
                     />
+
                     {/* Payment Method */}
                     <Text style={styles.label}>Phương thức thanh toán</Text>
                     <TouchableOpacity
                         style={styles.methodCard}
-                        onPress={() => navigation.navigate('PaymentMethodScreen', { onSelectMethod: handlePaymentMethodSelect })}
+                        onPress={() =>
+                            navigation.navigate('PaymentMethodScreen', {
+                                onSelectMethod: handleSelectMethod,
+                            })
+                        }
                     >
                         <View style={styles.methodLeft}>
                             <FontAwesome5 name="money-check-alt" size={32} color="#7B61FF" />
@@ -113,17 +107,38 @@ const TopUpScreen: React.FC = () => {
                     {/* Policy */}
                     <View style={styles.policyCard}>
                         <Text style={styles.policyTitle}>Chính sách</Text>
-                        {/* ... các điều khoản chính sách ... */}
+                        <View style={styles.policyRow}>
+                            <MaterialIcons name="info-outline" size={16} color="#7B61FF" />
+                            <Text style={styles.policyText}>
+                                Số tiền nạp vào <Text style={styles.link}>TrueDoc</Text> chỉ được dùng để thanh toán các dịch vụ y tế, sức khoẻ do <Text style={styles.link}>TrueDoc</Text> cung cấp
+                            </Text>
+                        </View>
+                        <View style={styles.policyRow}>
+                            <MaterialIcons name="info-outline" size={16} color="#7B61FF" />
+                            <Text style={styles.policyText}>
+                                Khách hàng không được phép chuyển tiền giữa các tài khoản <Text style={styles.link}>TrueDoc</Text> với nhau
+                            </Text>
+                        </View>
+                        <View style={styles.policyRow}>
+                            <MaterialIcons name="info-outline" size={16} color="#7B61FF" />
+                            <Text style={styles.policyText}>
+                                Khách hàng không được phép tự rút tiền từ tài khoản <Text style={styles.link}>TrueDoc</Text>
+                            </Text>
+                        </View>
                     </View>
 
+                    {/* Next Button */}
                     <TouchableOpacity
-                        style={[styles.button, (!amount || !selectedMethod) && styles.buttonDisabled]}
-                        onPress={() => setStep(2)}
-                        disabled={!amount || !selectedMethod}
+                        style={styles.button}
+                        onPress={() => {
+                            if (amount && selectedMethod) {
+                                setStep(2);
+                            }
+                        }}
                     >
-                        <Text style={styles.buttonText}>Tiếp tục</Text>
+                        <Text style={styles.buttonText}>Nạp tiền</Text>
                     </TouchableOpacity>
-                </View>
+                </>
             )}
 
             {step === 2 && (
@@ -133,7 +148,12 @@ const TopUpScreen: React.FC = () => {
                     {selectedMethod && (
                         <Text style={styles.confirmationText}>Phương thức: {paymentMethodDisplay[selectedMethod]}</Text>
                     )}
-                    <TouchableOpacity style={styles.button} onPress={handleConfirmPayment}>
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={() => {
+                            navigation.navigate('TransferGuideScreen', { amount, selectedMethod }); setStep(3); // Truyền selectedMethod
+                        }}
+                    >
                         <Text style={styles.buttonText}>Xác nhận nạp tiền</Text>
                     </TouchableOpacity>
                 </View>
@@ -141,9 +161,37 @@ const TopUpScreen: React.FC = () => {
 
             {step === 3 && (
                 <View>
-                    <Text style={styles.resultTitle}>{paymentSuccess ? 'Nạp tiền thành công!' : 'Nạp tiền thất bại!'}</Text>
-                    <TouchableOpacity style={styles.button} onPress={handleStartOver}>
-                        <Text style={styles.buttonText}>Hoàn tất</Text>
+                    {/* Amount */}
+                    <Text style={{ fontSize: 32, color: '#2CB742', fontWeight: 'bold', textAlign: 'center', marginTop: 12 }}>
+                        + {Number(amount).toLocaleString()}VND
+                    </Text>
+                    <Text style={{ color: '#7B61FF', textAlign: 'center', marginBottom: 12 }}>Đang xử lý</Text>
+                    {/* Info Card */}
+                    <View style={{
+                        backgroundColor: '#fff',
+                        borderRadius: 10,
+                        padding: 16,
+                        marginHorizontal: 16,
+                        marginBottom: 24,
+                        elevation: 2,
+                    }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                            <Text style={{ color: '#888' }}>Nguồn tiền</Text>
+                            <Text style={{ fontWeight: 'bold' }}>{selectedMethod ? paymentMethodDisplay[selectedMethod] : ''}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <Text style={{ color: '#888' }}>Thời gian</Text>
+                            <Text style={{ fontWeight: 'bold' }}>
+                                {new Date().toLocaleDateString('vi-VN')}  •  {new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                            </Text>
+                        </View>
+                    </View>
+                    {/* Home Button */}
+                    <TouchableOpacity
+                        style={[styles.button, { marginHorizontal: 16 }]}
+                        onPress={() => navigation.navigate('Home')}
+                    >
+                        <Text style={styles.buttonText}>Quay về trang chủ</Text>
                     </TouchableOpacity>
                 </View>
             )}
@@ -156,12 +204,11 @@ const styles = StyleSheet.create({
     headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
     headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#222' },
     stepperRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 18 },
-    stepItem: { alignItems: 'center', backgroundColor: '#F2F2F2', borderRadius: 8, padding: 8, flex: 1 },
     stepItemActive: { alignItems: 'center', backgroundColor: '#7B61FF', borderRadius: 8, padding: 8, flex: 1 },
-    stepText: { color: '#7B61FF', fontWeight: 'bold', fontSize: 13, marginTop: 2 },
+    stepItem: { alignItems: 'center', backgroundColor: '#F2F2F2', borderRadius: 8, padding: 8, flex: 1 },
     stepTextActive: { color: '#fff', fontWeight: 'bold', fontSize: 13, marginTop: 2 },
+    stepText: { color: '#7B61FF', fontWeight: 'bold', fontSize: 13, marginTop: 2 },
     stepDivider: { width: 16, height: 2, backgroundColor: '#7B61FF', marginHorizontal: 2 },
-    stepDividerActive: { backgroundColor: '#7B61FF' },
     input: {
         borderWidth: 1,
         borderColor: '#eee',
@@ -193,20 +240,20 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     policyTitle: { fontWeight: 'bold', marginBottom: 8, fontSize: 15 },
+    policyRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 6 },
+    policyText: { marginLeft: 8, color: '#222', fontSize: 13, flex: 1 },
+    link: { color: '#7B61FF', fontWeight: 'bold' },
     button: {
         backgroundColor: '#7B61FF',
         borderRadius: 10,
         paddingVertical: 16,
         alignItems: 'center',
         marginBottom: 24,
-    },
-    buttonDisabled: {
-        backgroundColor: '#ccc',
+        marginTop: 16,
     },
     buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-    confirmationTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
-    confirmationText: { fontSize: 16, marginBottom: 5 },
-    resultTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
+    confirmationTitle: { fontWeight: 'bold', fontSize: 18, marginBottom: 12, textAlign: 'center' },
+    confirmationText: { fontSize: 16, marginBottom: 8, textAlign: 'center' },
 });
 
 export default TopUpScreen;
