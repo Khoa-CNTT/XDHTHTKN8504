@@ -6,7 +6,7 @@ const serviceController = {
     createService: async (req, res) => {
         const io = getIO();
         try {
-            const { name, description, price, percentage, role } = req.body;
+            const { name, description, price, percentage, role, imgUrl } = req.body;
 
             // check if service already exists
             const existingService = await Service.findOne({ name });
@@ -22,7 +22,8 @@ const serviceController = {
                 description,
                 price,
                 percentage,
-                role
+                role,
+                imgUrl
             })
 
             await newService.save();
@@ -43,7 +44,7 @@ const serviceController = {
 
     getService: async (req, res) => {
         try {
-            const services = await Service.find({}).select("-__v"); // (optional) bỏ __v cho sạch
+            const services = await Service.find({}).select("-__v");
 
             return res.status(200).json({
                 success: true,
