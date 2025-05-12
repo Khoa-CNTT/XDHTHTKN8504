@@ -15,26 +15,50 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas, onSuccess }) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
   const [role, setRole] = useState("");
-
   const [image, setImage] = useState("");
 
-  const color = true;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // State to store error messages for each field
+  const [errors, setErrors] = useState({
+    phoneNumber: "",
+    password: "",
+    confirmPassword: "",
+    role: "",
+  });
+
   const handleSubmitUser = async (e) => {
     e.preventDefault();
-    // if (!phoneNumber || !password || !role) {
-    //   toast.error("Vui lòng điền đầy đủ thông tin");
-    //   return;
-    // }
 
-    // if (password !== confirmPassword) {
-    //   toast.error("Mật khẩu và xác nhận mật khẩu không khớp");
-    //   return;
-    // }
+    let formErrors = { ...errors };
+    let hasError = false;
+
+    // Validate inputs
+    if (!phoneNumber) {
+      formErrors.phoneNumber = "Số điện thoại không được để trống";
+      hasError = true;
+    }
+
+    if (!password) {
+      formErrors.password = "Mật khẩu không được để trống";
+      hasError = true;
+    }
+
+    if (password !== confirmPassword) {
+      formErrors.confirmPassword = "Mật khẩu và xác nhận mật khẩu không khớp";
+      hasError = true;
+    }
+
+    if (!role) {
+      formErrors.role = "Vui lòng chọn vai trò";
+      hasError = true;
+    }
+
+    setErrors(formErrors);
+
+    if (hasError) return;
 
     try {
       setLoading(true);
@@ -49,7 +73,6 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas, onSuccess }) {
       );
       const newId = response.data._id;
       toast.success("User created successfully");
-      // console.log('Đăng ký thành công:', newId);
       setError(null);
       onSuccess(newId);
     } catch (error) {
@@ -61,12 +84,6 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas, onSuccess }) {
       toast.error("Đăng ký thất bại!");
     }
   };
-
-  // console.log("image", image);
-  // console.log("dhhhh", role);
-  // console.log("phoneNumber", phoneNumber);
-  // console.log("password", password);
-  // console.log("confirmPassword", confirmPassword);
 
   return (
     <Modal
@@ -88,8 +105,11 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas, onSuccess }) {
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
           />
+          {errors.phoneNumber && (
+            <p className="text-sm text-red-500">{errors.phoneNumber}</p>
+          )}
         </div>
-        {/* password */}
+
         <Input
           type="password"
           label="Mật khẩu"
@@ -97,6 +117,10 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas, onSuccess }) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        {errors.password && (
+          <p className="text-sm text-red-500">{errors.password}</p>
+        )}
+
         <Input
           type="password"
           label="Xác nhận mật khẩu"
@@ -104,6 +128,9 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas, onSuccess }) {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
+        {errors.confirmPassword && (
+          <p className="text-sm text-red-500">{errors.confirmPassword}</p>
+        )}
 
         <div className="grid sm:grid-cols-1 gap-4 w-full">
           <div className="flex flex-col gap-2 w-full">
@@ -112,7 +139,7 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas, onSuccess }) {
               value={role}
               onChange={(e) => setRole(e.target.value)}
               className={`w-full bg-transparent text-sm mt-3 p-4 border ${
-                color ? "border-border font-light" : "border-white text-white"
+                role ? "border-border" : "border-red-500"
               } rounded-lg focus:border focus:border-subMain`}
             >
               <option
@@ -135,12 +162,11 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas, onSuccess }) {
               </option>
             </select>
             {errors.role && (
-              <p className="text-sm text-red-500 ">{errors.role}</p>
+              <p className="text-sm text-red-500">{errors.role}</p>
             )}
           </div>
         </div>
 
-        {/* buttons */}
         <div className="grid sm:grid-cols-2 gap-4 w-full">
           <button
             onClick={closeModal}

@@ -9,12 +9,12 @@ import { doctorsData } from "../components/Datas";
 import { useNavigate } from "react-router-dom";
 import AddDoctorModal from "../components/Modals/AddDoctorModal";
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchBookings } from '../store/bookingSlice.js';
+import { useDispatch, useSelector } from "react-redux";
+import { fetchBookings } from "../store/bookingSlice.js";
 import { getUserIdFromToken } from "../utils/jwtHelper.js";
-import { io } from 'socket.io-client';
-
-const socket = io('http://localhost:5000')
+import { io } from "socket.io-client";
+import * as XLSX from "xlsx"; // Import xlsx library
+const socket = io("http://localhost:5000");
 
 function Booking() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -43,7 +43,6 @@ function Booking() {
     return () => {
       socket.off("newBookingCreated");
     };
-    
   }, [dispatch]);
 
   console.log("bookings", bookings);
@@ -54,6 +53,52 @@ function Booking() {
 
   const preview = (data) => {
     navigate(`/nurses/preview/${data.id}`);
+  };
+  //export excel
+  const handleExport = () => {
+    // Tạo worksheet từ dữ liệu bookings
+    const ws = XLSX.utils.json_to_sheet(
+      bookings.map((booking, index) => ({
+        "#": index + 1,
+        "Khách hàng": `${booking?.profileId?.firstName || "Ẩn"} ${
+          booking?.profileId?.lastName || ""
+        }`,
+        "Người thực hiện": booking?.participants?.[0]?.fullName || "Chưa có",
+        "Ngày bắt đầu": new Date(booking?.repeatFrom).toLocaleDateString(
+          "vi-VN"
+        ),
+        "Ngày kết thúc": new Date(booking?.repeatTo).toLocaleDateString(
+          "vi-VN"
+        ),
+        "Dịch vụ": booking?.serviceId?.name || "Không rõ",
+        "Trạng thái": booking.status,
+      }))
+    );
+
+    // Tạo workbook và thêm worksheet vào
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Bookings");
+
+    // Tạo file excel dưới dạng nhị phân
+    const excelFile = XLSX.write(wb, { bookType: "xlsx", type: "binary" });
+
+    // Tạo một Blob và kích hoạt tải về
+    const file = new Blob([s2ab(excelFile)], {
+      type: "application/octet-stream",
+    });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(file);
+    link.download = "bookings.xlsx";
+    link.click();
+  };
+  // Chuyển đổi chuỗi thành ArrayBuffer (để tạo file Excel nhị phân)
+  const s2ab = (s) => {
+    const buf = new ArrayBuffer(s.length);
+    const view = new Uint8Array(buf);
+    for (let i = 0; i < s.length; i++) {
+      view[i] = s.charCodeAt(i) & 0xff;
+    }
+    return buf;
   };
 
   return (
@@ -91,28 +136,23 @@ function Booking() {
 
         <div className="grid md:grid-cols-6 sm:grid-cols-2 grid-cols-1 gap-2">
           <div className="md:col-span-5 grid lg:grid-cols-4 items-center gap-6">
-            <input
+            {/* <input
               type="text"
               placeholder='Search "daudi mburuge"'
               className="h-14 w-full text-sm text-main rounded-md bg-dry border border-border px-4"
-            />
+            /> */}
           </div>
 
           {/* export */}
+          {/* Nút xuất dữ liệu */}
           <Button
             label="Export"
             Icon={MdOutlineCloudDownload}
-            onClick={() => {
-              toast.error("Exporting is not available yet");
-            }}
+            onClick={handleExport} // Gọi handleExport khi nhấn
           />
         </div>
         <div className="mt-8 w-full overflow-x-scroll">
-          <BookingTable
-            doctor={true}
-            data={bookings}
-            functions={{ preview }}
-          />
+          <BookingTable doctor={true} data={bookings} functions={{ preview }} />
         </div>
       </div>
     </Layout>
