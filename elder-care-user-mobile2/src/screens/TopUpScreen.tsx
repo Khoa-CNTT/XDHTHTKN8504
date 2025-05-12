@@ -151,7 +151,7 @@ const TopUpScreen: React.FC = () => {
                     <TouchableOpacity
                         style={styles.button}
                         onPress={() => {
-                            navigation.navigate('TransferGuideScreen', { amount, selectedMethod }) // Truyền selectedMethod
+                            navigation.navigate('TransferGuideScreen', { amount, selectedMethod }); setStep(3); // Truyền selectedMethod
                         }}
                     >
                         <Text style={styles.buttonText}>Xác nhận nạp tiền</Text>
