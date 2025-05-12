@@ -20,7 +20,7 @@ const IncomeScreen: React.FC = () => {
     const currentMonth = new Date().getMonth() + 1;
 
     if (completedBookings.length === 0) {
-      fetchCompletedBookings(currentYear, currentMonth);
+      fetchCompletedBookings();
     }
   }, [fetchCompletedBookings, completedBookings.length]); // Chỉ gọi lại nếu completedBookings chưa có dữ liệu
   const handleSelectJob = (job: CompletedBooking) => {

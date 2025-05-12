@@ -141,7 +141,7 @@ const MapScreen: React.FC = () => {
           <View style={styles.arrivalInfo}>
             <View style={styles.userInfo}>
               <Image
-                source={{ uri: "https://via.placeholder.com/40" }}
+                source={{ uri: "https://via.placeholder.com/40" } }
                 style={styles.avatar}
               />
               <View>

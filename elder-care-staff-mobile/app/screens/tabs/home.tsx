@@ -10,6 +10,8 @@ import useCompletedBookingStore from "@/stores/completedBookingStore";
 import updateAvailability from "../../../api/updateAvailability";
 import useAuthStore from "@/stores/authStore";
 import { useModalStore } from "@/stores/modalStore"; // Import useModalStore
+import { MaterialIcons } from "@expo/vector-icons";
+import UpcomingSchedule from "@/components/home/UpcomingSchedule";
 
 const Home = () => {
   const extraInfo = useAuthStore((state) => state.extraInfo);
@@ -81,19 +83,37 @@ const handleToggleAvailability = async (newValue: boolean) => {
         isAvailable={isAvailable}
         setIsAvailable={handleToggleAvailability}
       />
+      <View style={styles.infoContainer}>
+        {/* Thu nhập */}
+        <IncomeCard
+          value={totalSalary}
+          label="Thu nhập hiện tại"
+          icon={<MaterialIcons name="attach-money" size={24} color="#5cb85c" />}
+          color="#5cb85c"
+        />
+        <IncomeCard
+          value={totalSalary}
+          label="Thu nhập hiện tại"
+          icon={<MaterialIcons name="attach-money" size={24} color="#5cb85c" />}
+          color="#5cb85c"
+        />
+        <IncomeCard
+          value={totalSalary}
+          label="Thu nhập hiện tại"
+          icon={<MaterialIcons name="attach-money" size={24} color="#5cb85c" />}
+          color="#5cb85c"
+        />
+        <IncomeCard
+          value={totalSalary}
+          label="Thu nhập hiện tại"
+          icon={<MaterialIcons name="attach-money" size={24} color="#5cb85c" />}
+          color="#5cb85c"
+        />
+      </View>
 
-      {/* Thu nhập */}
-      <IncomeCard
-        title="Thu nhập hiện tại"
-        icon="cash-outline"
-        income={totalSalary}
-        color="green"
-        onPress={() => {
-          router.push("/screens/income-screen");
-        }}
-      />
-      <WorkStatsCard />
+      {/* <WorkStatsCard /> */}
       <AvailableWorkList />
+      <UpcomingSchedule/>
     </View>
   );
 };
@@ -105,6 +125,13 @@ const styles = StyleSheet.create({
   },
   divider: {
     marginVertical: 10,
+  },
+  infoContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-around",
+    paddingHorizontal: 15,
+    marginBottom: 15,
   },
 });
 
