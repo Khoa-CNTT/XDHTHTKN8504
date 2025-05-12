@@ -30,14 +30,14 @@ const PaymentInfoScreen: React.FC = () => {
             {/* Actions */}
             <View style={styles.actionRow}>
                 <TouchableOpacity style={styles.actionCard} onPress={() => { /* Handle payment */ }}>
-                    <MaterialIcons name="qr-code-scanner" size={36} color="#7B61FF" />
+                    <MaterialIcons name="qr-code-scanner" size={36} color="#37B44E" />
                     <Text style={styles.actionText}>Thanh toán</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.actionCard}
                     onPress={() => navigation.navigate('TopUpScreen')} // Navigate to TopUpScreen
                 >
-                    <FontAwesome5 name="money-bill-wave" size={36} color="#7B61FF" />
+                    <FontAwesome5 name="money-bill-wave" size={36} color="#37B44E" />
                     <Text style={styles.actionText}>Nạp tiền</Text>
                 </TouchableOpacity>
             </View>
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
         elevation: 2,
         marginBottom: 16,
     },
-    balanceLabel: { color: '#7B61FF', fontWeight: 'bold', fontSize: 16 },
+    balanceLabel: { color: '#37B44E', fontWeight: 'bold', fontSize: 16 },
     balanceAmount: { fontSize: 32, fontWeight: 'bold', color: '#222', marginTop: 8 },
     currency: { fontSize: 18, color: '#888' },
     actionRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 6,
         elevation: 2,
     },
-    actionText: { marginTop: 8, color: '#7B61FF', fontWeight: 'bold' },
+    actionText: { marginTop: 8, color: '#37B44E', fontWeight: 'bold' },
     cardManage: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -114,8 +114,8 @@ const styles = StyleSheet.create({
     transactionType: { fontWeight: 'bold', fontSize: 15 },
     transactionAmount: { color: '#2CB742', fontWeight: 'bold', fontSize: 15 },
     transactionDesc: { color: '#888', fontSize: 13 },
-    transactionStatus: { color: '#7B61FF', fontSize: 13 },
-    seeMore: { color: '#7B61FF', textAlign: 'center', marginTop: 10, fontWeight: 'bold' },
+    transactionStatus: { color: '#37B44E', fontSize: 13 },
+    seeMore: { color: '#37B44E', textAlign: 'center', marginTop: 10, fontWeight: 'bold' },
 });
 
 export default PaymentInfoScreen;
