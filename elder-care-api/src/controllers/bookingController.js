@@ -19,6 +19,7 @@ const bookingController = {
                 notes,
                 paymentId,
                 participants,
+                repeatInterval,
                 repeatFrom,
                 repeatTo,
                 timeSlot
@@ -85,6 +86,7 @@ const bookingController = {
                 notes,
                 paymentId,
                 participants,
+                repeatInterval,
                 repeatFrom: fromDate,
                 repeatTo: toDate,
                 timeSlot,
@@ -253,6 +255,7 @@ const bookingController = {
 
             let currentDate = moment.tz(booking.repeatFrom, timeZone);
             const repeatTo = moment.tz(booking.repeatTo, timeZone);
+            const repeatInterval = booking.repeatInterval;
             const schedules = [];
 
             const add7Hours = (date) => {
@@ -307,7 +310,7 @@ const bookingController = {
                     schedules.push(schedule);
                 }
 
-                currentDate.add(1, 'days');
+                currentDate.add(repeatInterval, 'days');
             }
 
 
