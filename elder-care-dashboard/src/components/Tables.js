@@ -404,7 +404,7 @@ export function PatientTable({ data, functions, used }) {
           const gender = "Male";
           const bloodType = "Không rõ";
           const age = "Không rõ";
-          const avatarUrl = item.image || "https://via.placeholder.com/150";
+          const avatarUrl = item.avatar || "https://via.placeholder.com/150";
 
           return (
             <tr
