@@ -400,11 +400,11 @@ export function PatientTable({ data, functions, used }) {
           }
 
           const phoneNumber = item.phone || "Không rõ";
-          const createdDate =
-            new Date(item.createdAt).toLocaleDateString("vi-VN") || "Không rõ";
+          const createdDate = new Date(item.createdAt).toLocaleDateString("vi-VN") || "Không rõ";
           const gender = "Male";
           const bloodType = "Không rõ";
           const age = "Không rõ";
+          const avatarUrl = item.image || "https://via.placeholder.com/150";
 
           return (
             <tr
@@ -414,15 +414,15 @@ export function PatientTable({ data, functions, used }) {
               <td className={tdclasse}>{index + 1}</td>
               <td className={tdclasse}>
                 <div className="flex gap-4 items-center">
-                  {/* {!used && (
+                  {!used && (
                     <span className="w-12">
                       <img
-                        src={item.image}
-                        alt={item.title}
+                        src={avatarUrl}
+                        alt={lastName}
                         className="w-full h-12 rounded-full object-cover border border-border"
                       />
                     </span>
-                  )} */}
+                  )}
 
                   <div>
                     <h4 className="text-sm font-medium">
@@ -505,10 +505,9 @@ export function DoctorsTable({ data, functions, doctor }) {
           const createdDate = new Date(item.createdAt).toLocaleDateString(
             "vi-VN"
           );
-          {
-            /* const phone = item.userId.phone || "Không rõ"; */
-          }
-          const phone = item.phone || "Không rõ";
+          
+          const phone = item.userId.phone || "Không rõ";
+
           let title;
           if (item.type === "doctor") {
             title = "Bác sĩ";
@@ -516,6 +515,7 @@ export function DoctorsTable({ data, functions, doctor }) {
             title = "Điều dưỡng";
           }
           const email = item.email || "Không rõ";
+          let avatarUrl = item.userId.avatar || "https://via.placeholder.com/150";
 
           return (
             <tr
@@ -525,13 +525,13 @@ export function DoctorsTable({ data, functions, doctor }) {
               <td className={tdclass}>{index + 1}</td>
               <td className={tdclass}>
                 <div className="flex gap-4 items-center">
-                  {/* <span className="w-12">
+                  <span className="w-12">
                     <img
-                      src={item.user.image}
-                      alt={item.user.title}
+                      src={avatarUrl}
+                      alt={fullName}
                       className="w-full h-12 rounded-full object-cover border border-border"
                     />
-                  </span> */}
+                  </span>
                   <h4 className="text-sm font-medium">{fullName}</h4>
                 </div>
               </td>
@@ -566,6 +566,7 @@ export function DoctorsTable({ data, functions, doctor }) {
 export function BookingTable({ data, functions, doctor }) {
   const statusMap = {
     pending: "Chưa nhận",
+    paid: "Đã thanh toán",
     accepted: "Đã được nhận",
     completed: "Hoàn thành",
     cancelled: "Đã hủy",
@@ -650,6 +651,8 @@ export function BookingTable({ data, functions, doctor }) {
                       ? "bg-orange-500 text-orange-500"
                       : item.status === "pending"
                       ? "bg-red-600 text-red-600"
+                      : item.status === "paid"
+                      ? "bg-green-500 text-green-500"
                       : item.status === "cancelled" &&
                         "bg-gray-500 text-gray-500"
                   } bg-opacity-10 text-xs rounded-xl`}
@@ -660,6 +663,8 @@ export function BookingTable({ data, functions, doctor }) {
                     ? "Đã được nhận"
                     : item.status === "pending"
                     ? "Đang chờ xử lý"
+                    : item.status === "paid"
+                    ? "Đã thanh toán"
                     : item.status === "cancelled" && "Đã hủy"}
                 </span>
               </td>
