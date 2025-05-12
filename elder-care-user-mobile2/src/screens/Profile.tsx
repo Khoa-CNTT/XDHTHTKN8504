@@ -46,6 +46,11 @@ const menuItems: MenuItem[] = [
     icon: 'chevron-forward',
   },
   {
+    id: 'payment',
+    title: 'Ví điện tử',
+    icon: 'chevron-forward',
+  },
+  {
     id: 'logout',
     title: 'Đăng xuất',
     icon: 'chevron-forward',
@@ -74,6 +79,8 @@ const Profile: React.FC = () => {
       navigation.navigate('ProfileList');
     }else if (id === 'help') {
       navigation.navigate('ReviewScreen');
+    }else if (id === 'payment') {
+      navigation.navigate('PaymentInfoScreen');
     }
   };
 
@@ -87,6 +94,8 @@ const Profile: React.FC = () => {
         return <Ionicons name="help-circle-outline" size={20} color="#8F9BB3" />;
       case 'terms':
         return <Ionicons name="shield-outline" size={20} color="#8F9BB3" />;
+      case 'payment':
+        return <Ionicons name="home-outline" size={20} color="#8F9BB3" />;
       case 'logout':
         return <Ionicons name="log-out-outline" size={20} color="#8F9BB3" />;
       default:
