@@ -4,6 +4,7 @@ import { Button, Input, Switchi, Textarea } from "../Form";
 import { HiOutlineCheckCircle } from "react-icons/hi";
 import { toast } from "react-hot-toast";
 import axios from "axios";
+import Uploader from "../Uploader.js";
 
 const AddServiceModal = ({ closeModal, isOpen }) => {
   const [name, setName] = useState("");
@@ -13,6 +14,7 @@ const AddServiceModal = ({ closeModal, isOpen }) => {
   const [percentage, setPercentage] = useState("");
   const [role, setRole] = useState("doctor");
   const [errors, setErrors] = useState({});
+  const [image, setImage] = useState("");
 
   const handleSubmit = async () => {
     const newErrors = {};
@@ -26,18 +28,14 @@ const AddServiceModal = ({ closeModal, isOpen }) => {
     if (Object.keys(newErrors).length > 0) return;
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/v1/services/create",
-        {
-          name,
-          description,
-          price: Number(price),
-          isActive,
-          percentage: Number(percentage),
-          role,
-        }
-      );
-
+      const response = await axios.post("http://localhost:5000/api/v1/services/create", {
+        name,
+        description,
+        price: Number(price),
+        percentage: Number(percentage),
+        role,
+        imgUrl: image,
+      });
       toast.success("Thêm dịch vụ thành công");
       closeModal();
     } catch (error) {
@@ -45,6 +43,9 @@ const AddServiceModal = ({ closeModal, isOpen }) => {
       toast.error("Không thể thêm dịch vụ");
     }
   };
+
+  console.log("image", image);
+  
 
   return (
     <Modal
@@ -54,6 +55,9 @@ const AddServiceModal = ({ closeModal, isOpen }) => {
       width="max-w-3xl"
     >
       <div className="flex-colo gap-6">
+        {/* Upload Image */}
+        <Uploader setImage={setImage} image={image} />
+
         {/* Tên dịch vụ */}
         <div className="w-full">
           <Input
@@ -69,7 +73,7 @@ const AddServiceModal = ({ closeModal, isOpen }) => {
         </div>
 
         {/* Giá */}
-        <div className="w-full">
+        <div className="w-full grid sm:grid-cols-2 gap-4">
           <Input
             label="Giá (vnd)"
             type="number"
@@ -81,10 +85,7 @@ const AddServiceModal = ({ closeModal, isOpen }) => {
           {errors.price && (
             <p className="text-sm text-red-500 mt-1">{errors.price}</p>
           )}
-        </div>
-
-        {/* Phần trăm */}
-        <div className="w-full">
+          {/* Phần trăm */}
           <Input
             label="Tỉ lệ phần trăm (%)"
             type="number"
@@ -97,6 +98,7 @@ const AddServiceModal = ({ closeModal, isOpen }) => {
             <p className="text-sm text-red-500 mt-1">{errors.percentage}</p>
           )}
         </div>
+
 
         {/* Vai trò */}
         <div className="w-full">
