@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchStaffList } from "../../store/staffSlice.js";
 import { getUserIdFromToken } from "../../utils/jwtHelper.js";
 import { io } from "socket.io-client";
+import * as XLSX from "xlsx"; // Import xlsx library
 
 const socket = io("http://localhost:5000");
 
@@ -73,39 +74,80 @@ function Staffs() {
     navigate(`/staffs/preview/${data.id}`);
   };
 
+  const handleExport = () => {
+    if (!staffList || staffList.length === 0) {
+      toast.error("Không có dữ liệu để xuất!");
+      return;
+    }
+
+    const ws = XLSX.utils.json_to_sheet(
+      staffList.map((item, index) => ({
+        "#": index + 1,
+        "Họ và tên": `${item.firstName || ""} ${item.lastName || ""}`,
+        "Ngày Tạo": new Date(item.createdAt).toLocaleDateString("vi-VN"),
+        "Điện Thoại": item.userId?.phone || "Không rõ",
+        "Chức Danh":
+          item.type === "doctor"
+            ? "Bác sĩ"
+            : item.type === "nurse"
+            ? "Điều dưỡng"
+            : "Không xác định",
+        Email: item.email || "Không rõ",
+      }))
+    );
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Staffs");
+
+    const excelFile = XLSX.write(wb, { bookType: "xlsx", type: "binary" });
+
+    const s2ab = (s) => {
+      const buf = new ArrayBuffer(s.length);
+      const view = new Uint8Array(buf);
+      for (let i = 0; i < s.length; i++) {
+        view[i] = s.charCodeAt(i) & 0xff;
+      }
+      return buf;
+    };
+
+    const file = new Blob([s2ab(excelFile)], {
+      type: "application/octet-stream",
+    });
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(file);
+    link.download = "staffs.xlsx";
+    link.click();
+  };
+
   return (
     <Layout>
-      {
-        // add doctor modal
+      <div>
+        <AddUserStaffModal
+          closeModal={() => setShowModal1(false)}
+          isOpen={showModal1}
+          doctor={true}
+          datas={null}
+          onSuccess={handleSuccessFromModal1}
+        />
 
-        <div>
-          <AddUserStaffModal
-            closeModal={() => setShowModal1(false)}
-            isOpen={showModal1}
-            doctor={true}
-            datas={null}
-            onSuccess={handleSuccessFromModal1}
-          />
+        <AddDoctorModal
+          closeModal={handleCloseModal2}
+          isOpen={showModal2}
+          doctor={true}
+          datas={null}
+          id={selectedId}
+        />
+      </div>
 
-          <AddDoctorModal
-            closeModal={handleCloseModal2}
-            isOpen={showModal2}
-            doctor={true}
-            datas={null}
-            id={selectedId}
-          />
-        </div>
-      }
-      {/* add button */}
+      {/* Add button */}
       <button
         onClick={handleOpenModal1}
         className="w-16 animate-bounce h-16 border border-border z-50 bg-subMain text-white rounded-full flex-colo fixed bottom-8 right-12 button-fb"
       >
         <BiPlus className="text-2xl" />
       </button>
-      {/* payroll */}
 
-      {/*  */}
       <h1 className="text-xl font-semibold">Nhân viên</h1>
       <div
         data-aos="fade-up"
@@ -114,8 +156,7 @@ function Staffs() {
         data-aos-offset="200"
         className="bg-white my-8 rounded-xl border-[1px] border-border p-5"
       >
-        {/* datas */}
-
+        {/* Search input */}
         <div className="grid md:grid-cols-6 sm:grid-cols-2 grid-cols-1 gap-2">
           <div className="md:col-span-5 grid lg:grid-cols-4 items-center gap-6">
             <input
@@ -124,25 +165,15 @@ function Staffs() {
               className="h-14 w-full text-sm text-main rounded-md bg-dry border border-border px-4"
             />
           </div>
-          {/* Link chuyển đến trang thanh toán chung */}
-          {/* <div className="md:col-span-5 grid  items-center gap-4 bg-subMain text-white text-sm font-medium px-2 py-2 rounded w-fit">
-            <Link
-              to="/nurses/payroll"
-              className="text-white  px-4 py-2 rounded-md text-sm font-semibold"
-            >
-              Go to Payroll
-            </Link>
-          </div> */}
 
-          {/* export */}
+          {/* Export button */}
           <Button
             label="Export"
             Icon={MdOutlineCloudDownload}
-            onClick={() => {
-              toast.error("Exporting is not available yet");
-            }}
+            onClick={handleExport}
           />
         </div>
+
         <div className="mt-8 w-full overflow-x-scroll">
           <DoctorsTable
             doctor={true}
