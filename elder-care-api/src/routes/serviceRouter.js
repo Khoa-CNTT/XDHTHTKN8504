@@ -10,4 +10,14 @@ router.get(
     serviceController.getService
 )
 
+router.put(
+    '/update-service/:serviceId',
+    serviceController.updateService
+)
+
+router.delete(
+    '/delete-service/:serviceId',
+    serviceController.deleteService
+)
+
 export default router;
