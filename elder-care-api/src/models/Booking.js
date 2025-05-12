@@ -12,7 +12,7 @@ const bookingSchema = new Schema(
     serviceId: { type: Schema.Types.ObjectId, ref: "Service", required: true },
     status: {
       type: String,
-      enum: ["pending", "accepted", "completed", "cancelled"],
+      enum: ["pending", "paid", "accepted", "completed", "cancelled"],
       default: "pending",
       index: true,
     },
