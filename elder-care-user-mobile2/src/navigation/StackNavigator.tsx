@@ -29,7 +29,11 @@ import EditCareRecipientScreen from '../screens/EditCareRecipientScreen';
 import WorkScreen from '../screens/work-screen';
 import ServiceScreen from '../screens/ServiceScreen'; 
 import Seach from '../screens/Seach';
+
 import ChatScreen from '../screens/ChatSreen';
+import ReviewScreen from '../screens/ReviewScreen';
+
+
 
 
 export type RootStackParamList = {
@@ -58,7 +62,10 @@ export type RootStackParamList = {
   WorkScreen: undefined;
   ServiceScreen: undefined;
   Seach: undefined;
+
   Chat: undefined;
+  ReviewScreen: undefined;
+
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -69,6 +76,7 @@ const defaultScreenOptions: StackNavigationOptions = {
 
 const StackNavigator = (): JSX.Element => {
   return (
+
     <Stack.Navigator id={undefined} screenOptions={defaultScreenOptions}>
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
@@ -101,6 +109,7 @@ const StackNavigator = (): JSX.Element => {
       />
       <Stack.Screen name="ServiceScreen" component={ServiceScreen} />
       <Stack.Screen name="Seach" component={Seach} />
+      <Stack.Screen name="ReviewScreen" component={ReviewScreen} />
 
       <Stack.Screen name="BookingSuccess" component={BookingSuccessScreen} />
 
@@ -110,6 +119,7 @@ const StackNavigator = (): JSX.Element => {
       {/* <Stack.Screen name="AddCareRecipient" component={AddCareRecipientScreen} /> */}
       {/* Add other screens here */}
     </Stack.Navigator>
+
   );
 };
 

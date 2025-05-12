@@ -47,7 +47,7 @@ const bannerData = [
 
 const { width, height } = Dimensions.get('window');
 const BANNER_WIDTH = width - 32;
-const BANNER_HEIGHT = height / 3; // Sử dụng một phần ba chiều cao màn hình
+const BANNER_HEIGHT = 180; // Sử dụng một phần ba chiều cao màn hình
 const AUTO_SCROLL_INTERVAL = 3000;
 
 const Banner: React.FC = () => {
