@@ -72,7 +72,7 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas, onSuccess }) {
         }
       );
       const newId = response.data._id;
-      toast.success("User created successfully");
+      toast.success("Thêm thành công!");
       setError(null);
       onSuccess(newId);
     } catch (error) {
