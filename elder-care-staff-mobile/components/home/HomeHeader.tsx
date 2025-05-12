@@ -1,94 +1,43 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 
-interface HeaderProps {
-  onMessagePress?: () => void;
-}
-
-const HomeHeader: React.FC<HeaderProps> = ({ onMessagePress }) => {
-  const router = useRouter(); // Sử dụng useRouter từ expo-router
-  const notificationCount = 0;
-
-  const handleNotificationPress = () => {
-    router.push("/screens/notification/notifications"); // Sử dụng router.push thay cho navigation.navigate
-  };
-
+const Header = () => {
   return (
-    <View style={styles.container}>
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>
-          <Text style={{ color: "#37B44E" }}>Elder</Text>
-          <Text style={{ color: "#BBBFBC" }}>Care</Text>
-        </Text>
+    <View style={styles.header}>
+      <View style={styles.logoContainer}>
+        <FontAwesome5 name="taxi" size={24} color="#fff" />
+        <Text style={styles.logoText}>Taxify</Text>
       </View>
-      <View style={styles.iconsContainer}>
-        <TouchableOpacity
-          onPress={handleNotificationPress}
-          style={styles.iconContainer}
-        >
-          <Ionicons name="notifications-outline" size={26} color="#333" />
-          {notificationCount > 0 && (
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationText}>{notificationCount}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-        <TouchableOpacity onPress={onMessagePress} style={styles.iconContainer}>
-          <Ionicons name="chatbubble-outline" size={26} color="#333" />
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity style={styles.notificationButton}>
+        <Ionicons name="notifications-outline" size={24} color="#fff" />
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  header: {
+    backgroundColor: "#27ae60",
+    paddingVertical: 15,
+    paddingHorizontal: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 12,
-    backgroundColor: "#FFFFFF",
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#EEEEEE",
   },
-  titleContainer: {
-    flex: 1,
-    alignItems: "flex-start",
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#2C3E50",
-  },
-  iconsContainer: {
+  logoContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
-  iconContainer: {
-    marginLeft: 20,
-    position: "relative",
-  },
-  notificationBadge: {
-    position: "absolute",
-    top: -2,
-    right: -2,
-    backgroundColor: "#FF4500",
-    borderRadius: 12,
-    width: 24,
-    height: 24,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  notificationText: {
-    color: "white",
-    fontSize: 14,
+  logoText: {
+    color: "#fff",
+    fontSize: 20,
     fontWeight: "bold",
-    marginTop: -1,
+    marginLeft: 10,
+  },
+  notificationButton: {
+    padding: 8,
   },
 });
 
-export default HomeHeader;
+export default Header;

@@ -1,48 +1,50 @@
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
-import { Card } from "react-native-paper";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, StyleSheet } from "react-native";
+import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 
-interface IncomeCardProps {
-  title: string;
-  icon: keyof typeof Ionicons.glyphMap; // Đảm bảo chỉ nhận các icon hợp lệ
-  income: number;
-  color?: string;
-  onPress?: () => void;
+// Định nghĩa kiểu cho props
+interface InfoCardProps {
+  value: string | number; // Kiểu dữ liệu của value có thể là string hoặc number
+  label: string; // label là string
+  icon: React.ReactNode; // icon là một React component (node)
+  color: string; // color là một chuỗi (string)
 }
 
-const IncomeCard: React.FC<IncomeCardProps> = ({
-  title,
-  icon,
-  income,
-  color = "green",
-  onPress,
-}) => {
+const InfoCard: React.FC<InfoCardProps> = ({ value, label, icon, color }) => {
   return (
-    <TouchableOpacity onPress={onPress}>
-      <Card style={styles.card}>
-        <Card.Title
-          titleStyle={{ fontSize: 16, fontWeight: "bold" }}
-          title={title}
-          left={() => <Ionicons name={icon as any} size={24} color={color} />} // Cast icon
-        />
-        <Card.Content>
-          <Text style={[styles.income, { color }]}>{income} VND</Text>
-        </Card.Content>
-      </Card>
-    </TouchableOpacity>
+    <View style={styles.infoCard}>
+      <Text style={styles.infoValue}>{value}</Text>
+      <Text style={styles.infoLabel}>{label}</Text>
+      <View style={[styles.iconContainer, { borderColor: color }]}>{icon}</View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
-    margin: 10,
-    borderRadius: 20,
+  infoCard: {
+    backgroundColor: "#fff",
+    width: "45%",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    alignItems: "flex-start",
   },
-  income: {
-    fontSize: 20,
+  infoValue: {
+    fontSize: 22,
     fontWeight: "bold",
+    color: "#333",
+    marginBottom: 5,
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: "#777",
+    marginBottom: 8,
+  },
+  iconContainer: {
+    padding: 2,
+    borderRadius: 8,
+    marginTop: 4,
   },
 });
 
-export default IncomeCard;
+export default InfoCard;

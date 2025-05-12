@@ -72,10 +72,10 @@ export default function Profile() {
         router.push("/screens/notification/notifications");
         break;
       case "Cài đặt":
-        // router.push("/screens/settings-screen");
+        router.push("/screens/Test");
         break;
       case "Hỗ trợ khách hàng":
-        // router.push("/screens/help-screen");
+        router.push("/screens/book-a-service");
         break;
       case "Điều khoản sử dụng":
         // router.push("/screens/terms-screen");
