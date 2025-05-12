@@ -11,3 +11,19 @@ export const getAllBookings = async () => {
         throw error;
     }
 }
+
+export const getPatients = async() => {
+    const token = localStorage.getItem('token');
+    try {
+        const response = await axios.get("http://localhost:5000/api/v1/bookings/get-profiles", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        console.log("response:", response.data.patients);
+        return response.data.patients;
+    } catch (error) {
+        console.error("Error fetching patients:", error);
+        throw error;        
+    }
+}

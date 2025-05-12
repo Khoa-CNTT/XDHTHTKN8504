@@ -1,19 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { MdOutlineCloudDownload } from 'react-icons/md';
-import { toast } from 'react-hot-toast';
-import { BiChevronDown, BiPlus } from 'react-icons/bi';
-import Layout from '../Layout';
-import { Button, Select } from '../components/Form';
-import { ServiceTable } from '../components/Tables';
-import { servicesData, sortsDatas } from '../components/Datas';
-import AddEditServiceModal from '../components/Modals/AddEditServiceModal';
-import { getServices } from '../api/services.js';
+import React, { useState, useEffect } from "react";
+import { MdOutlineCloudDownload } from "react-icons/md";
+import { BiChevronDown, BiPlus } from "react-icons/bi";
+import Layout from "../Layout";
+import { Button, Select } from "../components/Form";
+import { ServiceTable } from "../components/Tables";
+import { servicesData, sortsDatas } from "../components/Datas";
+import AddEditServiceModal from "../components/Modals/AddEditServiceModal";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchServices } from "../store/serviceSlice";
+import { getUserIdFromToken } from "../utils/jwtHelper.js";
+import { io } from "socket.io-client";
+import * as XLSX from "xlsx"; // Import xlsx library
+
+const socket = io("http://localhost:5000");
 
 function Services() {
   const [isOpen, setIsOpen] = React.useState(false);
   const [data, setData] = React.useState({});
   const [status, setStatus] = React.useState(sortsDatas.service[0]);
-  const [servicesDatas, setServicesDatas] = useState([]);
+  const dispatch = useDispatch();
+  const { services, loading, error } = useSelector((state) => state.service);
 
   const onCloseModal = () => {
     setIsOpen(false);
@@ -26,16 +32,65 @@ function Services() {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getServices();
-        setServicesDatas(data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-    fetchData();
-  }, []);
+    dispatch(fetchServices());
+
+    const user = getUserIdFromToken();
+
+    if (user) {
+      socket.emit("join", {
+        role: user.role,
+      });
+      socket.on("newServiceCreated", (newService) => {
+        console.log("📥 Service mới!");
+        dispatch(fetchServices());
+      });
+
+      // Cleanup khi component unmount
+      return () => {
+        socket.off("newServiceCreated");
+      };
+    }
+  }, [dispatch]);
+
+  // Hàm xuất Excel
+  const handleExport = () => {
+    // Tạo worksheet từ dữ liệu services
+    const ws = XLSX.utils.json_to_sheet(
+      services.map((service, index) => ({
+        "#": index + 1,
+        "Tên dịch vụ": service.name || "Không rõ",
+        "Loại dịch vụ": service.category || "Không rõ",
+        Giá: service.price || "Không rõ",
+        "Trạng thái": service.status || "Chưa cập nhật",
+      }))
+    );
+
+    // Tạo workbook và thêm worksheet vào
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Services");
+
+    // Tạo file excel dưới dạng nhị phân
+    const excelFile = XLSX.write(wb, { bookType: "xlsx", type: "binary" });
+
+    // Tạo một Blob và kích hoạt tải về
+    const file = new Blob([s2ab(excelFile)], {
+      type: "application/octet-stream",
+    });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(file);
+    link.download = "services.xlsx";
+    link.click();
+  };
+
+  // Chuyển đổi chuỗi thành ArrayBuffer (để tạo file Excel nhị phân)
+  const s2ab = (s) => {
+    const buf = new ArrayBuffer(s.length);
+    const view = new Uint8Array(buf);
+    for (let i = 0; i < s.length; i++) {
+      view[i] = s.charCodeAt(i) & 0xff;
+    }
+    return buf;
+  };
 
   return (
     <Layout>
@@ -86,13 +141,11 @@ function Services() {
           <Button
             label="Export"
             Icon={MdOutlineCloudDownload}
-            onClick={() => {
-              toast.error('Exporting is not available yet');
-            }}
+            onClick={handleExport} // Gọi handleExport khi nhấn
           />
         </div>
         <div className="mt-8 w-full overflow-x-scroll">
-          <ServiceTable data={servicesData.slice(1, 100)} onEdit={onEdit} />
+          <ServiceTable data={services} onEdit={onEdit} />
         </div>
       </div>
     </Layout>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../../Layout";
 import PersonalInfo from "../../components/UsedComp/PersonalInfo";
 import ChangePassword from "../../components/UsedComp/ChangePassword";
@@ -10,11 +10,19 @@ import { doctorTab } from "../../components/Datas";
 import PaymentsUsed from "../../components/UsedComp/PaymentUsed";
 import InvoiceUsed from "../../components/UsedComp/InvoiceUsed";
 import Access from "../../components/Access";
-
+import { useLocation } from "react-router-dom";
 function DoctorProfile() {
+  const location = useLocation();
   const [activeTab, setActiveTab] = React.useState(1);
   const [access, setAccess] = React.useState({});
+  //===========
 
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const tabFromQuery = parseInt(queryParams.get("tab")) || 1;
+    setActiveTab(tabFromQuery);
+  }, [location.search]);
+  //=======
   const tabPanel = () => {
     switch (activeTab) {
       case 1:
@@ -27,8 +35,8 @@ function DoctorProfile() {
         return <PaymentsUsed doctor={true} />;
       case 5:
         return <InvoiceUsed />;
-      case 6:
-        return <Access setAccess={setAccess} />;
+      // case 6:
+      //   return <Access setAccess={setAccess} />;
       case 7:
         return <ChangePassword />;
       default:
@@ -40,12 +48,12 @@ function DoctorProfile() {
     <Layout>
       <div className="flex items-center gap-4">
         <Link
-          to="/doctors"
+          to="/staffs"
           className="bg-white border border-subMain border-dashed rounded-lg py-3 px-4 text-md"
         >
           <IoArrowBackOutline />
         </Link>
-        <h1 className="text-xl font-semibold">Dr. Daudi Mburuge</h1>
+        <h1 className="text-xl font-semibold">Jos Nghĩa</h1>
       </div>
       <div className=" grid grid-cols-12 gap-6 my-8 items-start">
         <div

@@ -27,7 +27,6 @@ const nurseSchema = new Schema(
     licenseNumber: {
       type: String,
       required: true,
-      unique: true,
     },
     // Trạng thái chung của điều dưỡng (sẵn sàng nhận đơn hay không)
     isAvailable: {

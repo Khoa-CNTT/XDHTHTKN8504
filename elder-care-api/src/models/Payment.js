@@ -1,13 +1,14 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const paymentSchema = new Schema({
+  orderId: { type: String, required: true },
   bookingId: { type: Schema.Types.ObjectId, ref: "Booking", required: true },
   amount: { type: Number, required: true },
   method: {
     type: String,
     enum: ["Momo", "VNPay", "Cash"],
-    required: true
+    default: "Momo"
   },
   status: {
     type: String,
@@ -18,4 +19,5 @@ const paymentSchema = new Schema({
   invoiceId: { type: Schema.Types.ObjectId, ref: "Invoice" }
 }, { timestamps: true });
 
-module.exports = mongoose.model("Payment", paymentSchema);
+const Payments = mongoose.model("Payment", paymentSchema);
+export default Payments;

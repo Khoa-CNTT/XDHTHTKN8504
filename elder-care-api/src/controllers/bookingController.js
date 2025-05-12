@@ -19,6 +19,7 @@ const bookingController = {
                 notes,
                 paymentId,
                 participants,
+                repeatInterval,
                 repeatFrom,
                 repeatTo,
                 timeSlot
@@ -85,6 +86,7 @@ const bookingController = {
                 notes,
                 paymentId,
                 participants,
+                repeatInterval,
                 repeatFrom: fromDate,
                 repeatTo: toDate,
                 timeSlot,
@@ -107,6 +109,8 @@ const bookingController = {
                     populatedBooking
                 );
             }
+
+            io.to("staff_admin").emit("newBookingCreated", populatedBooking);
 
             return res.status(201).json({
                 message: "Booking created successfully",
@@ -246,26 +250,41 @@ const bookingController = {
 
             const patientName = `${profile.firstName} ${profile.lastName}`;
             const timeSlots = Array.isArray(booking.timeSlot) ? booking.timeSlot : [booking.timeSlot];
+
             const timeZone = 'Asia/Ho_Chi_Minh';
 
             let currentDate = moment.tz(booking.repeatFrom, timeZone);
             const repeatTo = moment.tz(booking.repeatTo, timeZone);
+            const repeatInterval = booking.repeatInterval;
             const schedules = [];
+
+            const add7Hours = (date) => {
+                return moment(date).add(7, 'hours').toDate();
+            };
 
             while (currentDate <= repeatTo) {
                 for (const timeSlot of timeSlots) {
-                    const startDateTime = moment.tz(`${currentDate.format('YYYY-MM-DD')}T${timeSlot.start}:00`, timeZone);
-                    const endDateTime = moment.tz(`${currentDate.format('YYYY-MM-DD')}T${timeSlot.end}:00`, timeZone);
+                    const startDateTime = moment.tz(`${currentDate.format('YYYY-MM-DD')}T${timeSlot.start}:00`, 'Asia/Ho_Chi_Minh');
+                    const endDateTime = moment.tz(`${currentDate.format('YYYY-MM-DD')}T${timeSlot.end}:00`, 'Asia/Ho_Chi_Minh');
 
-                    // Kiểm tra trùng lịch cùng ngày
+                    // Nếu giờ kết thúc nhỏ hơn giờ bắt đầu (02:00 sáng qua ngày hôm sau), cộng thêm 1 ngày
+                    if (endDateTime.isBefore(startDateTime)) {
+                        endDateTime.add(1, 'days'); // Cộng thêm một ngày cho giờ kết thúc
+                    }
+
+                    // Cộng thêm 7 giờ vào thời gian
+                    const adjustedStartDateTime = add7Hours(startDateTime);
+                    const adjustedEndDateTime = add7Hours(endDateTime);
+
+                    // Kiểm tra trùng lịch
                     const isConflict = await Schedule.findOne({
                         staffId: staff._id,
                         date: {
                             $gte: currentDate.clone().startOf('day').toDate(),
                             $lte: currentDate.clone().endOf('day').toDate()
                         },
-                        'timeSlots.start': { $lt: endDateTime.toDate() },
-                        'timeSlots.end': { $gt: startDateTime.toDate() },
+                        'timeSlots.start': { $lt: adjustedEndDateTime },
+                        'timeSlots.end': { $gt: adjustedStartDateTime },
                     });
 
                     if (isConflict) {
@@ -282,8 +301,8 @@ const bookingController = {
                         serviceName: service.name,
                         date: currentDate.clone().toDate(),
                         timeSlots: [{
-                            start: startDateTime.toDate(),
-                            end: endDateTime.toDate()
+                            start: adjustedStartDateTime,
+                            end: adjustedEndDateTime
                         }],
                         status: 'scheduled',
                     });
@@ -291,8 +310,9 @@ const bookingController = {
                     schedules.push(schedule);
                 }
 
-                currentDate.add(1, 'days');
+                currentDate.add(repeatInterval, 'days');
             }
+
 
             // Cập nhật thông tin booking
             booking.status = 'accepted';
@@ -524,7 +544,6 @@ const bookingController = {
             }
 
             return res.status(200).json({
-                labels,
                 datas,
             });
 

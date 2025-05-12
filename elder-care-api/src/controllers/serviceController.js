@@ -1,10 +1,12 @@
 import Service from '../models/Service.js';
+import { getIO } from "../config/socketConfig.js";
 
 const serviceController = {
     // ceate service
     createService: async (req, res) => {
+        const io = getIO();
         try {
-            const { name, description, price, percentage, role } = req.body;
+            const { name, description, price, percentage, role, imgUrl } = req.body;
 
             // check if service already exists
             const existingService = await Service.findOne({ name });
@@ -20,10 +22,14 @@ const serviceController = {
                 description,
                 price,
                 percentage,
-                role
+                role,
+                imgUrl
             })
 
             await newService.save();
+
+            io.to("staff_admin").emit("newServiceCreated", newService);
+
             return res.status(201).json({
                 message: "Thêm mới dịch vụ thành công!",
                 service: newService,
@@ -38,7 +44,7 @@ const serviceController = {
 
     getService: async (req, res) => {
         try {
-            const services = await Service.find({}).select("-__v"); // (optional) bỏ __v cho sạch
+            const services = await Service.find({}).select("-__v");
 
             return res.status(200).json({
                 success: true,

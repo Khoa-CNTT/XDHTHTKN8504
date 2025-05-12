@@ -46,14 +46,14 @@ export const MenuDatas = [
     path: "/customers",
     icon: TbUsers,
   },
+  // {
+  //   title: "Receptions",
+  //   path: "/receptions",
+  //   icon: HiOutlineUsers,
+  // },
   {
-    title: "Receptions",
-    path: "/receptions",
-    icon: HiOutlineUsers,
-  },
-  {
-    title: "Nurse",
-    path: "/nurses",
+    title: "Staff",
+    path: "/staffs",
     icon: RiUserHeartLine,
   },
 
@@ -92,7 +92,6 @@ export const MenuDatas = [
     path: "/chat",
     icon: MdChat,
   },
-
   {
     title: "Settings",
     path: "/settings",
@@ -887,7 +886,7 @@ export const getDashboardCards = (
     },
     {
       id: 3,
-      title: "Tổng số điều dưỡng",
+      title: "Tổng số nhân viên",
       icon: TbFile,
       value: nursesData.reduce((a, b) => a + b, 0),
       percent: 65.06,

@@ -7,6 +7,7 @@ import NotificationComp from "../components/NotificationComp";
 import { useNavigate } from "react-router-dom";
 import { BiMenu } from "react-icons/bi";
 import MenuDrawer from "../components/Drawer/MenuDrawer";
+import { getUserIdFromToken } from "../utils/jwtHelper";
 
 function Header() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -29,10 +30,16 @@ function Header() {
       title: "Logout",
       icon: AiOutlinePoweroff,
       onClick: () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         navigate("/login");
       },
     },
   ];
+
+  const user = getUserIdFromToken();
+  const userAvatar = user?.avatar || "/images/123.jpg";
+  const userName = user?.role || "Jos Nghia";
 
   return (
     <>
@@ -69,11 +76,13 @@ function Header() {
               <MenuSelect datas={DropDown1}>
                 <div className="flex gap-4 items-center p-4 rounded-lg">
                   <img
-                    src="/images/123.jpg"
+                    src={userAvatar}
                     alt="user"
                     className="w-12 border border-border object-cover h-12 rounded-full"
                   />
-                  <p className="text-sm text-textGray font-medium">Jos Nghia</p>
+                  <p className="text-sm text-textGray font-medium">
+                    {userName}
+                  </p>
                 </div>
               </MenuSelect>
             </div>

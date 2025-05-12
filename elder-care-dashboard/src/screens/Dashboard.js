@@ -21,9 +21,12 @@ import { Link } from "react-router-dom";
 // import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { countUsers } from "../api/auth.js";
+import { getPatients } from "../api/bookings.js";
 
 function Dashboard() {
   const [userCount, setUserCount] = useState([]);
+  const [patients, setPatients] = useState([]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -36,8 +39,26 @@ function Dashboard() {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const data = await getPatients();
+        setPatients(data);
+        console.log("patients:", patients);
+      } catch (error) {
+        console.error("Error fetching patients:", error);
+      }
+    }
+    fetchPatients();
+  }, []);
+
   
-  const dashboardCards = getDashboardCards(userCount, [], [], []);
+  
+  const appointmentsData = [20, 50, 75, 15, 108, 97, 70, 41, 50, 20, 90, 60]
+  const revenueData = [20, 50, 75, 15, 108, 97, 70, 41, 50, 20, 90, 60]
+  const staffsData = [92, 80, 45, 15, 49, 77, 70, 51, 110, 20, 90, 60]
+  const dashboardCards = getDashboardCards(userCount, appointmentsData, staffsData, revenueData);
 
   return (
     <Layout>
@@ -135,21 +156,21 @@ function Dashboard() {
           {/* recent patients */}
           <div className="bg-white rounded-xl border-[1px] border-border p-5">
             <h2 className="text-sm font-medium">Recent Patients</h2>
-            {memberData.slice(3, 8).map((member, index) => (
+            {patients.map((member, index) => (
               <Link
-                to={`/patients/preview/${member.id}`}
+                to={`/patients/preview/${member._id}`}
                 key={index}
                 className="flex-btn gap-4 mt-6 border-b pb-4 border-border"
               >
                 <div className="flex gap-4 items-center">
-                  <img
+                  {/* <img
                     src={member.image}
                     alt="member"
                     className="w-10 h-10 rounded-md object-cover"
-                  />
+                  /> */}
                   <div className="flex flex-col gap-1">
-                    <h3 className="text-xs font-medium">{member.title}</h3>
-                    <p className="text-xs text-gray-400">{member.phone}</p>
+                    <h3 className="text-xs font-medium">{member.firstName} {member.lastName}</h3>
+                    <p className="text-xs text-gray-400">{member.bookedByPhone}</p>
                   </div>
                 </div>
                 <p className="text-xs text-textGray">2:00 PM</p>

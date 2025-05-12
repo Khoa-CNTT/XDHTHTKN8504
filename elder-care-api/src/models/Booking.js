@@ -12,7 +12,7 @@ const bookingSchema = new Schema(
     serviceId: { type: Schema.Types.ObjectId, ref: "Service", required: true },
     status: {
       type: String,
-      enum: ["pending", "accepted", "completed", "cancelled"],
+      enum: ["pending", "paid", "accepted", "completed", "cancelled"],
       default: "pending",
       index: true,
     },
@@ -34,6 +34,7 @@ const bookingSchema = new Schema(
       start: { type: String, required: true }, // Giờ bắt đầu: '08:00'
       end: { type: String, required: true }, // Giờ kết thúc: '10:00'
     },
+    repeatInterval: { type: Number, required: true },
     totalPrice: { type: Number, default: 0 },
     totalDiscount: { type: Number, default: 0 },
     isRecurring: { type: Boolean, default: true },

@@ -19,6 +19,7 @@ import UserRouter from "./src/routes/userRouter.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./src/config/swaggerConfig.js";
 import configureSocket from "./src/config/socketConfig.js";
+import PaymentRouter from "./src/routes/paymentRoutes.js"; 
 import http from "http";
 
 const app = express();
@@ -74,6 +75,7 @@ app.use("/api/v1/nurses", NurseRouter);
 app.use("/api/v1/schedules", ScheduleRouter);
 app.use("/api/v1/chat", ChatRouter);
 app.use("/api/v1/user", UserRouter); 
+app.use("/api/v1/payment", PaymentRouter); 
 
 const port = process.env.SERVER_PORT || 8080;
 const listener = server.listen(port, '0.0.0.0',() => {

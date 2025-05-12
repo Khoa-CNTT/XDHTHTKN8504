@@ -32,7 +32,7 @@ type LoginScreenNavigationProp = StackNavigationProp<
 >;
 
 const LoginScreen: React.FC<{}> = () => {
-    const { control, handleSubmit } = useForm<FormData>();
+    const { control, handleSubmit, formState: { errors } } = useForm<FormData>();
     const navigation = useNavigation<LoginScreenNavigationProp>();
     const [secureText, setSecureText] = useState(true);
     const setSession = useAuthStore((state) => state.setSession); // Trạng thái ẩn/hiện mật khẩu
@@ -61,8 +61,6 @@ const LoginScreen: React.FC<{}> = () => {
         }
     };
 
-    // ... rest of the code
-
     return (
         <View style={styles.container}>
             {/* Logo */}
@@ -82,50 +80,56 @@ const LoginScreen: React.FC<{}> = () => {
             </Text>
 
             {/* Ô nhập số điện thoại */}
-            <View style={styles.phoneContainer}>
-                <TextInput style={styles.countryCode} value="+84" editable={false} />
-                <Controller
-                    control={control}
-                    name="phone"
-                    rules={{ required: "Vui lòng nhập số điện thoại" }}
-                    render={({ field: { onChange, value } }) => (
-                        <TextInput
-                            style={styles.phoneInput}
-                            placeholder="Số điện thoại của bạn"
-                            keyboardType="phone-pad"
-                            value={value}
-                            onChangeText={onChange}
-                        />
-                    )}
-                />
+            <View>
+                <View style={styles.phoneContainer}>
+                    <TextInput style={styles.countryCode} value="+84" editable={false} />
+                    <Controller
+                        control={control}
+                        name="phone"
+                        rules={{ required: "Vui lòng nhập số điện thoại" }}
+                        render={({ field: { onChange, value } }) => (
+                            <TextInput
+                                style={styles.phoneInput}
+                                placeholder="Số điện thoại của bạn"
+                                keyboardType="phone-pad"
+                                value={value}
+                                onChangeText={onChange}
+                            />
+                        )}
+                    />
+                </View>
+                {errors.phone && <Text style={styles.errorText}>{errors.phone.message}</Text>}
             </View>
 
             {/* Ô nhập mật khẩu có icon ẩn/hiện */}
-            <View style={styles.passwordContainer}>
-                <Controller
-                    control={control}
-                    name="password"
-                    rules={{ required: "Vui lòng nhập mật khẩu" }}
-                    render={({ field: { onChange, value } }) => (
-                        <TextInput
-                            style={styles.passwordInput}
-                            placeholder="Mật khẩu đăng nhập"
-                            secureTextEntry={secureText}
-                            value={value}
-                            onChangeText={onChange}
-                        />
-                    )}
-                />
-                <TouchableOpacity
-                    onPress={togglePasswordVisibility}
-                    style={styles.eyeIcon}
-                >
-                    <Ionicons
-                        name={secureText ? "eye-off" : "eye"}
-                        size={24}
-                        color="#B0B0B0" // Lighter color for eye icon
+            <View>
+                <View style={styles.passwordContainer}>
+                    <Controller
+                        control={control}
+                        name="password"
+                        rules={{ required: "Vui lòng nhập mật khẩu" }}
+                        render={({ field: { onChange, value } }) => (
+                            <TextInput
+                                style={styles.passwordInput}
+                                placeholder="Mật khẩu đăng nhập"
+                                secureTextEntry={secureText}
+                                value={value}
+                                onChangeText={onChange}
+                            />
+                        )}
                     />
-                </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={togglePasswordVisibility}
+                        style={styles.eyeIcon}
+                    >
+                        <Ionicons
+                            name={secureText ? "eye-off" : "eye"}
+                            size={24}
+                            color="#B0B0B0" // Lighter color for eye icon
+                        />
+                    </TouchableOpacity>
+                </View>
+                {errors.password && <Text style={styles.errorText}>{errors.password.message}</Text>}
             </View>
 
             {/* Quên mật khẩu */}
@@ -174,7 +178,7 @@ const styles = StyleSheet.create({
         padding: 20,
         backgroundColor: "#F9FAFB", // Lighter background
         justifyContent: "flex-start",
-          paddingTop: 40
+        paddingTop: 40
     },
     logo: {
         width: 350,
@@ -206,7 +210,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: "#FFFFFF", // White background for input
         borderRadius: 10, // More rounded corners
-        marginBottom: 18, // Increased margin
+        marginBottom: 5, // Reduced margin to accommodate error text
         overflow: "hidden",
         borderWidth: 1,  //Added border
         borderColor: "#E2E8F0" //Light border color
@@ -233,7 +237,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: "#FFFFFF", // White background for input
         borderRadius: 10, // More rounded corners
-        marginBottom: 18, // Increased margin
+        marginBottom: 5, // Reduced margin to accommodate error text
         paddingRight: 10,
         borderWidth: 1,  //Added border
         borderColor: "#E2E8F0" //Light border color
@@ -298,6 +302,12 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         marginTop: 10,
         gap: 40,
+    },
+    errorText: {
+        color: "red",
+        fontSize: 12,
+        marginTop: 3,
+        marginLeft: 16,
     },
 });
 
