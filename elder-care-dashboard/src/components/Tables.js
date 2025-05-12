@@ -570,6 +570,7 @@ export function BookingTable({ data, functions, doctor }) {
     completed: "Hoàn thành",
     cancelled: "Đã hủy",
   };
+
   const DropDown1 = [
     {
       title: "Xem",
@@ -641,8 +642,25 @@ export function BookingTable({ data, functions, doctor }) {
               <td className={tdclass}>{serviceName}</td>
 
               <td className={tdclass}>
-                <span className="py-1 px-4 bg-subMain text-subMain bg-opacity-10 text-xs rounded-xl">
-                  {statusText}
+                <span
+                  className={`py-1 px-4 ${
+                    item.status === "completed"
+                      ? "bg-green-500 text-green-500"
+                      : item.status === "accepted"
+                      ? "bg-orange-500 text-orange-500"
+                      : item.status === "pending"
+                      ? "bg-red-600 text-red-600"
+                      : item.status === "cancelled" &&
+                        "bg-gray-500 text-gray-500"
+                  } bg-opacity-10 text-xs rounded-xl`}
+                >
+                  {item.status === "completed"
+                    ? "Hoàn thành"
+                    : item.status === "accepted"
+                    ? "Đã được nhận"
+                    : item.status === "pending"
+                    ? "Đang chờ xử lý"
+                    : item.status === "cancelled" && "Đã hủy"}
                 </span>
               </td>
 
