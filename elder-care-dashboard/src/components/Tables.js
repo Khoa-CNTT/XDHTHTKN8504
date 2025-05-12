@@ -305,6 +305,7 @@ export function ServiceTable({ data, onEdit }) {
           } else if (item?.isActive === false) {
             serviceStatus = "Tắt";
           }
+          const imageUrl = item?.imgUrl || "https://via.placeholder.com/150";
 
           return (
             <tr
