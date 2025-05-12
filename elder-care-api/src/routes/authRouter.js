@@ -40,4 +40,22 @@ router.get("/get-staff", authController.getAllStaff);
 
 router.get("/get-customer", authController.getAllUsers);
 
+// Change password
+router.patch (
+  "/change-password",
+  auth,
+  authorizeRoles("admin", "doctor", "nurse", "family-member"),
+  authController.changePassword
+)
+
+router.delete(
+  '/delete-user/:userId',
+  authController.deleteOneUser
+)
+
+router.get(
+  '/search-customer',
+  authController.searchCustomer
+)
+
 export default router;
