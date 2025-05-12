@@ -18,7 +18,6 @@ import { io } from "socket.io-client";
 const socket = io("http://localhost:5000");
 
 function Staffs() {
-
   const [isOpen, setIsOpen] = React.useState(true);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -27,13 +26,13 @@ function Staffs() {
 
   const handleOpenModal1 = () => setShowModal1(true);
   const handleCloseModal2 = () => setShowModal2(false);
-  const [selectedId, setSelectedId] = useState(null); 
+  const [selectedId, setSelectedId] = useState(null);
   const { staffList, loading, error } = useSelector((state) => state.staff);
 
   const handleSuccessFromModal1 = (idFromModal1) => {
-    setSelectedId(idFromModal1);        // lưu id
-    setShowModal1(false);               // đóng modal 1
-    setShowModal2(true);                // mở modal 2
+    setSelectedId(idFromModal1); // lưu id
+    setShowModal1(false); // đóng modal 1
+    setShowModal2(true); // mở modal 2
   };
 
   useEffect(() => {
@@ -71,7 +70,7 @@ function Staffs() {
   };
 
   const preview = (data) => {
-    navigate(`/nurses/preview/${data.id}`);
+    navigate(`/staffs/preview/${data.id}`);
   };
 
   return (

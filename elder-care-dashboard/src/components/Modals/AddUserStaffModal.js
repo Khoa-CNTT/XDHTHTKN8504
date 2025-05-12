@@ -134,9 +134,9 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas, onSuccess }) {
                 Điều dưỡng
               </option>
             </select>
-            {errors.role && (
+            {/* {errors.role && (
               <p className="text-sm text-red-500 ">{errors.role}</p>
-            )}
+            )} */}
           </div>
         </div>
 
