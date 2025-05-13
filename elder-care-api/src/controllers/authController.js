@@ -240,9 +240,8 @@ const authController = {
       // Nếu không tìm thấy người dùng, trả về lỗi
       if (!updatedUser) {
         return res.status(404).json({
-          message: `${
-            role.charAt(0).toUpperCase() + role.slice(1)
-          } không tồn tại`,
+          message: `${role.charAt(0).toUpperCase() + role.slice(1)
+            } không tồn tại`,
         });
       }
 
@@ -306,6 +305,106 @@ const authController = {
         message: "Lỗi server",
         error: error.message,
       });
+    }
+  },
+
+  changePassword: async (req, res) => {
+    try {
+      const { _id: userId } = req.user;
+      const { oldPassword, newPassword } = req.body;
+
+      //Kiểm tra có đúng mật khẩu cũ không
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "Người dùng không tồn tại" });
+      }
+
+      if (!oldPassword || !newPassword) {
+        return res
+          .status(400)
+          .json({ message: "Vui lòng nhập đầy đủ mật khẩu cũ và mới" });
+      }
+
+      if (oldPassword === newPassword) {
+        return res
+          .status(400)
+          .json({ message: "Mật khẩu mới không được giống mật khẩu cũ" });
+      }
+
+      if (oldPassword) {
+        const isMatch = await bcryptjs.compare(oldPassword, user.password);
+        if (!isMatch) {
+          return res.status(400).json({ message: "Mật khẩu cũ không đúng" });
+        }
+      }
+
+      // Cập nhật mật khẩu mới
+      const hashedNewPassword = await bcryptjs.hash(newPassword, 10);
+      user.password = hashedNewPassword;
+      await user.save();
+
+      return res.status(200).json({ message: "Cập nhật mật khẩu thành công" });
+    } catch (error) {
+      console.error("Lỗi khi thay đổi mật khẩu:", error);
+      return res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  searchCustomer: async (req, res) => {
+    try {
+      const { _id, name, email, phone } = req.query;
+
+      let filter = {};
+      if (_id) filter._id = _id;
+      if (name) filter.name = new RegExp(name, 'i');
+      if (email) filter.email = new RegExp(email, 'i');
+      if (phone) filter.phone = new RegExp(phone, 'i');
+
+      if (!phone) {
+        return res.status(400).json({ message: "Vui lòng nhập số điện thoại" });
+      }
+
+      // const regex = new RegExp(phone, "i"); 
+      const customers = await User.find(filter);
+
+      return res.status(200).json({
+        message: "Tìm kiếm người dùng thành công",
+        data: customers,
+      });
+
+    } catch (error) {
+      console.error("Lỗi khi tìm kiếm người dùng:", error);
+      return res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  deleteOneUser: async (req, res) => {
+    try {
+      const { userId } = req.params;
+
+      const deletedUser = await User.findByIdAndDelete(userId);
+
+      const isDoctor = await Doctor.findOne({ userId });
+      const isNurse = await Nurse.findOne({ userId });
+
+      if (isDoctor) {
+        await Doctor.findByIdAndDelete(isDoctor._id);
+        return res.status(200).json({ message: "Xóa bác sĩ thành công" });
+      }
+
+      if (isNurse) {
+        await Nurse.findByIdAndDelete(isNurse._id);
+        return res.status(200).json({ message: "Xóa điều dưỡng thành công" });
+      }
+
+      if (!deletedUser) {
+        return res.status(404).json({ message: "Người dùng không tồn tại" });
+      }
+
+      return res.status(200).json({ message: "Xóa người dùng thành công" });
+    } catch (error) {
+      console.error("Lỗi khi xóa người dùng:", error);
+      return res.status(500).json({ message: "Lỗi server", error: error.message });
     }
   },
 
