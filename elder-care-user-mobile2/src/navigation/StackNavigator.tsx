@@ -36,6 +36,7 @@ import PaymentInfoScreen from '../screens/PaymentInfoScreen';
 import TopUpScreen from '../screens/TopUpScreen';
 import PaymentMethodScreen from '../screens/PaymentMethodScreen';
 import TransferGuideScreen from '../screens/TransferGuideScreen';
+import AddProfileScreen from '../screens/DanhSachProfile/AddProfileScreen';
 
 
 
@@ -73,7 +74,7 @@ export type RootStackParamList = {
   TopUpScreen: undefined;
   PaymentMethodScreen: undefined;
   TransferGuideScreen: undefined;
-
+  AddProfileScreen: undefined;
 
 };
 
@@ -123,6 +124,8 @@ const StackNavigator = (): JSX.Element => {
       <Stack.Screen name="TopUpScreen" component={TopUpScreen} />
       <Stack.Screen name="PaymentMethodScreen" component={PaymentMethodScreen} />
       <Stack.Screen name="TransferGuideScreen" component={TransferGuideScreen} />
+      <Stack.Screen name="AddProfileScreen" component={AddProfileScreen} />
+      
       
 
       <Stack.Screen name="BookingSuccess" component={BookingSuccessScreen} />

@@ -19,6 +19,7 @@ type RootStackParamList = {
     ProfileDetails: { profileId: string };
     AddCareRecipient: undefined;
     EditCareRecipient: { profileId: string }; // Thêm màn hình EditCareRecipient
+    AddProfileScreen: undefined;
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -134,7 +135,7 @@ const ProfileListScreen: React.FC = () => {
             <View style={styles.buttonContainer}>
                 <TouchableOpacity
                     style={styles.addRecipientButton}
-                    onPress={() => navigation.navigate("AddCareRecipient")}
+                    onPress={() => navigation.navigate("AddProfileScreen")}
                 >
                     <Text style={styles.addRecipientText}>Thêm Care Recipient</Text>
                 </TouchableOpacity>
