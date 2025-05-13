@@ -10,8 +10,8 @@ type RootStackParamList = {
     Seach: undefined;
     PaymentMethodScreen: { onSelectMethod: (method: string) => void };
     TopUpScreen: { goToStep?: number; amount?: string };
-    TransferGuideScreen: { amount: string; selectedMethod?: string }; // Đã thêm 'selectedMethod'
-    PaymentInfoScreen: undefined;
+    TransferGuideScreen: { amount: string; selectedMethod?: string };
+    PaymentInfoScreen: { newTransaction?: any }; // Sửa để nhận params
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -111,19 +111,19 @@ const TopUpScreen: React.FC = () => {
                         <View style={styles.policyRow}>
                             <MaterialIcons name="info-outline" size={16} color="#37B44E" />
                             <Text style={styles.policyText}>
-                                Số tiền nạp vào <Text style={styles.link}>TrueDoc</Text> chỉ được dùng để thanh toán các dịch vụ y tế, sức khoẻ do <Text style={styles.link}>TrueDoc</Text> cung cấp
+                                Số tiền nạp vào <Text style={styles.link}>ElderCare</Text> chỉ được dùng để thanh toán các dịch vụ y tế, sức khoẻ do <Text style={styles.link}>ElderCare</Text> cung cấp
                             </Text>
                         </View>
                         <View style={styles.policyRow}>
                             <MaterialIcons name="info-outline" size={16} color="#37B44E" />
                             <Text style={styles.policyText}>
-                                Khách hàng không được phép chuyển tiền giữa các tài khoản <Text style={styles.link}>TrueDoc</Text> với nhau
+                                Khách hàng không được phép chuyển tiền giữa các tài khoản <Text style={styles.link}>ElderCare</Text> với nhau
                             </Text>
                         </View>
                         <View style={styles.policyRow}>
                             <MaterialIcons name="info-outline" size={16} color="#37B44E" />
                             <Text style={styles.policyText}>
-                                Khách hàng không được phép tự rút tiền từ tài khoản <Text style={styles.link}>TrueDoc</Text>
+                                Khách hàng không được phép tự rút tiền từ tài khoản <Text style={styles.link}>ElderCare</Text>
                             </Text>
                         </View>
                     </View>
@@ -145,7 +145,7 @@ const TopUpScreen: React.FC = () => {
             {step === 2 && (
                 <View>
                     <Text style={styles.confirmationTitle}>Xác nhận giao dịch</Text>
-                    {amount && <Text style={styles.confirmationText}>Số tiền: {amount}</Text>}
+                    {amount && <Text style={styles.confirmationText}>Số tiền: {Number(amount).toLocaleString()} VND</Text>}
                     {selectedMethod && (
                         <Text style={styles.confirmationText}>Phương thức: {paymentMethodDisplay[selectedMethod]}</Text>
                     )}
@@ -153,11 +153,6 @@ const TopUpScreen: React.FC = () => {
                         style={styles.button}
                         onPress={() => {
                             navigation.navigate('TransferGuideScreen', { amount, selectedMethod }); setStep(3); 
-                            
-                            // if (amount && selectedMethod) {
-                            //     setStep(3);
-                            // }
-                        
                         }}
                     >
                         <Text style={styles.buttonText}>Xác nhận nạp tiền</Text>
@@ -195,19 +190,29 @@ const TopUpScreen: React.FC = () => {
                     {/* Home Button */}
                     <TouchableOpacity
                         style={[styles.button, { marginHorizontal: 16 }]}
-                        onPress={() => navigation.navigate('PaymentInfoScreen')}
+                        onPress={() => {
+                            navigation.navigate('PaymentInfoScreen', {
+                                newTransaction: {
+                                    id: Date.now().toString(),
+                                    type: 'Nạp tiền',
+                                    amount: Number(amount),
+                                    status: 'Đang xử lý',
+                                    desc: selectedMethod ? paymentMethodDisplay[selectedMethod] : '',
+                                    time: new Date().toLocaleString('vi-VN'),
+                                }
+                            });
+                        }}
                     >
                         <Text style={styles.buttonText}>Quay về ví của tao</Text>
                     </TouchableOpacity>
                 </View>
             )}
         </ScrollView>
-        //
     );
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff', padding: 16 },
+    container: { flex: 1, backgroundColor: '#fff', padding: 16 ,paddingTop: 30,},
     headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
     headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#222' },
     stepperRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 18 },

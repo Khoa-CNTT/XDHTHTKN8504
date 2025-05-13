@@ -95,7 +95,7 @@ const TransferGuideScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff', padding: 16 },
+    container: { flex: 1, backgroundColor: '#fff', padding: 16,paddingTop: 30, },
     headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
     headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#222' },
     instruction: { color: '#222', fontSize: 14, marginBottom: 12 },

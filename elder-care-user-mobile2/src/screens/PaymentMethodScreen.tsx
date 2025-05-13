@@ -76,7 +76,7 @@ const PaymentMethodScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff', padding: 16 },
+    container: { flex: 1, backgroundColor: '#fff', padding: 16 ,paddingTop: 30,},
     headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
     headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#222' },
     sectionTitle: { fontWeight: 'bold', fontSize: 15, marginTop: 16, marginBottom: 8 },
