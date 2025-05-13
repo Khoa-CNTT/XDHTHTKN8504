@@ -37,7 +37,7 @@ const TransferGuideScreen: React.FC = () => {
             {/* Header */}
             <View style={styles.headerRow}>
                 <Text style={styles.headerTitle}>Hướng dẫn chuyển khoản</Text>
-                <Feather name="headphones" size={22} color="#7B61FF" />
+                <Feather name="headphones" size={22} color="#37B44E" />
             </View>
 
             {/* Instructions */}
@@ -95,18 +95,18 @@ const TransferGuideScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff', padding: 16 },
+    container: { flex: 1, backgroundColor: '#fff', padding: 16,paddingTop: 30, },
     headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
     headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#222' },
     instruction: { color: '#222', fontSize: 14, marginBottom: 12 },
     label: { color: '#888', fontSize: 13, marginTop: 10, marginBottom: 2 },
-    brand: { color: '#7B61FF', fontWeight: 'bold' },
-    amount: { color: '#7B61FF', fontWeight: 'bold', fontSize: 28, marginBottom: 8 },
+    brand: { color: '#37B44E', fontWeight: 'bold' },
+    amount: { color: '#37B44E', fontWeight: 'bold', fontSize: 28, marginBottom: 8 },
     infoBox: { backgroundColor: '#F7F7F7', borderRadius: 8, padding: 12, marginBottom: 12 },
     infoLabel: { color: '#888', fontSize: 13, marginTop: 6 },
     infoValue: { color: '#222', fontWeight: 'bold', fontSize: 15 },
     row: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
-    copyText: { color: '#7B61FF', fontWeight: 'bold', marginLeft: 12 },
+    copyText: { color: '#37B44E', fontWeight: 'bold', marginLeft: 12 },
     transferContentBox: {
         backgroundColor: '#F7F7F7',
         borderRadius: 8,
@@ -118,9 +118,9 @@ const styles = StyleSheet.create({
     },
     transferContent: { color: '#222', fontWeight: 'bold', fontSize: 16 },
     note: { color: '#222', fontSize: 13, marginVertical: 10 },
-    link: { color: '#7B61FF', fontWeight: 'bold' },
+    link: { color: '#37B44E', fontWeight: 'bold' },
     button: {
-        backgroundColor: '#6366f1',
+        backgroundColor: '#37B44E',
         borderRadius: 10,
         paddingVertical: 16,
         alignItems: 'center',

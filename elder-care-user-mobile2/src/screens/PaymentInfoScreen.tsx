@@ -1,20 +1,24 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
 type RootStackParamList = {
     Home: undefined;
     ServiceScreen: { serviceId: string };
     Seach: undefined;
-    TopUpScreen: undefined; // Add TopUp to the list of screens
+    TopUpScreen: undefined;
+    PaymentInfoScreen: { newTransaction?: any };
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
+type PaymentInfoScreenRouteProp = RouteProp<RootStackParamList, 'PaymentInfoScreen'>;
 
 const PaymentInfoScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
+    const route = useRoute<PaymentInfoScreenRouteProp>();
+    const newTransaction = route.params?.newTransaction;
 
     return (
         <ScrollView style={styles.container}>
@@ -23,7 +27,7 @@ const PaymentInfoScreen: React.FC = () => {
 
             {/* Balance */}
             <View style={styles.balanceCard}>
-                <Text style={styles.balanceLabel}>Số dư ví TrueDoc</Text>
+                <Text style={styles.balanceLabel}>Số dư ví ElderCare</Text>
                 <Text style={styles.balanceAmount}>0 <Text style={styles.currency}>đ</Text></Text>
             </View>
 
@@ -35,7 +39,7 @@ const PaymentInfoScreen: React.FC = () => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.actionCard}
-                    onPress={() => navigation.navigate('TopUpScreen')} // Navigate to TopUpScreen
+                    onPress={() => navigation.navigate('TopUpScreen')}
                 >
                     <FontAwesome5 name="money-bill-wave" size={36} color="#37B44E" />
                     <Text style={styles.actionText}>Nạp tiền</Text>
@@ -50,25 +54,27 @@ const PaymentInfoScreen: React.FC = () => {
 
             {/* Transaction History */}
             <Text style={styles.sectionTitle}>Lịch sử giao dịch</Text>
-            <View style={styles.transactionCard}>
-                <View style={styles.transactionRow}>
-                    <Text style={styles.transactionType}>Nạp tiền</Text>
-                    <Text style={styles.transactionAmount}>+ 20,000đ</Text>
+            {newTransaction ? (
+                <View style={styles.transactionCard}>
+                    <View style={styles.transactionRow}>
+                        <Text style={styles.transactionType}>{newTransaction.type}</Text>
+                        <Text style={styles.transactionAmount}>+ {newTransaction.amount.toLocaleString()}đ</Text>
+                    </View>
+                    <View style={styles.transactionRow}>
+                        <Text style={styles.transactionDesc}>{newTransaction.desc}</Text>
+                        <Text style={styles.transactionStatus}>{newTransaction.status}</Text>
+                    </View>
+                    <Text style={{ color: '#888', fontSize: 12, marginTop: 4 }}>{newTransaction.time}</Text>
                 </View>
-                <View style={styles.transactionRow}>
-                    <Text style={styles.transactionDesc}>Chuyển khoản</Text>
-                    <Text style={styles.transactionStatus}>Đang xử lý</Text>
-                </View>
-                <TouchableOpacity>
-                    <Text style={styles.seeMore}>Xem thêm</Text>
-                </TouchableOpacity>
-            </View>
+            ) : (
+                <Text style={{ color: '#888', textAlign: 'center', marginBottom: 20 }}>Chưa có giao dịch nào</Text>
+            )}
         </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff', padding: 16 },
+    container: { flex: 1, backgroundColor: '#fff', padding: 16, paddingTop: 30,},
     header: { fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginVertical: 12 },
     balanceCard: {
         backgroundColor: '#fff',

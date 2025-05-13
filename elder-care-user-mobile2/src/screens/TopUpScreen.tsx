@@ -10,7 +10,8 @@ type RootStackParamList = {
     Seach: undefined;
     PaymentMethodScreen: { onSelectMethod: (method: string) => void };
     TopUpScreen: { goToStep?: number; amount?: string };
-    TransferGuideScreen: { amount: string; selectedMethod?: string }; // Đã thêm 'selectedMethod'
+    TransferGuideScreen: { amount: string; selectedMethod?: string };
+    PaymentInfoScreen: { newTransaction?: any }; // Sửa để nhận params
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -59,17 +60,17 @@ const TopUpScreen: React.FC = () => {
             {/* Stepper */}
             <View style={styles.stepperRow}>
                 <View style={step === 1 ? styles.stepItemActive : styles.stepItem}>
-                    <FontAwesome5 name="wallet" size={18} color={step === 1 ? "#fff" : "#7B61FF"} />
+                    <FontAwesome5 name="wallet" size={18} color={step === 1 ? "#fff" : "#37B44E"} />
                     <Text style={step === 1 ? styles.stepTextActive : styles.stepText}>Phương thức</Text>
                 </View>
                 <View style={styles.stepDivider} />
                 <View style={step === 2 ? styles.stepItemActive : styles.stepItem}>
-                    <FontAwesome5 name="file-alt" size={18} color={step === 2 ? "#fff" : "#7B61FF"} />
+                    <FontAwesome5 name="file-alt" size={18} color={step === 2 ? "#fff" : "#37B44E"} />
                     <Text style={step === 2 ? styles.stepTextActive : styles.stepText}>Xác nhận</Text>
                 </View>
                 <View style={styles.stepDivider} />
                 <View style={step === 3 ? styles.stepItemActive : styles.stepItem}>
-                    <FontAwesome5 name="check-circle" size={18} color={step === 3 ? "#fff" : "#7B61FF"} />
+                    <FontAwesome5 name="check-circle" size={18} color={step === 3 ? "#fff" : "#37B44E"} />
                     <Text style={step === 3 ? styles.stepTextActive : styles.stepText}>Kết quả</Text>
                 </View>
             </View>
@@ -96,7 +97,7 @@ const TopUpScreen: React.FC = () => {
                         }
                     >
                         <View style={styles.methodLeft}>
-                            <FontAwesome5 name="money-check-alt" size={32} color="#7B61FF" />
+                            <FontAwesome5 name="money-check-alt" size={32} color="#37B44E" />
                             <Text style={styles.methodTitle}>
                                 {selectedMethod ? paymentMethodDisplay[selectedMethod] : 'Chọn phương thức thanh toán'}
                             </Text>
@@ -108,21 +109,21 @@ const TopUpScreen: React.FC = () => {
                     <View style={styles.policyCard}>
                         <Text style={styles.policyTitle}>Chính sách</Text>
                         <View style={styles.policyRow}>
-                            <MaterialIcons name="info-outline" size={16} color="#7B61FF" />
+                            <MaterialIcons name="info-outline" size={16} color="#37B44E" />
                             <Text style={styles.policyText}>
-                                Số tiền nạp vào <Text style={styles.link}>TrueDoc</Text> chỉ được dùng để thanh toán các dịch vụ y tế, sức khoẻ do <Text style={styles.link}>TrueDoc</Text> cung cấp
+                                Số tiền nạp vào <Text style={styles.link}>ElderCare</Text> chỉ được dùng để thanh toán các dịch vụ y tế, sức khoẻ do <Text style={styles.link}>ElderCare</Text> cung cấp
                             </Text>
                         </View>
                         <View style={styles.policyRow}>
-                            <MaterialIcons name="info-outline" size={16} color="#7B61FF" />
+                            <MaterialIcons name="info-outline" size={16} color="#37B44E" />
                             <Text style={styles.policyText}>
-                                Khách hàng không được phép chuyển tiền giữa các tài khoản <Text style={styles.link}>TrueDoc</Text> với nhau
+                                Khách hàng không được phép chuyển tiền giữa các tài khoản <Text style={styles.link}>ElderCare</Text> với nhau
                             </Text>
                         </View>
                         <View style={styles.policyRow}>
-                            <MaterialIcons name="info-outline" size={16} color="#7B61FF" />
+                            <MaterialIcons name="info-outline" size={16} color="#37B44E" />
                             <Text style={styles.policyText}>
-                                Khách hàng không được phép tự rút tiền từ tài khoản <Text style={styles.link}>TrueDoc</Text>
+                                Khách hàng không được phép tự rút tiền từ tài khoản <Text style={styles.link}>ElderCare</Text>
                             </Text>
                         </View>
                     </View>
@@ -144,14 +145,14 @@ const TopUpScreen: React.FC = () => {
             {step === 2 && (
                 <View>
                     <Text style={styles.confirmationTitle}>Xác nhận giao dịch</Text>
-                    {amount && <Text style={styles.confirmationText}>Số tiền: {amount}</Text>}
+                    {amount && <Text style={styles.confirmationText}>Số tiền: {Number(amount).toLocaleString()} VND</Text>}
                     {selectedMethod && (
                         <Text style={styles.confirmationText}>Phương thức: {paymentMethodDisplay[selectedMethod]}</Text>
                     )}
                     <TouchableOpacity
                         style={styles.button}
                         onPress={() => {
-                            navigation.navigate('TransferGuideScreen', { amount, selectedMethod }); setStep(3); // Truyền selectedMethod
+                            navigation.navigate('TransferGuideScreen', { amount, selectedMethod }); setStep(3); 
                         }}
                     >
                         <Text style={styles.buttonText}>Xác nhận nạp tiền</Text>
@@ -165,7 +166,7 @@ const TopUpScreen: React.FC = () => {
                     <Text style={{ fontSize: 32, color: '#2CB742', fontWeight: 'bold', textAlign: 'center', marginTop: 12 }}>
                         + {Number(amount).toLocaleString()}VND
                     </Text>
-                    <Text style={{ color: '#7B61FF', textAlign: 'center', marginBottom: 12 }}>Đang xử lý</Text>
+                    <Text style={{ color: '#37B44E', textAlign: 'center', marginBottom: 12 }}>Đang xử lý</Text>
                     {/* Info Card */}
                     <View style={{
                         backgroundColor: '#fff',
@@ -189,9 +190,20 @@ const TopUpScreen: React.FC = () => {
                     {/* Home Button */}
                     <TouchableOpacity
                         style={[styles.button, { marginHorizontal: 16 }]}
-                        onPress={() => navigation.navigate('Home')}
+                        onPress={() => {
+                            navigation.navigate('PaymentInfoScreen', {
+                                newTransaction: {
+                                    id: Date.now().toString(),
+                                    type: 'Nạp tiền',
+                                    amount: Number(amount),
+                                    status: 'Đang xử lý',
+                                    desc: selectedMethod ? paymentMethodDisplay[selectedMethod] : '',
+                                    time: new Date().toLocaleString('vi-VN'),
+                                }
+                            });
+                        }}
                     >
-                        <Text style={styles.buttonText}>Quay về trang chủ</Text>
+                        <Text style={styles.buttonText}>Quay về ví của tao</Text>
                     </TouchableOpacity>
                 </View>
             )}
@@ -200,15 +212,15 @@ const TopUpScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff', padding: 16 },
+    container: { flex: 1, backgroundColor: '#fff', padding: 16 ,paddingTop: 30,},
     headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
     headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#222' },
     stepperRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 18 },
-    stepItemActive: { alignItems: 'center', backgroundColor: '#7B61FF', borderRadius: 8, padding: 8, flex: 1 },
+    stepItemActive: { alignItems: 'center', backgroundColor: '#37B44E', borderRadius: 8, padding: 8, flex: 1 },
     stepItem: { alignItems: 'center', backgroundColor: '#F2F2F2', borderRadius: 8, padding: 8, flex: 1 },
     stepTextActive: { color: '#fff', fontWeight: 'bold', fontSize: 13, marginTop: 2 },
-    stepText: { color: '#7B61FF', fontWeight: 'bold', fontSize: 13, marginTop: 2 },
-    stepDivider: { width: 16, height: 2, backgroundColor: '#7B61FF', marginHorizontal: 2 },
+    stepText: { color: '#37B44E', fontWeight: 'bold', fontSize: 13, marginTop: 2 },
+    stepDivider: { width: 16, height: 2, backgroundColor: '#37B44E', marginHorizontal: 2 },
     input: {
         borderWidth: 1,
         borderColor: '#eee',
@@ -231,7 +243,7 @@ const styles = StyleSheet.create({
     },
     methodLeft: { flexDirection: 'row', alignItems: 'center' },
     methodTitle: { fontWeight: 'bold', marginLeft: 12, fontSize: 15 },
-    methodChoose: { color: '#7B61FF', fontWeight: 'bold', fontSize: 15 },
+    methodChoose: { color: '#37B44E', fontWeight: 'bold', fontSize: 15 },
     policyCard: {
         backgroundColor: '#fff',
         borderRadius: 10,
@@ -242,9 +254,9 @@ const styles = StyleSheet.create({
     policyTitle: { fontWeight: 'bold', marginBottom: 8, fontSize: 15 },
     policyRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 6 },
     policyText: { marginLeft: 8, color: '#222', fontSize: 13, flex: 1 },
-    link: { color: '#7B61FF', fontWeight: 'bold' },
+    link: { color: '#37B44E', fontWeight: 'bold' },
     button: {
-        backgroundColor: '#7B61FF',
+        backgroundColor: '#37B44E',
         borderRadius: 10,
         paddingVertical: 16,
         alignItems: 'center',
