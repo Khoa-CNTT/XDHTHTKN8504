@@ -14,7 +14,7 @@ function Settings() {
     //   icon: BiUserPlus,
     // },
     {
-      id: 2,
+      id: 1,
       name: "Thay đổi mật khẩu",
       icon: RiLockPasswordLine,
     },
@@ -24,7 +24,7 @@ function Settings() {
     switch (activeTab) {
       // case 1:
       //   return <PersonalInfo titles={true} />;
-      case 2:
+      case 1:
         return <ChangePassword />;
       default:
         return;

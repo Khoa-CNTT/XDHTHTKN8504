@@ -57,7 +57,7 @@ function Header() {
           {/* search */}
           <input
             type="text"
-            placeholder='Tìm kiếm "bệnh nhân"'
+            placeholder='Tìm kiếm "khách hàng"'
             className="md:w-96 w-full h-12 text-sm text-main rounded-md bg-dry border border-border px-4"
           />
         </div>
