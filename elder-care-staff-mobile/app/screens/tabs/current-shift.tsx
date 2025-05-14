@@ -1,6 +1,12 @@
-import React, { useEffect, useState } from "react";
-import {log} from "../../../utils/logger"
-import { View, Text, Image, StyleSheet, TouchableOpacity, Linking } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Linking,
+} from "react-native";
 import { Button } from "react-native-paper";
 import { MapPin, Phone, MessageCircle } from "lucide-react-native";
 import { router } from "expo-router";
@@ -15,12 +21,10 @@ import canStartSchedule from "@/utils/canStartSchedule";
 const ShiftWorkScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const nearestSchedule = useScheduleStore((state) => state.nearestSchedule);
-  
   const updateSchedule = useScheduleStore((state) => state.updateSchedule);
 
   useScheduleSocket(nearestSchedule?.schedule._id || "");
 
-  // Hàm cập nhật trạng thái lịch
   const handleUpdateStatus = async (newStatus: ScheduleStatus) => {
     if (!nearestSchedule) return;
     try {
@@ -28,28 +32,23 @@ const ShiftWorkScreen = () => {
         nearestSchedule.schedule._id,
         newStatus
       );
-      updateSchedule(nearestSchedule.schedule._id, newStatus); 
+      updateSchedule(nearestSchedule.schedule._id, newStatus);
     } catch (error) {
       console.error("Không thể cập nhật trạng thái:", error);
     }
   };
 
-  const renderActionButtonByStatus = (
-    status: ScheduleStatus,
-    start: Date
-  ) => {
-    console.log("🔍 start time", start);
+  const renderActionButtonByStatus = (status: ScheduleStatus, start: Date) => {
     const isTimeReady = canStartSchedule(start);
-    console.log("✅ isTimeReady", isTimeReady);
     switch (status) {
       case "scheduled":
         return (
           <TouchableOpacity
             style={[
               styles.actionButton,
-              !isTimeReady && { backgroundColor: "#ccc" }, // màu xám nếu chưa sẵn sàng
+              !isTimeReady && { backgroundColor: "#ccc" },
             ]}
-            disabled={!isTimeReady} // không cho bấm nếu chưa sẵn sàng
+            disabled={!isTimeReady}
             onPress={() => handleUpdateStatus("waiting_for_client")}
           >
             <Text style={styles.actionButtonText}>
@@ -108,21 +107,13 @@ const ShiftWorkScreen = () => {
           </TouchableOpacity>
         );
       case "completed":
-        return (
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => router.push("/screens/tabs/home")}
-          >
-            <Text style={styles.actionButtonText}>Trở về màn hình chính</Text>
-          </TouchableOpacity>
-        );
       case "cancelled":
         return (
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => router.push("/screens/tabs/home")}
           >
-            <Text style={styles.actionButtonText}>Kết thúc chăm sóc</Text>
+            <Text style={styles.actionButtonText}>Về màn hình chính</Text>
           </TouchableOpacity>
         );
       default:
@@ -134,8 +125,24 @@ const ShiftWorkScreen = () => {
 
   if (!nearestSchedule) {
     return (
-      <View>
-        <Text>Không có lịch gần nhất.</Text>
+      <View style={styles.emptyContainer}>
+        <Image
+          source={require("../../../assets/images/empty_schedule.png")} // Bạn cần thêm ảnh này vào thư mục assets
+          style={styles.emptyImage}
+          resizeMode="contain"
+        />
+        <Text style={styles.emptyTitle}>
+          Hiện tại bạn không có lịch làm việc
+        </Text>
+        <Text style={styles.emptyText}>
+          Vui lòng kiểm tra lại sau hoặc quay về trang chủ.
+        </Text>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.push("/screens/tabs/home")}
+        >
+          <Text style={styles.backButtonText}>Về trang chủ</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -148,9 +155,7 @@ const ShiftWorkScreen = () => {
         <View style={styles.arrivalInfo}>
           <View style={styles.userInfo}>
             <Image
-              source={{
-                uri: "https://via.placeholder.com/40", // Placeholder ảnh bệnh nhân
-              }}
+              source={{ uri: "https://via.placeholder.com/40" }}
               style={styles.avatar}
             />
             <View>
@@ -197,12 +202,11 @@ const ShiftWorkScreen = () => {
           onClose={() => setModalVisible(false)}
         />
 
-        {nearestSchedule && nearestSchedule.schedule.timeSlots[0]?.start
-          ? renderActionButtonByStatus(
-              nearestSchedule.schedule.status,
-              new Date(nearestSchedule.schedule.timeSlots[0].start)
-            )
-          : null}
+        {nearestSchedule?.schedule.timeSlots[0]?.start &&
+          renderActionButtonByStatus(
+            nearestSchedule.schedule.status,
+            new Date(nearestSchedule.schedule.timeSlots[0].start)
+          )}
       </View>
     </View>
   );
@@ -224,19 +228,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 10,
   },
-  showWayBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  showWayText: {
-    marginLeft: 6,
-    color: "#000",
-    fontWeight: "bold",
-  },
-  arrivalInfo: {
-    marginBottom: 16,
-  },
+  arrivalInfo: { marginBottom: 16 },
   userInfo: {
     flexDirection: "row",
     alignItems: "center",
@@ -248,14 +240,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 12,
   },
-  userName: {
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  travelInfo: {
-    fontSize: 14,
-    color: "gray",
-  },
+  userName: { fontWeight: "bold", fontSize: 16 },
+  travelInfo: { fontSize: 14, color: "gray" },
   actionButton: {
     marginTop: 10,
     backgroundColor: "#4CAF50",
@@ -272,8 +258,43 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 16,
   },
-  button: {
-    width: "48%",
+  button: { width: "48%" },
+
+  // Giao diện khi không có lịch
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: "#fff",
+  },
+  emptyImage: {
+    width: 200,
+    height: 200,
+    marginBottom: 24,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  emptyText: {
+    fontSize: 14,
+    color: "gray",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  backButton: {
+    backgroundColor: "#28a745",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+  },
+  backButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
 
