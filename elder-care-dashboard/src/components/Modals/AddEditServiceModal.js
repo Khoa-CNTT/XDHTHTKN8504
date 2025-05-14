@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "./Modal";
 import { Button, Input, Switchi, Textarea } from "../Form";
 import { HiOutlineCheckCircle } from "react-icons/hi";
@@ -6,7 +6,7 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import Uploader from "../Uploader.js";
 
-const AddServiceModal = ({ closeModal, isOpen }) => {
+const AddEditServiceModal = ({ closeModal, isOpen, datas }) => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
@@ -16,121 +16,133 @@ const AddServiceModal = ({ closeModal, isOpen }) => {
   const [errors, setErrors] = useState({});
   const [image, setImage] = useState("");
 
+  // Load data khi sửa
+  useEffect(() => {
+    if (datas) {
+      setName(datas.name || "");
+      setPrice(datas.price || "");
+      setDescription(datas.description || "");
+      setIsActive(datas.status !== false); // nếu status là false => đã ngừng hoạt động
+      setPercentage(datas.percentage || "");
+      setRole(datas.role || "doctor");
+      setImage(datas.imgUrl || "");
+    }
+  }, [datas]);
+
   const handleSubmit = async () => {
     const newErrors = {};
 
     if (!name) newErrors.name = "Tên dịch vụ không được để trống";
-    if (!price || isNaN(price)) newErrors.price = "Giá phải là một số hợp lệ";
+    if (!price || isNaN(price)) newErrors.price = "Giá phải là số";
     if (percentage === "" || isNaN(percentage))
       newErrors.percentage = "Tỉ lệ phần trăm phải là số";
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
+    const payload = {
+      name,
+      description,
+      price: Number(price),
+      percentage: Number(percentage),
+      role,
+      imgUrl: image,
+      status: isActive, // nếu bạn dùng field "status"
+    };
+
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/v1/services/create",
-        {
-          name,
-          description,
-          price: Number(price),
-          percentage: Number(percentage),
-          role,
-          imgUrl: image,
-        }
-      );
-      toast.success("Thêm dịch vụ thành công");
+      if (datas?._id) {
+        // Chế độ sửa
+        await axios.put(
+          `http://localhost:5000/api/v1/services/update-service/${datas._id}`,
+          payload
+        );
+        toast.success("Cập nhật dịch vụ thành công");
+      } else {
+        // Chế độ thêm
+        await axios.post(
+          "http://localhost:5000/api/v1/services/create",
+          payload
+        );
+        toast.success("Thêm dịch vụ thành công");
+      }
+
       closeModal();
     } catch (error) {
-      console.error("Lỗi khi thêm dịch vụ:", error.response || error.message);
-      toast.error("Không thể thêm dịch vụ");
+      console.error("Lỗi:", error.response || error.message);
+      toast.error("Thao tác thất bại");
     }
   };
-
-  console.log("image", image);
 
   return (
     <Modal
       closeModal={closeModal}
       isOpen={isOpen}
-      title="Thêm Dịch Vụ"
+      title={datas?._id ? "Cập nhật Dịch Vụ" : "Thêm Dịch Vụ"}
       width="max-w-3xl"
     >
       <div className="flex-colo gap-6">
-        {/* Upload Image */}
         <Uploader setImage={setImage} image={image} />
 
-        {/* Tên dịch vụ */}
-        <div className="w-full">
-          <Input
-            label="Tên dịch vụ"
-            color={true}
-            placeholder="Nhập tên dịch vụ"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          {errors.name && (
-            <p className="text-sm text-red-500 mt-1">{errors.name}</p>
-          )}
-        </div>
+        <Input
+          label="Tên dịch vụ"
+          color={true}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Nhập tên dịch vụ"
+        />
+        {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
 
-        {/* Giá */}
         <div className="w-full grid sm:grid-cols-2 gap-4">
           <Input
             label="Giá (vnd)"
             type="number"
             color={true}
-            placeholder="Nhập giá"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
           />
           {errors.price && (
-            <p className="text-sm text-red-500 mt-1">{errors.price}</p>
+            <p className="text-sm text-red-500">{errors.price}</p>
           )}
-          {/* Phần trăm */}
           <Input
             label="Tỉ lệ phần trăm (%)"
             type="number"
             color={true}
-            placeholder="Nhập phần trăm"
             value={percentage}
             onChange={(e) => setPercentage(e.target.value)}
           />
           {errors.percentage && (
-            <p className="text-sm text-red-500 mt-1">{errors.percentage}</p>
+            <p className="text-sm text-red-500">{errors.percentage}</p>
           )}
         </div>
 
-        {/* Vai trò */}
         <div className="w-full">
           <label className="text-sm block mb-2">Vai trò</label>
           <select
-            className="w-full p-3 border border-border rounded-md bg-main text-sm"
+            className="w-full p-3 border border-border rounded-md bg-teal-100 text-sm"
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >
+            <option
+              value=""
+              className="p-4 text-sm font-light bg-white text-black"
+            >
+              -- Chọn vai trò --
+            </option>
             <option value="doctor">Bác sĩ</option>
             <option value="nurse">Điều dưỡng</option>
           </select>
         </div>
 
-        {/* Mô tả */}
         <Textarea
           label="Mô tả"
-          placeholder="Nhập mô tả dịch vụ..."
-          color={true}
-          rows={5}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          placeholder="Nhập mô tả"
         />
 
-        {/* Trạng thái */}
         <div className="flex items-center gap-2 w-full">
-          <Switchi
-            label="Trạng thái"
-            checked={isActive}
-            onChange={() => setIsActive(!isActive)}
-          />
+          <Switchi checked={isActive} onChange={() => setIsActive(!isActive)} />
           <p
             className={`text-sm ${isActive ? "text-subMain" : "text-textGray"}`}
           >
@@ -138,7 +150,6 @@ const AddServiceModal = ({ closeModal, isOpen }) => {
           </p>
         </div>
 
-        {/* Buttons */}
         <div className="grid sm:grid-cols-2 gap-4 w-full">
           <button
             onClick={closeModal}
@@ -157,4 +168,4 @@ const AddServiceModal = ({ closeModal, isOpen }) => {
   );
 };
 
-export default AddServiceModal;
+export default AddEditServiceModal;
