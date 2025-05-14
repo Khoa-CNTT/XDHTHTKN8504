@@ -44,11 +44,25 @@ const packageController = {
     },
 
     // Get all packages
-    getAllPackages: async (req, res) => {
+    getPackagesForService: async (req, res) => {
         try {
             const { serviceId } = req.params;
 
             const packages = await Packages.find({ serviceId })
+
+            return res.status(200).json({
+                success: true,
+                packages: packages,
+            });
+        } catch (error) {
+            console.error("Error in getAllPackages:", error);
+            return res.status(500).json({ success: false, message: "Server error" });
+        }
+    },
+
+    getAllPackages: async (req, res) => {
+        try {
+            const packages = await Packages.find().select("-__v");
 
             return res.status(200).json({
                 success: true,
