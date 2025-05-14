@@ -2,18 +2,31 @@ import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
-const walletSchema = new Schema({
+const walletSchema = new Schema(
+  {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     balance: { type: Number, default: 0 },
-    transactions: [{
+    transactions: [
+      {
+        transactionId: { type: String },
         type: {
-            type: String,
-            required: true
+          type: String,
+          enum: ["TOP_UP", "PAYMENT"],
+          required: true,
         },
         amount: { type: Number, required: true },
-        date: { type: Date, default: Date.now }
-    }]
-}, { timestamps: true });
+        date: { type: Date, default: Date.now },
+        status: {
+          type: String,
+          enum: ["pending", "success", "failed"],
+          default: "pending",
+        },
+        description: { type: String },
+      },
+    ],
+  },
+  { timestamps: true }
+);
 
 const Wallet = mongoose.model("Wallet", walletSchema);
 
