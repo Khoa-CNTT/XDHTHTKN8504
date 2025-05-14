@@ -1,11 +1,8 @@
 import React, { useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import HomeHeader from "../../../components/home/HomeHeader";
 import AvailabilitySwitch from "../../../components/home/AvailabilitySwitch";
 import IncomeCard from "../../../components/home/IncomeCard";
-import WorkStatsCard from "../../../components/home/WorkStatsCard";
-import AvailableWorkList from "../../../components/home/AvailableWorkList";
-import { router } from "expo-router";
 import useCompletedBookingStore from "@/stores/completedBookingStore";
 import updateAvailability from "../../../api/updateAvailability";
 import useAuthStore from "@/stores/authStore";
@@ -93,27 +90,25 @@ const handleToggleAvailability = async (newValue: boolean) => {
         />
         <IncomeCard
           value={totalSalary}
-          label="Thu nhập hiện tại"
+          label="Đơn đặt lịch"
           icon={<MaterialIcons name="attach-money" size={24} color="#5cb85c" />}
           color="#5cb85c"
         />
         <IncomeCard
           value={totalSalary}
-          label="Thu nhập hiện tại"
+          label="Ca làm việc"
           icon={<MaterialIcons name="attach-money" size={24} color="#5cb85c" />}
           color="#5cb85c"
         />
         <IncomeCard
           value={totalSalary}
-          label="Thu nhập hiện tại"
+          label="Bị hủy"
           icon={<MaterialIcons name="attach-money" size={24} color="#5cb85c" />}
           color="#5cb85c"
         />
       </View>
-
-      {/* <WorkStatsCard /> */}
-      <AvailableWorkList />
-      <UpcomingSchedule/>
+      <Text style={styles.sectionTitle}>Ca làm việc hôm nay</Text>
+      <UpcomingSchedule />
     </View>
   );
 };
@@ -125,6 +120,13 @@ const styles = StyleSheet.create({
   },
   divider: {
     marginVertical: 10,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+    marginHorizontal: 15,
+    marginBottom: 10,
   },
   infoContainer: {
     flexDirection: "row",

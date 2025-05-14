@@ -7,7 +7,7 @@ const Header = () => {
     <View style={styles.header}>
       <View style={styles.logoContainer}>
         <FontAwesome5 name="taxi" size={24} color="#fff" />
-        <Text style={styles.logoText}>Taxify</Text>
+        <Text style={styles.logoText}>ElderCare</Text>
       </View>
       <TouchableOpacity style={styles.notificationButton}>
         <Ionicons name="notifications-outline" size={24} color="#fff" />

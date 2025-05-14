@@ -1,41 +1,87 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import React, { useEffect } from "react";
+import { View, Text, Image, StyleSheet, ActivityIndicator } from "react-native";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import useScheduleStore from "../../stores/scheduleStore";
 
 const UpcomingSchedule = () => {
+  const { nearestSchedule, getNearestSchedule, loading, error } =
+    useScheduleStore();
+
+  useEffect(() => {
+    getNearestSchedule();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.upcomingRideContainer}>
+        <Text style={styles.upcomingRideTitle}>Đang tải lịch sắp tới...</Text>
+        <ActivityIndicator size="small" color="#28a745" />
+      </View>
+    );
+  }
+
+  if (!nearestSchedule) {
+    return (
+      <View style={styles.upcomingRideContainer}>
+        <Text style={styles.upcomingRideTitle}>Không có lịch sắp tới</Text>
+      </View>
+    );
+  }
+
+  const { avatar, serviceName, customerAddress, phoneNumber, schedule } =
+    nearestSchedule;
+  const formattedDate = new Date(schedule.date).toLocaleDateString("vi-VN");
+  const timeSlotText = schedule.timeSlots?.[0]
+    ? `${schedule.timeSlots[0].start} - ${schedule.timeSlots[0].end}`
+    : "Chưa rõ thời gian";
+    if (!nearestSchedule) {
+      return (
+        <View style={[styles.upcomingRideContainer, styles.emptyContainer]}>
+          <Ionicons
+            name="calendar-outline"
+            size={48}
+            color="#ccc"
+            style={{ marginBottom: 10 }}
+          />
+          <Text style={styles.emptyText}>
+            Hiện chưa có lịch làm việc sắp tới
+          </Text>
+        </View>
+      );
+    }
+
   return (
     <View style={styles.upcomingRideContainer}>
-      <Text style={styles.upcomingRideTitle}>New Upcoming Ride</Text>
+      <Text style={styles.upcomingRideTitle}>Lịch sắp tới</Text>
       <View style={styles.rideDetailsCard}>
         <View style={styles.riderInfo}>
           <Image
-            source={{ uri: "https://via.placeholder.com/50" }} 
+            source={{ uri: avatar || "https://via.placeholder.com/50" }}
             style={styles.riderAvatar}
           />
-          <Text style={styles.riderName}>Johnson Smithkover</Text>
-          <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={16} color="#ffc107" />
-            <Text style={styles.rating}>4.5</Text>
-          </View>
+          <Text style={styles.riderName}>{schedule.patientName}</Text>
           <View style={styles.rideIdContainer}>
-            <Text style={styles.rideId}>256</Text>
+            <Text style={styles.rideId}>{schedule._id.slice(-4)}</Text>
           </View>
         </View>
-        <Text style={styles.rideTime}>15 Dec'23 at 10:15 AM</Text>
-        <Text style={styles.rideDistance}>
-          <MaterialIcons name="location-on" size={16} color="#777" /> 9.5 km
+
+        <Text style={styles.rideTime}>
+          {formattedDate} lúc {timeSlotText}
         </Text>
+
+        <View style={styles.addressContainer}>
+          <MaterialIcons name="medical-services" size={16} color="#777" />
+          <Text style={styles.addressText}>{serviceName}</Text>
+        </View>
+
         <View style={styles.addressContainer}>
           <Ionicons name="location" size={16} color="#777" />
-          <Text style={styles.addressText}>
-            220 Yonge St, Toronto, ON M5B 2H1, Canada
-          </Text>
+          <Text style={styles.addressText}>{customerAddress}</Text>
         </View>
+
         <View style={styles.addressContainer}>
-          <Ionicons name="flag" size={16} color="#777" />
-          <Text style={styles.addressText}>
-            17600 Yonge St, Newmarket, ON L3Y 4Z1, Canada
-          </Text>
+          <Ionicons name="call" size={16} color="#777" />
+          <Text style={styles.addressText}>{phoneNumber}</Text>
         </View>
       </View>
     </View>
@@ -75,15 +121,6 @@ const styles = StyleSheet.create({
     color: "#333",
     flex: 1,
   },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 8,
-  },
-  rating: {
-    marginLeft: 3,
-    color: "#ffc107",
-  },
   rideIdContainer: {
     backgroundColor: "#d4edda",
     paddingVertical: 5,
@@ -100,13 +137,6 @@ const styles = StyleSheet.create({
     color: "#777",
     marginBottom: 5,
   },
-  rideDistance: {
-    fontSize: 14,
-    color: "#777",
-    marginBottom: 10,
-    flexDirection: "row",
-    alignItems: "center",
-  },
   addressContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -117,6 +147,18 @@ const styles = StyleSheet.create({
     color: "#555",
     fontSize: 14,
     flexShrink: 1,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 10,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#999",
+    textAlign: "center",
   },
 });
 
