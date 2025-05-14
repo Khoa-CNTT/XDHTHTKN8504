@@ -1,79 +1,102 @@
-import React from "react";
-import Uploder from "../Uploader";
-import { sortsDatas } from "../Datas";
-import { Button, DatePickerComp, Input, Select } from "../Form";
-import { BiChevronDown } from "react-icons/bi";
+import React, { useState } from "react";
+import { Button, Input } from "../Form";
 import { toast } from "react-hot-toast";
 import { HiOutlineCheckCircle } from "react-icons/hi";
 import { RiDeleteBin5Line } from "react-icons/ri";
+import axios from "axios";
 
-function PersonalInfo({ titles }) {
-  const [title, setTitle] = React.useState(sortsDatas.title[0]);
-  const [date, setDate] = React.useState(new Date());
-  const [gender, setGender] = React.useState(sortsDatas.genderFilter[0]);
+function PersonalInfo() {
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState({});
+
+  const role = "family_member";
+  const profiles = [];
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!phone.trim()) newErrors.phone = "Vui lòng nhập số điện thoại";
+    if (!password.trim()) newErrors.password = "Vui lòng nhập mật khẩu";
+    if (!confirmPassword.trim())
+      newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu";
+    else if (password !== confirmPassword)
+      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
+
+    return newErrors;
+  };
+
+  const handleSave = async () => {
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    setErrors({});
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/v1/auth/signup",
+        {
+          phone,
+          password,
+          role,
+          profiles,
+        }
+      );
+
+      if (response.status === 201 || response.status === 200) {
+        toast.success("Đăng ký tài khoản thành công!");
+        setPhone("");
+        setPassword("");
+        setConfirmPassword("");
+      } else {
+        toast.error("Lỗi không xác định!");
+      }
+    } catch (error) {
+      console.error("Đăng ký lỗi:", error);
+      const message = error.response?.data?.message || "Lỗi kết nối API";
+      toast.error(message);
+    }
+  };
 
   return (
     <div className="flex-colo gap-4">
-      {/* uploader */}
-      <div className="flex gap-3 flex-col w-full col-span-6">
-        <p className="text-sm">Ảnh hồ sơ</p>
-        <Uploder />
-      </div>
+      {/* Phone */}
+      <Input
+        label="Số điện thoại"
+        color={true}
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+      />
+      {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
 
-      {/* select */}
-      {titles && (
-        <div className="flex w-full flex-col gap-3">
-          <p className="text-black text-sm">Chức danh</p>
-          <Select
-            selectedPerson={title}
-            setSelectedPerson={setTitle}
-            datas={sortsDatas.title}
-          >
-            <div className="w-full flex-btn text-textGray text-sm p-4 border border-border font-light rounded-lg focus:border focus:border-subMain">
-              {title?.name} <BiChevronDown className="text-xl" />
-            </div>
-          </Select>
-        </div>
+      {/* Password */}
+      <Input
+        type="password"
+        label="Mật khẩu"
+        color={true}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      {errors.password && (
+        <p className="text-red-500 text-sm">{errors.password}</p>
       )}
 
-      {/* fullName */}
-      <Input label="Họ và tên" color={true} type="text" />
-      {/* phone */}
-      <Input label="Số điện thoại" color={true} type="number" />
-      {/* email */}
-      <Input label="Email" color={true} type="email" />
-      {!titles && (
-        <>
-          {/* gender */}
-          <div className="flex w-full flex-col gap-3">
-            <p className="text-black text-sm">Giới tính</p>
-            <Select
-              selectedPerson={gender}
-              setSelectedPerson={setGender}
-              datas={sortsDatas.genderFilter}
-            >
-              <div className="w-full flex-btn text-textGray text-sm p-4 border border-border font-light rounded-lg focus:border focus:border-subMain">
-                {gender?.name} <BiChevronDown className="text-xl" />
-              </div>
-            </Select>
-          </div>
-
-          {/* emergency contact */}
-          <Input label="Liên hệ khẩn cấp" color={true} type="number" />
-
-          {/* date */}
-          <DatePickerComp
-            label="Ngày sinh"
-            startDate={date}
-            onChange={(date) => setDate(date)}
-          />
-
-          {/* address */}
-          <Input label="Địa chỉ" color={true} type="text" />
-        </>
+      {/* Confirm Password */}
+      <Input
+        type="password"
+        label="Xác nhận mật khẩu"
+        color={true}
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+      />
+      {errors.confirmPassword && (
+        <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
       )}
 
-      {/* submit */}
+      {/* Buttons */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
         <Button
           label={"Xóa tài khoản"}
@@ -85,9 +108,7 @@ function PersonalInfo({ titles }) {
         <Button
           label={"Lưu thay đổi"}
           Icon={HiOutlineCheckCircle}
-          onClick={() => {
-            toast.error("Chức năng này hiện chưa khả dụng");
-          }}
+          onClick={handleSave}
         />
       </div>
     </div>

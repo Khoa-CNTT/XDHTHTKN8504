@@ -28,14 +28,17 @@ const AddServiceModal = ({ closeModal, isOpen }) => {
     if (Object.keys(newErrors).length > 0) return;
 
     try {
-      const response = await axios.post("http://localhost:5000/api/v1/services/create", {
-        name,
-        description,
-        price: Number(price),
-        percentage: Number(percentage),
-        role,
-        imgUrl: image,
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/v1/services/create",
+        {
+          name,
+          description,
+          price: Number(price),
+          percentage: Number(percentage),
+          role,
+          imgUrl: image,
+        }
+      );
       toast.success("Thêm dịch vụ thành công");
       closeModal();
     } catch (error) {
@@ -45,7 +48,6 @@ const AddServiceModal = ({ closeModal, isOpen }) => {
   };
 
   console.log("image", image);
-  
 
   return (
     <Modal
@@ -98,7 +100,6 @@ const AddServiceModal = ({ closeModal, isOpen }) => {
             <p className="text-sm text-red-500 mt-1">{errors.percentage}</p>
           )}
         </div>
-
 
         {/* Vai trò */}
         <div className="w-full">

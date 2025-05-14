@@ -21,18 +21,18 @@ function PatientProfile() {
         return <MedicalRecord />;
       case 2:
         return <AppointmentsUsed doctor={false} />;
-      case 3:
-        return <InvoiceUsed />;
-      case 4:
-        return <PaymentsUsed doctor={false} />;
-      case 5:
-        return <PatientImages />;
+      // case 3:
+      //   return <InvoiceUsed />;
+      // case 4:
+      //   return <PaymentsUsed doctor={false} />;
+      // case 5:
+      //   return <PatientImages />;
+      // case 6:
+      //   return <DentalChart />;
       case 6:
-        return <DentalChart />;
-      case 7:
         return <PersonalInfo titles={false} />;
-      case 8:
-        return <HealthInfomation />;
+      // case 7:
+      //   return <HealthInfomation />;
       default:
         return;
     }

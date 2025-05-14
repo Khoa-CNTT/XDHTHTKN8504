@@ -23,11 +23,12 @@ const profileSchema = new Schema({
             name: String,
             description: String,
         }],
-        height: String,
-        weight: String,
+        height: Number,
+        weight: Number,
         typeBlood: {
             type: String,
-            enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+            enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Unknown"],
+            default: "Unknown"
         },
         notes: String
     }],
