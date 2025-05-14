@@ -82,7 +82,7 @@ const walletController = {
 
             return res.status(200).json({
                 response: response.data,
-                msg: "Payment initiated successfully"
+                msg: "Payment initiated successfully",
             });
         } catch (error) {
             console.error("MOMO ERROR:", error.response?.data || error.message);
@@ -98,18 +98,38 @@ const walletController = {
             console.log("📥 MoMo callback received:", req.body);
             const { resultCode, amount, extraData } = req.body;
 
+            if (!resultCode) {
+                console.log("Không được! 1");
+            }
+            if (!amount) {
+                console.log("Không được! 2");
+            }
+            if (!extraData) {
+                console.log("Không được! 3");
+            }
+
             if (resultCode === 0) {
                 const userId = new mongoose.Types.ObjectId(String(extraData));
+                console.log(userId);
 
-                const wallet = await Wallet.findOne({ userId });
+                // Kiểm tra ví người dùng
+                let wallet = await Wallet.findOne({ userId });
+
                 if (!wallet) {
-                    return res.status(402).json({ msg: 'Không tìm thấy ví người dùng' });
+                    // Nếu ví không tồn tại, tạo ví mới cho người dùng
+                    wallet = new Wallet({
+                        userId,
+                        balance: 0, 
+                        transactions: []  
+                    });
+                    await wallet.save(); 
+                    console.log("Tạo ví mới cho người dùng:", wallet);
                 }
 
                 // Cộng tiền vào ví
                 wallet.balance += Number(amount);
                 wallet.transactions.push({
-                    type: 'TOP_UP',
+                    type: 'MOMO',
                     amount: amount
                 });
 
