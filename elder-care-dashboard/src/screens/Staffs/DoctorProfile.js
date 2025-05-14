@@ -14,7 +14,7 @@ import { useLocation } from "react-router-dom";
 function DoctorProfile() {
   const location = useLocation();
   const [activeTab, setActiveTab] = React.useState(1);
-  const [access, setAccess] = React.useState({});
+  // const [access, setAccess] = React.useState({});
   //===========
 
   useEffect(() => {

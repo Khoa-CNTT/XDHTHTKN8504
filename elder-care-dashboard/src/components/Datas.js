@@ -1040,54 +1040,54 @@ export const patientTab = [
     title: "Medical Records",
     icon: TbChartHistogram,
   },
-  {
-    id: 2,
-    title: "Appointments",
-    icon: BiCalendar,
-  },
-  {
-    id: 3,
-    title: "Invoices",
-    icon: RiFileList3Line,
-  },
-  {
-    id: 4,
-    title: "Payments",
-    icon: RiMoneyDollarCircleLine,
-  },
-  {
-    id: 5,
-    title: "Images",
-    icon: RiImageLine,
-  },
-  {
-    id: 6,
-    title: "Dental Chart",
-    icon: RiStethoscopeLine,
-  },
-  {
-    id: 7,
-    title: "Patient Information",
-    icon: RiUserLine,
-  },
-  {
-    id: 8,
-    title: "Health Information",
-    icon: RiHeartLine,
-  },
+  // {
+  //   id: 2,
+  //   title: "Appointments",
+  //   icon: BiCalendar,
+  // },
+  // {
+  //   id: 3,
+  //   title: "Invoices",
+  //   icon: RiFileList3Line,
+  // },
+  // {
+  //   id: 4,
+  //   title: "Payments",
+  //   icon: RiMoneyDollarCircleLine,
+  // },
+  // {
+  //   id: 5,
+  //   title: "Images",
+  //   icon: RiImageLine,
+  // },
+  // {
+  //   id: 6,
+  //   title: "Dental Chart",
+  //   icon: RiStethoscopeLine,
+  // },
+  // {
+  //   id: 7,
+  //   title: "Patient Information",
+  //   icon: RiUserLine,
+  // },
+  // {
+  //   id: 8,
+  //   title: "Health Information",
+  //   icon: RiHeartLine,
+  // },
 ];
 
 export const doctorTab = [
-  {
-    id: 1,
-    title: "Personal Information",
-    icon: RiUserLine,
-  },
-  {
-    id: 2,
-    title: "Customers",
-    icon: BiUserPlus,
-  },
+  // {
+  //   id: 1,
+  //   title: "Personal Information",
+  //   icon: RiUserLine,
+  // },
+  // {
+  //   id: 2,
+  //   title: "Customers",
+  //   icon: BiUserPlus,
+  // },
   {
     id: 3,
     title: "Appointments",
@@ -1103,11 +1103,11 @@ export const doctorTab = [
     title: "Invoices",
     icon: RiFileList3Line,
   },
-  {
-    id: 6,
-    title: "Access Control",
-    icon: TbLockAccess,
-  },
+  // {
+  //   id: 6,
+  //   title: "Access Control",
+  //   icon: TbLockAccess,
+  // },
   {
     id: 7,
     title: "Change Password",

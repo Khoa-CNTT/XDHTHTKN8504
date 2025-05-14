@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Checkbox } from './Form';
+import React, { useEffect, useState } from "react";
+import { Checkbox } from "./Form";
 
 function Access({ setAccess }) {
-  const thclass = 'text-start text-xs font-medium py-3 px-2 whitespace-nowrap';
-  const tdclass = 'text-start text-sm py-4 px-2 whitespace-nowrap';
+  const thclass = "text-start text-xs font-medium py-3 px-2 whitespace-nowrap";
+  const tdclass = "text-start text-sm py-4 px-2 whitespace-nowrap";
   const [parientAccess, setParientAccess] = useState({
     read: false,
     create: false,
@@ -54,25 +54,25 @@ function Access({ setAccess }) {
   const datas = [
     {
       id: 1,
-      name: 'Parient',
+      name: "Parient",
       access: parientAccess,
       onChange: onChangePatient,
     },
     {
       id: 2,
-      name: 'Appointment',
+      name: "Appointment",
       access: appointmentAccess,
       onChange: onChangeAppointment,
     },
     {
       id: 3,
-      name: 'Invoices',
+      name: "Invoices",
       access: invoicesAccess,
       onChange: onChangeInvoices,
     },
     {
       id: 4,
-      name: 'Payments',
+      name: "Payments",
       access: paymentsAccess,
       onChange: onChangePayments,
     },

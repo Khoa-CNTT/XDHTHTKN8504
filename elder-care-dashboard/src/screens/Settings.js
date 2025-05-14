@@ -8,11 +8,11 @@ import { getUserIdFromToken } from "../utils/jwtHelper";
 function Settings() {
   const [activeTab, setActiveTab] = React.useState(1);
   const tabs = [
-    {
-      id: 1,
-      name: "Thông tin người dùng",
-      icon: BiUserPlus,
-    },
+    // {
+    //   id: 1,
+    //   name: "Thông tin người dùng",
+    //   icon: BiUserPlus,
+    // },
     {
       id: 2,
       name: "Thay đổi mật khẩu",
@@ -22,8 +22,8 @@ function Settings() {
 
   const tabPanel = () => {
     switch (activeTab) {
-      case 1:
-        return <PersonalInfo titles={true} />;
+      // case 1:
+      //   return <PersonalInfo titles={true} />;
       case 2:
         return <ChangePassword />;
       default:

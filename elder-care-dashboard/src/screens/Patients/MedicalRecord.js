@@ -32,7 +32,7 @@ function MedicalRecord() {
           <h1 className="text-sm font-medium sm:block hidden">
             Medical Record
           </h1>
-          <div className="sm:w-1/4 w-full">
+          {/* <div className="sm:w-1/4 w-full">
             <Button
               label="New Record"
               Icon={BiPlus}
@@ -40,7 +40,7 @@ function MedicalRecord() {
                 navigate(`/customers/visiting/2`);
               }}
             />
-          </div>
+          </div> */}
         </div>
         {medicalRecodData.map((data) => (
           <div
@@ -72,7 +72,7 @@ function MedicalRecord() {
             </div>
             {/* actions */}
             <div className="col-span-12 md:col-span-2 flex-rows gap-2">
-              <button
+              {/* <button
                 onClick={() => {
                   setIsOpen(true);
                   setDatas(data);
@@ -80,7 +80,7 @@ function MedicalRecord() {
                 className="text-sm flex-colo bg-white text-subMain border border-border rounded-md w-2/4 md:w-10 h-10"
               >
                 <FiEye />
-              </button>
+              </button> */}
               <button
                 onClick={() => {
                   toast.error("This feature is not available yet");
