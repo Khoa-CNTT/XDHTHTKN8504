@@ -22,6 +22,7 @@
     "http": "^0.0.1-security",
     "install": "^0.13.0",
     "jsonwebtoken": "^9.0.2",
+    "mkdir": "^0.0.2",
     "moment": "^2.30.1",
     "moment-timezone": "^0.5.48",
     "mongoose": "^8.13.0",
@@ -34,7 +35,8 @@
     "socket.io": "^4.8.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "twilio": "^5.5.2"
+    "twilio": "^5.5.2",
+    "url": "^0.11.4"
   },
   "type": "module"
 }
