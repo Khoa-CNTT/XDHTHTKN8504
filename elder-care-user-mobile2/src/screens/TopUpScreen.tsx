@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import React, {useEffect} from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Linking} from 'react-native';
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import {callMomoTopup} from "../api/WalletService"
 
 type RootStackParamList = {
     Home: undefined;
@@ -27,7 +28,7 @@ const paymentMethodDisplay: Record<string, string> = {
 const TopUpScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
     const route = useRoute<TopUpScreenRouteProp>();
-    const [amount, setAmount] = React.useState('');
+    const [amount, setAmount] = React.useState("");
     const [selectedMethod, setSelectedMethod] = React.useState<string | undefined>(undefined);
     const [step, setStep] = React.useState(1);
 
@@ -37,7 +38,7 @@ const TopUpScreen: React.FC = () => {
     };
 
     // Handle navigation param to jump to step 3
-    React.useEffect(() => {
+    useEffect(() => {
         if (route.params?.goToStep === 3) {
             setStep(3);
         }
@@ -45,6 +46,43 @@ const TopUpScreen: React.FC = () => {
             setAmount(route.params.amount);
         }
     }, [route.params]);
+
+    useEffect(() => {
+      const triggerMomoPayment = async () => {
+        try {
+          const response = await callMomoTopup(amount);
+
+          if (response?.response?.deeplink) {
+            Alert.alert(
+              "Xác nhận thanh toán",
+              "Bạn có muốn mở ứng dụng MoMo để hoàn tất thanh toán?",
+              [
+                {
+                  text: "Hủy",
+                  style: "cancel",
+                },
+                {
+                  text: "Đồng ý",
+                  onPress: () => Linking.openURL(response.response.deeplink),
+                },
+              ],
+              { cancelable: true }
+            );
+          } else {
+            Alert.alert("Không lấy được liên kết MoMo", "Vui lòng thử lại sau");
+          }
+        } catch (err) {
+          Alert.alert(
+            "Lỗi khi tạo giao dịch",
+            "Vui lòng kiểm tra kết nối hoặc thử lại sau"
+          );
+        }
+      };
+
+      if (step === 3 && selectedMethod === "momo") {
+        triggerMomoPayment();
+      }
+    }, [step, selectedMethod]);
 
     return (
         <ScrollView style={styles.container}>
@@ -152,6 +190,7 @@ const TopUpScreen: React.FC = () => {
                     <TouchableOpacity
                         style={styles.button}
                         onPress={() => {
+                           
                             navigation.navigate('TransferGuideScreen', { amount, selectedMethod }); setStep(3); 
                         }}
                     >
@@ -161,8 +200,9 @@ const TopUpScreen: React.FC = () => {
             )}
 
             {step === 3 && (
+               
                 <View>
-                    {/* Amount */}
+                    
                     <Text style={{ fontSize: 32, color: '#2CB742', fontWeight: 'bold', textAlign: 'center', marginTop: 12 }}>
                         + {Number(amount).toLocaleString()}VND
                     </Text>

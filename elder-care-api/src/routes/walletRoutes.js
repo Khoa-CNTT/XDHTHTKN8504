@@ -16,5 +16,8 @@ router.post(
     '/callback',
     walletController.walletCallback
 );
+router.get("/", auth, walletController.getWallet);
+router.get("/transactions", auth, walletController.getTransactions);
+router.post("/pay", auth, walletController.makePayment);
 
 export default router
