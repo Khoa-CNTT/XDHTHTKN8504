@@ -25,6 +25,7 @@ import ServiceDetails from '../screens/ServiceDetails';
 import { NavigationContainer } from '@react-navigation/native';
 import ProfileListScreen from '../screens/ProfileListScreen';
 import EditCareRecipientScreen from '../screens/EditCareRecipientScreen';
+import BookAService from '../screens/book-a-service';
 
 import WorkScreen from '../screens/work-screen';
 import ServiceScreen from '../screens/ServiceScreen'; 
@@ -36,6 +37,7 @@ import PaymentInfoScreen from '../screens/PaymentInfoScreen';
 import TopUpScreen from '../screens/TopUpScreen';
 import PaymentMethodScreen from '../screens/PaymentMethodScreen';
 import TransferGuideScreen from '../screens/TransferGuideScreen';
+import HomeServiceScreen from '../screens/Service';
 import AddProfileScreen from '../screens/DanhSachProfile/AddProfileScreen';
 
 
@@ -74,6 +76,9 @@ export type RootStackParamList = {
   TopUpScreen: undefined;
   PaymentMethodScreen: undefined;
   TransferGuideScreen: undefined;
+  BookAService: undefined;
+  ServiceScreenTest: undefined;
+
   AddProfileScreen: undefined;
 
 };
@@ -106,6 +111,7 @@ const StackNavigator = (): JSX.Element => {
       <Stack.Screen name="Chat" component={ChatScreen} />
       <Stack.Screen name="FeaturedService" component={FeaturedServiceScreen} />
       <Stack.Screen name="Booking" component={BookingScreen} />
+      <Stack.Screen name="BookAService" component={BookAService}/>
       <Stack.Screen
         name="AddCareRecipient"
         component={AddCareRecipientScreen}
@@ -124,9 +130,10 @@ const StackNavigator = (): JSX.Element => {
       <Stack.Screen name="TopUpScreen" component={TopUpScreen} />
       <Stack.Screen name="PaymentMethodScreen" component={PaymentMethodScreen} />
       <Stack.Screen name="TransferGuideScreen" component={TransferGuideScreen} />
+
+
       <Stack.Screen name="AddProfileScreen" component={AddProfileScreen} />
-      
-      
+  
 
       <Stack.Screen name="BookingSuccess" component={BookingSuccessScreen} />
 
