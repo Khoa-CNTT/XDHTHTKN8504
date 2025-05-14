@@ -12,6 +12,7 @@ import {
 import { toast } from "react-hot-toast";
 import { BsCalendarMonth } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx"; // THÊM: import thư viện xuất Excel
 
 function Payments() {
   const [status, setStatus] = useState(sortsDatas.status[0]);
@@ -34,7 +35,7 @@ function Payments() {
       datas: sortsDatas.method,
     },
   ];
-  // boxes
+
   const boxes = [
     {
       id: 1,
@@ -62,25 +63,67 @@ function Payments() {
   const editPayment = (id) => {
     navigate(`/payments/edit/${id}`);
   };
-  // preview
+
   const previewPayment = (id) => {
     navigate(`/payments/preview/${id}`);
   };
 
+  // 🔹 Chuyển chuỗi sang ArrayBuffer
+  const s2ab = (s) => {
+    const buf = new ArrayBuffer(s.length);
+    const view = new Uint8Array(buf);
+    for (let i = 0; i < s.length; i++) {
+      view[i] = s.charCodeAt(i) & 0xff;
+    }
+    return buf;
+  };
+
+  // 🔹 Hàm xuất Excel
+  const handleExport = () => {
+    if (!transactionData || transactionData.length === 0) {
+      toast.error("Không có dữ liệu để xuất");
+      return;
+    }
+
+    const ws = XLSX.utils.json_to_sheet(
+      transactionData.map((item, index) => ({
+        "#": index + 1,
+        "Mã giao dịch": item.id || "",
+        "Khách hàng": item.customer || "",
+        "Phương thức": item.method || "",
+        "Số tiền": item.amount || "",
+        "Trạng thái": item.status || "",
+        "Ngày thanh toán": item.date || "",
+      }))
+    );
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Payments");
+
+    const excelFile = XLSX.write(wb, { bookType: "xlsx", type: "binary" });
+    const file = new Blob([s2ab(excelFile)], {
+      type: "application/octet-stream",
+    });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(file);
+    link.download = "payments.xlsx";
+    link.click();
+  };
+
   return (
     <Layout>
-      {/* add button */}
+      {/* Export Excel */}
       <button
-        onClick={() => {
-          toast.error("Exporting is not available yet");
-        }}
+        onClick={handleExport}
         className="w-16 hover:w-44 group transitions hover:h-14 h-16 border border-border z-50 bg-subMain text-white rounded-full flex-rows gap-4 fixed bottom-8 right-12 button-fb"
       >
         <p className="hidden text-sm group-hover:block">Export</p>
         <MdOutlineCloudDownload className="text-2xl" />
       </button>
+
       <h1 className="text-xl font-semibold">Thanh toán</h1>
-      {/* boxes */}
+
+      {/* Boxes */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
         {boxes.map((box) => (
           <div
@@ -108,7 +151,8 @@ function Payments() {
           </div>
         ))}
       </div>
-      {/* datas */}
+
+      {/* Filters + Table */}
       <div
         data-aos="fade-up"
         data-aos-duration="1000"
@@ -122,44 +166,21 @@ function Payments() {
             placeholder='Search "Customers"'
             className="h-14 text-sm text-main rounded-md bg-dry border border-border px-4"
           />
-          {/* sort  */}
           {sorts.map((item) => (
             <Select
               key={item.id}
               selectedPerson={item.selected}
               setSelectedPerson={item.setSelected}
               datas={item.datas}
-            >
-              <div className="h-14 w-full text-xs text-main rounded-md bg-dry border border-border px-4 flex items-center justify-between">
-                <p>{item.selected.name}</p>
-                <BiChevronDown className="text-xl" />
-              </div>
-            </Select>
+            />
           ))}
-          {/* date */}
-          <FromToDate
-            startDate={startDate}
-            endDate={endDate}
-            bg="bg-dry"
-            onChange={(update) => setDateRange(update)}
-          />
-          {/* export */}
-          <Button
-            label="Filter"
-            Icon={MdFilterList}
-            onClick={() => {
-              toast.error("Filter data is not available yet");
-            }}
-          />
         </div>
+
+        {/* Table */}
         <div className="mt-8 w-full overflow-x-scroll">
           <Transactiontable
             data={transactionData}
-            action={true}
-            functions={{
-              edit: editPayment,
-              preview: previewPayment,
-            }}
+            functions={{ preview: previewPayment, edit: editPayment }}
           />
         </div>
       </div>
