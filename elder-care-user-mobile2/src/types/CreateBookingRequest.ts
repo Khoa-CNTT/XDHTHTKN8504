@@ -5,11 +5,12 @@ export interface CreateBookingRequest {
   status?: string;
   notes?: string;
   paymentId?: string | null;
-  participants: any[]; // hoặc: number nếu backend chấp nhận
-  repeatFrom: string; // "YYYY-MM-DD"
-  repeatTo: string; // "YYYY-MM-DD"
+  participants: any[]; 
+  repeatInterval?: number;
+  repeatFrom: string;
+  repeatTo: string; 
   timeSlot: {
-    start: string; // "HH:mm"
+    start: string;
     end: string;
   };
 }

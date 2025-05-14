@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useServicesStore } from "../stores/serviceStore";
-import { ro } from "date-fns/locale";
+
 
 type ServiceModalProps = {
   visible: boolean;
