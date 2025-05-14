@@ -1,6 +1,7 @@
 import API from "../utils/api";
 import useAuthStore from "../stores/authStore";
 import { Schedule } from "../types/schedule";
+import { log } from "../utils/logger";
 
 export type ScheduleUser = Schedule & {
   staffFullName: string;
@@ -30,7 +31,7 @@ const getSchedules = async (): Promise<ScheduleUser[]> => {
     // Trả về mảng ScheduleUser[] từ response.data
     return response.data || []; // Nếu response.data có mảng, trả về nó, nếu không thì trả về mảng rỗng
   } catch (error) {
-    console.error("Error fetching schedules:", error);
+    log("Error fetching schedules:", error);
     return [];
   }
 };

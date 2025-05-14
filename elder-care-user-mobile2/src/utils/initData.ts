@@ -4,12 +4,14 @@ import { useServicesStore } from "../stores/serviceStore";
 import { useBookingStore } from "../stores/BookingStore";
 import { useWalletStore } from "../stores/WalletStore";
 import {log} from "../utils/logger"
+import { usePackageStore } from "../stores/PackageService";
 const initData = async () => {
  
 
   try {
     await Promise.all([
       useServicesStore.getState().fetchServices(),
+      usePackageStore.getState().fetchPackages(),
       useProfileStore.getState().fetchProfiles(),
       useScheduleStore.getState().fetchSchedules(),
       useBookingStore.getState().fetchBookings(),

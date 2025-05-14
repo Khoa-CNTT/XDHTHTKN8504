@@ -73,6 +73,18 @@ const packageController = {
             return res.status(500).json({ success: false, message: "Server error" });
         }
     },
+    deleteAllPackages: async (req, res) => {
+        try {
+          const result = await Packages.deleteMany({});
+          res.status(200).json({
+            message: "All packages have been deleted",
+            deletedCount: result.deletedCount, // Trả về số lượng package đã bị xóa
+          });
+        } catch (error) {
+          console.error("Error deleting packages:", error);
+          res.status(500).json({ message: "Failed to delete packages", error });
+        }
+    }
 }
 
 export default packageController;
