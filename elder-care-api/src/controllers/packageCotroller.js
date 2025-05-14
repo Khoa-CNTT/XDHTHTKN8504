@@ -46,7 +46,9 @@ const packageController = {
     // Get all packages
     getAllPackages: async (req, res) => {
         try {
-            const packages = await Packages.find().select("-__v");
+            const { serviceId } = req.params;
+
+            const packages = await Packages.find({ serviceId })
 
             return res.status(200).json({
                 success: true,
