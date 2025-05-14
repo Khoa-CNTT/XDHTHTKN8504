@@ -72,15 +72,17 @@ const Profile: React.FC = () => {
     if (id === 'logout') {
       setShowLogoutModal(true);
     } else if (id === 'favorite') {
-      navigation.navigate('Favorites');
+      navigation.navigate('ServiceScreenTest');
     } else if (id === 'notifications') {
       navigation.navigate('Notifications');
     } else if (id === 'profile') {
       navigation.navigate('ProfileList');
     }else if (id === 'help') {
-      navigation.navigate('ReviewScreen');
+      navigation.navigate('BookAService');
     }else if (id === 'payment') {
       navigation.navigate('PaymentInfoScreen');
+    }else if (id === 'terms'){
+      navigation.navigate("ServiceScreenTest");
     }
   };
 
