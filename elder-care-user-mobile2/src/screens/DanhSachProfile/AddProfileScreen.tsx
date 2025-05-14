@@ -55,12 +55,14 @@ const AddProfileScreen: React.FC = () => {
     const [bloodGroup, setBloodGroup] = useState('');
     const [weight, setWeight] = useState('');
     const [height, setHeight] = useState('');
-    const [medicalHistory, setMedicalHistory] = useState('');
     const [careNote, setCareNote] = useState('');
 
     const [bloodGroupError, setBloodGroupError] = useState('');
     const [weightError, setWeightError] = useState('');
     const [heightError, setHeightError] = useState('');
+
+    // Medical histories: array of { name, desc }
+    const [medicalHistories, setMedicalHistories] = useState([{ name: '', desc: '' }]);
 
     // Date picker
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -116,6 +118,18 @@ const AddProfileScreen: React.FC = () => {
 
         if (!bloodGroup || !weight || !height) {
             valid = false;
+        }
+
+        // Validate medical histories: nếu có bệnh án thì phải nhập tên bệnh án
+        for (let i = 0; i < medicalHistories.length; i++) {
+            if (medicalHistories[i].name && !medicalHistories[i].desc) {
+                Alert.alert('Thông báo', `Vui lòng nhập mô tả cho bệnh án thứ ${i + 1}`);
+                return false;
+            }
+            if (!medicalHistories[i].name && medicalHistories[i].desc) {
+                Alert.alert('Thông báo', `Vui lòng nhập tên bệnh án cho bệnh án thứ ${i + 1}`);
+                return false;
+            }
         }
 
         return valid;
@@ -271,14 +285,48 @@ const AddProfileScreen: React.FC = () => {
                     />
                     {heightError ? <Text style={styles.errorText}>{heightError}</Text> : null}
 
-                    <Text style={styles.label}>Tiểu sử bệnh án</Text>
-                    <TextInput
-                        style={styles.textArea}
-                        placeholder="Nhập tiểu sử bệnh án (nếu có)"
-                        value={medicalHistory}
-                        onChangeText={setMedicalHistory}
-                        multiline
-                    />
+                    {/* Tiểu sử bệnh án + Thêm bệnh án */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, marginBottom: 8 }}>
+                        <Text style={[styles.label, { marginTop: 0, marginBottom: 0 }]}>Tiểu sử bệnh án</Text>
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: '#37B44E',
+                                borderRadius: 8,
+                                paddingVertical: 6,
+                                paddingHorizontal: 12,
+                                alignItems: 'center',
+                                marginLeft: 8,
+                            }}
+                            onPress={() => setMedicalHistories([...medicalHistories, { name: '', desc: '' }])}
+                        >
+                            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15 }}>+ Thêm bệnh án</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {medicalHistories.map((item, idx) => (
+                        <View key={idx} style={{ marginBottom: 12 }}>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Tên bệnh án"
+                                value={item.name}
+                                onChangeText={text => {
+                                    const arr = [...medicalHistories];
+                                    arr[idx].name = text;
+                                    setMedicalHistories(arr);
+                                }}
+                            />
+                            <TextInput
+                                style={styles.textArea}
+                                placeholder="Mô tả bệnh án"
+                                value={item.desc}
+                                onChangeText={text => {
+                                    const arr = [...medicalHistories];
+                                    arr[idx].desc = text;
+                                    setMedicalHistories(arr);
+                                }}
+                                multiline
+                            />
+                        </View>
+                    ))}
 
                     <Text style={styles.label}>Lưu ý chăm sóc</Text>
                     <TextInput
@@ -463,7 +511,7 @@ const styles = StyleSheet.create({
         color: '#1e293b',
         backgroundColor: '#fff',
         marginBottom: 12,
-        textAlignVertical: 'top', // Android
+        textAlignVertical: 'top',
         minHeight: 100,
     },
 });
