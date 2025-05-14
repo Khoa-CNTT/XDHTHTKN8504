@@ -11,6 +11,8 @@ import { fetchServices } from "../store/serviceSlice";
 import { getUserIdFromToken } from "../utils/jwtHelper.js";
 import { io } from "socket.io-client";
 import * as XLSX from "xlsx"; // Import xlsx library
+import axios from "axios";
+import { toast } from "react-toastify"; // Đảm bảo bạn đã cài react-toastify
 
 const socket = io("http://localhost:5000");
 
@@ -92,6 +94,26 @@ function Services() {
     return buf;
   };
 
+  const handleDeleteService = async (id) => {
+    if (!window.confirm("Bạn có chắc muốn xoá dịch vụ này không?")) return;
+
+    try {
+      const response = await axios.delete(
+        `http://localhost:5000/api/v1/services/delete-service/${id}`
+      );
+
+      if (response.status === 200) {
+        toast.success("Xoá dịch vụ thành công");
+        dispatch(fetchServices()); // Cập nhật lại danh sách
+      } else {
+        toast.error("Xoá thất bại. Vui lòng thử lại");
+      }
+    } catch (error) {
+      console.error("❌ Xoá thất bại:", error);
+      toast.error("Đã xảy ra lỗi khi xoá");
+    }
+  };
+
   return (
     <Layout>
       {isOpen && (
@@ -145,7 +167,11 @@ function Services() {
           />
         </div>
         <div className="mt-8 w-full overflow-x-scroll">
-          <ServiceTable data={services} onEdit={onEdit} />
+          <ServiceTable
+            data={services}
+            onEdit={onEdit}
+            onDelete={handleDeleteService}
+          />
         </div>
       </div>
     </Layout>
