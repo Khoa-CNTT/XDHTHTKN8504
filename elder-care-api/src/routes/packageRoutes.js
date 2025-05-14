@@ -6,6 +6,8 @@ const router = express.Router();
 // Create a new package
 router.post('/create', packageController.createPackage);
 
-router.get('/get-package/:serviceId', packageController.getAllPackages)
+router.get('/get-package/:serviceId', packageController.getPackagesForService)
+
+router.get('/get-all-package', packageController.getAllPackages)
 
 export default router;
