@@ -262,23 +262,7 @@ export function MedicineTable({ data, onEdit }) {
 }
 
 // ServiceTable
-export function ServiceTable({ data, onEdit }) {
-  const DropDown1 = [
-    {
-      title: "Chỉnh sửa",
-      icon: FiEdit,
-      onClick: (item) => {
-        onEdit(item);
-      },
-    },
-    {
-      title: "Xóa",
-      icon: RiDeleteBin6Line,
-      onClick: () => {
-        toast.error("Tính năng này chưa được hỗ trợ");
-      },
-    },
-  ];
+export function ServiceTable({ data, onEdit, onDelete }) {
   return (
     <table className="table-auto w-full">
       <thead className="bg-dry rounded-md overflow-hidden">
@@ -293,18 +277,16 @@ export function ServiceTable({ data, onEdit }) {
         </tr>
       </thead>
       <tbody>
-        {data.map((item, index) => {
+        {data.map((item) => {
           const serviceName = item?.name || "Không rõ";
-          const serviceDate = new Date(item?.createdAt).toLocaleDateString(
-            "vi-VN"
-          );
+          const serviceDate = item?.createdAt
+            ? new Date(item.createdAt).toLocaleDateString("vi-VN")
+            : "Không rõ";
           const servicePrice = item?.price || "Không rõ";
-          let serviceStatus;
-          if (item?.isActive === true) {
-            serviceStatus = "Bật";
-          } else if (item?.isActive === false) {
-            serviceStatus = "Tắt";
-          }
+          const isActive = item?.isActive;
+          const serviceStatus = isActive === true ? "Bật" : "Tắt";
+          const statusColor =
+            isActive === true ? "text-green-600" : "text-red-600";
           const imageUrl = item?.imgUrl || "https://via.placeholder.com/150";
 
           return (
@@ -327,20 +309,25 @@ export function ServiceTable({ data, onEdit }) {
               <td className={tdclass}>{serviceDate}</td>
               <td className={`${tdclass} font-semibold`}>{servicePrice}</td>
               <td className={tdclass}>
-                <span
-                  className={`text-xs font-medium ${
-                    !serviceStatus ? "text-red-600" : "text-green-600"
-                  }`}
-                >
+                <span className={`text-xs font-medium ${statusColor}`}>
                   {serviceStatus}
                 </span>
               </td>
               <td className={tdclass}>
-                <MenuSelect datas={DropDown1} item={item}>
-                  <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
-                    <BiDotsHorizontalRounded />
-                  </div>
-                </MenuSelect>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onEdit(item)}
+                    className="text-blue-500 underline text-sm"
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    onClick={() => onDelete(item._id)}
+                    className="text-red-500 underline text-sm"
+                  >
+                    Xoá
+                  </button>
+                </div>
               </td>
             </tr>
           );
