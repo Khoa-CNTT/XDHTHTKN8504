@@ -60,7 +60,8 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
               selectedProfile?.firstName ? styles.inputText : styles.placeholder
             }
           >
-            {selectedProfile?.firstName || "Chọn hồ sơ chăm sóc"}
+            {`${selectedProfile?.firstName} ${selectedProfile?.lastName}` ||
+              "Chọn hồ sơ chăm sóc"}
           </Text>
           <Feather name="chevron-down" size={20} color="#888" />
         </View>
@@ -71,12 +72,12 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
       <View style={styles.inputBox}>
         <Text
           style={
-            selectedProfile?.emergencyContact?.phone
+            selectedProfile?.phone
               ? styles.inputText
               : styles.placeholder
           }
         >
-          {selectedProfile?.emergencyContact?.phone || "Chưa có số điện thoại"}
+          {selectedProfile?.phone || "Chưa có số điện thoại"}
         </Text>
         <Feather name="phone" size={18} color="#888" />
       </View>
@@ -104,7 +105,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
               : styles.placeholder
           }
         >
-          {selectedProfile?.relationship || "Chưa có ghi chú"}
+          {selectedProfile?.avartar || "Chưa có ghi chú"}
         </Text>
         <Feather name="info" size={18} color="#888" />
       </View>
