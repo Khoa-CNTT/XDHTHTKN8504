@@ -19,7 +19,6 @@ const bookingSchema = new Schema(
     notes: String,
     paymentId: { type: Schema.Types.ObjectId, ref: "Payment" },
     scheduleId: { type: Schema.Types.ObjectId, ref: "Schedule" },
-
     participants: [
       {
         userId: { type: Schema.Types.ObjectId, ref: "User", required: true },

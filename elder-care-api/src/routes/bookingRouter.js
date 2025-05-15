@@ -134,4 +134,13 @@ router.get(
     authorizeRoles("admin"),
     bookingController.getCompletedPatients
 )
+
+// delete booking by Admin
+router.delete(
+    '/delete-booking/:bookingId',
+    auth,
+    authorizeRoles('admin'),
+    bookingController.deleteBookingById
+)
+
 export default router
