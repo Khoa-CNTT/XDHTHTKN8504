@@ -12,6 +12,32 @@ type RootStackParamList = {
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
+// Component Quy trình làm việc
+const QuyTrinhLamViec: React.FC<{ role: string }> = ({ role }) => {
+    if (role === "doctor") {
+        return (
+            <View>
+                <Text style={styles.processStep}>Khách hàng đặt lịch qua app Eldercare.</Text>
+                <Text style={styles.processStep}>- Bác sĩ của Eldercare tiếp nhận lịch, liên hệ với bệnh nhân để hỏi thêm tình trạng và xác nhận lịch hẹn</Text>
+                <Text style={styles.processStep}>- Bác sĩ mang các thiết bị máy móc cần thiết đến nhà bệnh nhân</Text>
+                <Text style={styles.processStep}>- Bác sĩ thực hiện các hoạt động khám lâm sàng, siêu âm, điện tâm đồ, lấy mẫu xét nghiệm nếu cần</Text>
+                <Text style={styles.processStep}>- Trả kết quả khám và đưa ra tham vấn y khoa ngay sau buổi khám.</Text>
+            </View>
+        );
+    }
+    if (role === "nurse") {
+        return (
+            <View>
+                <Text style={styles.processStep}>Bước 1: Đọc hồ sơ bệnh án (nếu có), đơn thuốc</Text>
+                <Text style={styles.processStep}>Bước 2: Hỏi bệnh nhân, người nhà về tình trạng sức khỏe, khám sức khỏe, đo nhịp tim, phổi, huyết áp, kiểm tra vết thương</Text>
+                <Text style={styles.processStep}>Bước 3: Lập phương án chăm sóc, Thực hiện các hoạt động chăm sóc</Text>
+                <Text style={styles.processStep}>Bước 4: Khám sơ bộ, đo huyết áp, nhịp tim, phổi, kiểm tra vết thương trước</Text>
+            </View>
+        );
+    }
+    return <Text style={styles.processStep}>Chưa có quy trình làm việc.</Text>;
+};
+
 const ServiceScreen: React.FC = () => {
     const route = useRoute();
     const { serviceId } = route.params as { serviceId: string };
@@ -24,19 +50,13 @@ const ServiceScreen: React.FC = () => {
     const service = {
         name: serviceFromStore?.name || "Tên dịch vụ",
         description: serviceFromStore?.description || "Mô tả dịch vụ",
-        avatar: require("../asset/img/hinh3.jpeg"), // Thay thế bằng đường dẫn ảnh thật
-        patients: "2,000+",
-        experience: "10+",
+        avatar: require("../asset/img/hinh3.jpeg"),
+        patients: "2.000.000",
+        experience: "23",
         rating: 5,
         reviews: "1,872",
         workingTime: "Cả ngày",
-        review: {
-            user: "Nguyễn",
-            avatar: require("../asset/img/Onboarding3.png"), // Thay thế bằng đường dẫn ảnh thật
-            rating: 5,
-            comment:
-                "Nguyên chuyên gia thực thụ, người thực sự quan tâm đến bệnh nhân của mình. Tôi rất khuyến cho bất kỳ ai tìm kiếm sự chăm sóc đặc biệt.",
-        },
+        role: serviceFromStore?.role || "doctor", // Lấy role từ store, mặc định doctor
     };
 
     return (
@@ -55,7 +75,6 @@ const ServiceScreen: React.FC = () => {
                     <Image source={service.avatar} style={styles.doctorAvatar} />
                     <View style={styles.doctorInfo}>
                         <Text style={styles.doctorName}>{service.name}</Text>
-                        {/* Bạn có thể thêm thông tin bác sĩ khác ở đây */}
                     </View>
                 </View>
 
@@ -66,28 +85,28 @@ const ServiceScreen: React.FC = () => {
                             <Users color="#fff" size={18} />
                         </View>
                         <Text style={styles.statNumber}>{service.patients}</Text>
-                        <Text style={styles.statLabel}>bệnh nhân</Text>
+                        <Text style={styles.statLabel}>Giá tiền theo giờ</Text>
                     </View>
                     <View style={styles.statItem}>
                         <View style={styles.statIcon}>
                             <Briefcase color="#fff" size={18} />
                         </View>
                         <Text style={styles.statNumber}>{service.experience}</Text>
-                        <Text style={styles.statLabel}>kinh nghiệm</Text>
+                        <Text style={styles.statLabel}>Điều dưỡng</Text>
                     </View>
-                    <View style={styles.statItem}>
+                    {/* <View style={styles.statItem}>
                         <View style={styles.statIcon}>
                             <Star color="#fff" size={18} />
                         </View>
                         <Text style={styles.statNumber}>{service.rating}</Text>
                         <Text style={styles.statLabel}>đánh giá</Text>
-                    </View>
+                    </View> */}
                     <View style={styles.statItem}>
                         <View style={styles.statIcon}>
                             <MessageCircle color="#fff" size={18} />
                         </View>
                         <Text style={styles.statNumber}>{service.reviews}</Text>
-                        <Text style={styles.statLabel}>lượt xem</Text>
+                        <Text style={styles.statLabel}>Lượt Đặt</Text>
                     </View>
                 </View>
 
@@ -103,32 +122,19 @@ const ServiceScreen: React.FC = () => {
                     <Text style={styles.sectionContent}>{service.workingTime}</Text>
                 </View>
 
-                {/* Reviews */}
+                {/* Quy trình làm việc */}
                 <View style={styles.section}>
                     <View style={styles.reviewHeader}>
-                        <Text style={styles.sectionTitle}>Đánh giá</Text>
-                        <TouchableOpacity>
-                            <Text style={styles.viewAllReviews}>Xem tất cả</Text>
-                        </TouchableOpacity>
+                        <Text style={styles.sectionTitle}>Quy trình làm việc</Text>
                     </View>
-                    <View style={styles.reviewItem}>
-                        <Image source={service.review.avatar} style={styles.reviewAvatar} />
-                        <View style={styles.reviewInfo}>
-                            <Text style={styles.reviewName}>{service.review.user}</Text>
-                            <View style={styles.reviewRating}>
-                                <Star color="#FFC107" size={16} />
-                                <Text style={styles.reviewRatingText}>{service.review.rating}.0</Text>
-                            </View>
-                            <Text style={styles.reviewComment}>{service.review.comment}</Text>
-                        </View>
-                    </View>
+                    <QuyTrinhLamViec role={service.role} />
                 </View>
             </ScrollView>
 
             {/* Appointment Button */}
             <TouchableOpacity
                 style={styles.appointmentButton}
-                onPress={() => navigation.navigate("Booking")} // Điều hướng đến màn hình "ĐặtLịch"
+                onPress={() => navigation.navigate("Booking")}
             >
                 <Text style={styles.appointmentButtonText}>Đặt lịch hẹn</Text>
             </TouchableOpacity>
@@ -144,17 +150,17 @@ const styles = StyleSheet.create({
     headerContainer: {
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "center", // ✅ Căn giữa theo chiều ngang
+        justifyContent: "center",
         paddingHorizontal: 16,
-        paddingTop: 45, // ✅ Đẩy phần top xuống
+        paddingTop: 45,
         paddingBottom: 12,
         borderBottomWidth: 1,
         borderBottomColor: "#f2f2f2",
         position: "relative",
     },
     headerTitle: {
-        flex: 1, // Cho phép chiếm không gian
-        textAlign: "center", // Căn giữa tiêu đề
+        flex: 1,
+        textAlign: "center",
         fontSize: 20,
         fontWeight: "bold",
         color: "#000",
@@ -165,27 +171,27 @@ const styles = StyleSheet.create({
     },
     doctorCard: {
         backgroundColor: "#f9f9f9",
-        borderRadius: 4, // Góc bo tròn nhẹ
+        borderRadius: 4,
         overflow: "hidden",
         marginTop: 16,
     },
     doctorAvatar: {
         width: "100%",
-        height: 180, // Chiều cao ảnh nổi bật hơn
+        height: 180,
         resizeMode: "cover",
     },
     doctorInfo: {
-        position: "absolute", // Định vị tuyệt đối so với doctorCard
-        bottom: 16, // Cách đáy 16px
-        left: 16, // Cách trái 16px
-        paddingHorizontal: 8, // Padding ngang
-        paddingVertical: 4,   // Padding dọc
+        position: "absolute",
+        bottom: 16,
+        left: 16,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
     },
     doctorName: {
-        fontSize: 16, // Kích thước chữ nhỏ hơn
+        fontSize: 16,
         fontWeight: "bold",
-        color: "#fff", // Chữ trắng để tương phản với ảnh
-        textShadowColor: "rgba(0, 0, 0, 0.5)", // Bóng đổ nhẹ cho chữ
+        color: "#fff",
+        textShadowColor: "rgba(0, 0, 0, 0.5)",
         textShadowOffset: { width: 1, height: 1 },
         textShadowRadius: 2,
     },
@@ -237,52 +243,10 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         paddingRight: 8,
     },
-    viewAllReviews: {
-        color: "#37B44E",
-        fontSize: 14,
-        fontWeight: "bold",
-    },
-    reviewItem: {
-        flexDirection: "row",
-        padding: 16,
-        backgroundColor: "#fff",
-        borderRadius: 8,
-        marginBottom: 12,
-        // Bóng đổ cho iOS
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        // Bóng đổ cho Android
-        elevation: 2,
-    },
-    reviewAvatar: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        marginRight: 12,
-    },
-    reviewInfo: {
-        flex: 1,
-    },
-    reviewName: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "#333",
-        marginBottom: 4,
-    },
-    reviewRating: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 4,
-    },
-    reviewRatingText: {
-        marginLeft: 4,
-        color: "#FFC107",
-    },
-    reviewComment: {
+    processStep: {
         fontSize: 14,
         color: "#555",
+        marginBottom: 8,
         lineHeight: 20,
     },
     appointmentButton: {
