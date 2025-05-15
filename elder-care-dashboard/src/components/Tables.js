@@ -1,7 +1,7 @@
 import React from "react";
 import { MenuSelect } from "./Form";
 import { BiDotsHorizontalRounded } from "react-icons/bi";
-import { FiEdit, FiEye } from "react-icons/fi";
+import { FiEdit, FiEye, FiTrash2 } from "react-icons/fi";
 import { RiDeleteBin6Line, RiDeleteBinLine } from "react-icons/ri";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -284,7 +284,7 @@ export function ServiceTable({ data, onEdit, onDelete }) {
             : "Không rõ";
           const servicePrice = item?.price || "Không rõ";
           const isActive = item?.isActive;
-          const serviceStatus = isActive === true ? "Bật" : "Tắt";
+          const serviceStatus = isActive === true ? "Đã duyệt" : "Chưa duyệt";
           const statusColor =
             isActive === true ? "text-green-600" : "text-red-600";
           const imageUrl = item?.imgUrl || "https://via.placeholder.com/150";
@@ -339,32 +339,6 @@ export function ServiceTable({ data, onEdit, onDelete }) {
 
 // patient table
 export function PatientTable({ data, functions, used }) {
-  const DropDown1 = !used
-    ? [
-        {
-          title: "Xem",
-          icon: FiEye,
-          onClick: (data) => {
-            functions.preview(data.id);
-          },
-        },
-        {
-          title: "Xóa",
-          icon: RiDeleteBin6Line,
-          onClick: () => {
-            toast.error("Tính năng này chưa được hỗ trợ");
-          },
-        },
-      ]
-    : [
-        {
-          title: "Xem",
-          icon: FiEye,
-          onClick: (data) => {
-            functions.preview(data.id);
-          },
-        },
-      ];
   const thclasse = "text-start text-sm font-medium py-3 px-2 whitespace-nowrap";
   const tdclasse = "text-start text-xs py-4 px-2 whitespace-nowrap";
 
@@ -382,7 +356,6 @@ export function PatientTable({ data, functions, used }) {
               <th className={thclasse}>Tuổi</th>
             </>
           )}
-
           <th className={thclasse}>Hành Động</th>
         </tr>
       </thead>
@@ -399,7 +372,7 @@ export function PatientTable({ data, functions, used }) {
           const phoneNumber = item.phone || "Không rõ";
           const createdDate =
             new Date(item.createdAt).toLocaleDateString("vi-VN") || "Không rõ";
-          const gender = "Male";
+          const gender = "Male"; // Bạn có thể sửa lại nếu dữ liệu có sẵn gender
           const bloodType = "Không rõ";
           const age = "Không rõ";
           const avatarUrl = item.avatar || "https://via.placeholder.com/150";
@@ -450,12 +423,20 @@ export function PatientTable({ data, functions, used }) {
                 </>
               )}
 
-              <td className={tdclasse}>
-                <MenuSelect datas={DropDown1} item={item}>
-                  <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
-                    <BiDotsHorizontalRounded />
-                  </div>
-                </MenuSelect>
+              <td className={`${tdclasse} flex gap-2`}>
+                <button
+                  onClick={() => functions.preview(item.id)}
+                  className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  <FiEye />
+                  Xem
+                </button>
+                {!used && (
+                  <button className="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm">
+                    <FiTrash2 />
+                    Xóa
+                  </button>
+                )}
               </td>
             </tr>
           );
@@ -467,22 +448,6 @@ export function PatientTable({ data, functions, used }) {
 
 // doctor table
 export function DoctorsTable({ data, functions, doctor }) {
-  const DropDown1 = [
-    {
-      title: "Xem",
-      icon: FiEye,
-      onClick: (data) => {
-        functions.preview(data);
-      },
-    },
-    {
-      title: "Xóa",
-      icon: RiDeleteBin6Line,
-      onClick: () => {
-        toast.error("Tính năng này chưa được hỗ trợ");
-      },
-    },
-  ];
   return (
     <table className="table-auto w-full">
       <thead className="bg-dry rounded-md overflow-hidden">
@@ -503,18 +468,15 @@ export function DoctorsTable({ data, functions, doctor }) {
           const createdDate = new Date(item.createdAt).toLocaleDateString(
             "vi-VN"
           );
+          const phone = item.userId?.phone || "Không rõ";
 
-          const phone = item.userId.phone || "Không rõ";
+          let title = "";
+          if (item.type === "doctor") title = "Bác sĩ";
+          else if (item.type === "nurse") title = "Điều dưỡng";
 
-          let title;
-          if (item.type === "doctor") {
-            title = "Bác sĩ";
-          } else if (item.type === "nurse") {
-            title = "Điều dưỡng";
-          }
           const email = item.email || "Không rõ";
-          let avatarUrl =
-            item.userId.avatar || "https://via.placeholder.com/150";
+          const avatarUrl =
+            item.userId?.avatar || "https://via.placeholder.com/150";
 
           return (
             <tr
@@ -542,18 +504,29 @@ export function DoctorsTable({ data, functions, doctor }) {
               <td className={tdclass}>{email}</td>
               <td className={tdclass}>
                 <Link
-                  to={`/staffs/preview/${data.id}?tab=4`}
+                  to={`/staffs/preview/${item.id}?tab=4`}
                   className="bg-blue-500 text-white px-3 py-1 rounded"
                 >
                   Xem lương
                 </Link>
               </td>
               <td className={tdclass}>
-                <MenuSelect datas={DropDown1} item={item}>
-                  <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
-                    <BiDotsHorizontalRounded />
-                  </div>
-                </MenuSelect>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => functions.preview(item)}
+                    className="text-green-600 hover:text-green-800 flex items-center gap-1"
+                  >
+                    <FiEye /> Xem
+                  </button>
+                  <button
+                    onClick={() =>
+                      toast.error("Tính năng này chưa được hỗ trợ")
+                    }
+                    className="text-red-600 hover:text-red-800 flex items-center gap-1"
+                  >
+                    <RiDeleteBin6Line /> Xóa
+                  </button>
+                </div>
               </td>
             </tr>
           );
