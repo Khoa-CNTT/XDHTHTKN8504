@@ -1,6 +1,7 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, Divider, Button, IconButton } from "react-native-paper";
+import { formatTime } from "../../utils/dateHelper";
 
 interface ConfirmationStepProps {
   formData: any;
@@ -14,18 +15,14 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   goToStep,
 }) => {
   const {
-    firstName,
+    fullName,
     address,
-    relationship,
-    emergencyContact,
-    servicePackage,
-    serviceOption,
-    serviceType,
-    isOneDay,
-    startDate,
-    endDate,
-    startTime,
-    duration,
+    phone,
+    serviceName,
+    price,
+    repeatFrom,
+    repeatTo,
+    timeSlot,
   } = formData;
 
   return (
@@ -37,39 +34,39 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
         Vui lòng kiểm tra lại các thông tin bên dưới trước khi gửi yêu cầu.
       </Text>
 
-      {/* --- Thông tin cá nhân --- */}
-      <SectionHeader title="Thông tin cá nhân" onEdit={() => goToStep(1)} />
-      <InfoRow label="Họ tên" value={firstName} />
-      <InfoRow label="Địa chỉ" value={address} />
-      <InfoRow label="Mối quan hệ" value={relationship} />
-      <InfoRow
-        label="SĐT liên hệ"
-        value={emergencyContact?.phone || "Chưa có"}
-      />
+      <Section title="Thông tin cá nhân" onEdit={() => goToStep(1)}>
+        <InfoRow label="Họ tên" value={fullName} />
+        <InfoRow label="Địa chỉ" value={address} />
+        <InfoRow label="SĐT liên hệ" value={phone || "Chưa có"} />
+      </Section>
 
       <Divider style={styles.divider} />
 
-      {/* --- Thông tin dịch vụ --- */}
-      <SectionHeader title="Thông tin dịch vụ" onEdit={() => goToStep(2)} />
-      <InfoRow
-        label="Loại gói"
-        value={serviceType === "available" ? "Gói có sẵn" : "Gói tùy chọn"}
-      />
-      <InfoRow label="Tên dịch vụ" value={servicePackage} />
-      {serviceOption && <InfoRow label="Lựa chọn" value={serviceOption} />}
-      <InfoRow label="Ngày bắt đầu" value={startDate} />
-      {!isOneDay && <InfoRow label="Ngày kết thúc" value={endDate} />}
-      <InfoRow label="Giờ bắt đầu" value={startTime} />
-      {serviceType === "custom" && (
-        <InfoRow label="Thời lượng" value={`${duration} phút`} />
-      )}
+      <Section title="Thông tin dịch vụ" onEdit={() => goToStep(2)}>
+        <InfoRow label="Tên dịch vụ" value={serviceName} />
+        <InfoRow
+          label="Ngày diễn ra"
+          value={`${formatTime(repeatFrom, "date")} - ${formatTime(
+            repeatTo,
+            "date"
+          )}`}
+        />
+        <InfoRow
+          label="Giờ bắt đầu"
+          value={`${timeSlot.start} - ${timeSlot.end}`}
+        />
+        <InfoRow
+          label="Tổng tiền"
+          value={`${Number(price).toLocaleString("vi-VN")} ₫`}
+        />
+      </Section>
 
-      {/* --- Nút xác nhận --- */}
       <Button
         mode="contained"
         onPress={onConfirm}
         style={styles.confirmButton}
         icon="check"
+        labelStyle={styles.confirmLabel}
       >
         Xác nhận & Gửi yêu cầu
       </Button>
@@ -77,21 +74,24 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   );
 };
 
-// 🔧 Tiêu đề mỗi phần với nút chỉnh sửa
-const SectionHeader = ({
+const Section = ({
   title,
   onEdit,
+  children,
 }: {
   title: string;
   onEdit: () => void;
+  children: React.ReactNode;
 }) => (
-  <View style={styles.sectionHeader}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    <IconButton icon="pencil" size={20} onPress={onEdit} />
+  <View style={styles.sectionContainer}>
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <IconButton icon="pencil-outline" size={20} onPress={onEdit} />
+    </View>
+    <View style={styles.sectionContent}>{children}</View>
   </View>
 );
 
-// 🧾 Hàng thông tin
 const InfoRow = ({ label, value }: { label: string; value: string }) => (
   <View style={styles.row}>
     <Text style={styles.label}>{label}</Text>
@@ -101,51 +101,65 @@ const InfoRow = ({ label, value }: { label: string; value: string }) => (
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    padding: 20,
+    backgroundColor: "#f9f9fb",
+    flex: 1,
   },
   title: {
-    fontWeight: "bold",
-    marginBottom: 8,
+    fontWeight: "700",
+    marginBottom: 6,
+    color: "#1a1a1a",
   },
   description: {
     marginBottom: 16,
     color: "#666",
   },
+  sectionContainer: {
+    marginBottom: 24,
+  },
   sectionHeader: {
-    backgroundColor: "#ecebf0",
+    backgroundColor: "#e7eaf6",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: 16,
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
   },
   sectionTitle: {
     fontWeight: "600",
     fontSize: 16,
+    color: "#333",
+  },
+  sectionContent: {
+    marginTop: 12,
   },
   row: {
-    marginBottom: 10,
+    marginBottom: 12,
   },
   label: {
-    color: "#666",
-    fontSize: 14,
+    fontSize: 13,
+    color: "#888",
     marginBottom: 2,
   },
   value: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#222",
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#111",
   },
   divider: {
-    marginVertical: 16,
-    backgroundColor: "#ccc",
+    marginVertical: 12,
+    backgroundColor: "#ddd",
   },
   confirmButton: {
     marginTop: 24,
     borderRadius: 30,
-    backgroundColor: "#28a745",
+    paddingVertical: 8,
+    backgroundColor: "#4caf50",
+  },
+  confirmLabel: {
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
 

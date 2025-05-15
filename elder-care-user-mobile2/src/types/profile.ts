@@ -7,23 +7,14 @@ export type HealthInfo = {
   condition: HealthCondition[];
   height?: number;
   weight?: number;
-  typeBlood:
-    | "A+"
-    | "A-"
-    | "B+"
-    | "B-"
-    | "AB+"
-    | "AB-"
-    | "O+"
-    | "O-"
-    | "Unknown";
+  typeBlood: string;
   notes?: string;
 };
 
 export type Profile = {
   avartar?: string;
-  _id: string;
-  userId: string;
+  _id?: string;
+  userId?: string;
   firstName: string;
   lastName: string;
   birthDate: string; // ISO date string

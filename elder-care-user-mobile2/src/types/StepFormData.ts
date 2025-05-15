@@ -7,8 +7,6 @@ export type StepFormData = {
   service: Service | null;
   packageService: Package| null;
   startTime?: string;
-  endTime?: string;
-  repeatFrom?: string;
-  repeatTo?: string;
+  startDate?: string;
   note?: string;
 };

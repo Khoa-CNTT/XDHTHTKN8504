@@ -5,7 +5,7 @@ import authorizeRoles from '../middlewares/authorizeRoles.js';
 
 const router = express.Router();
 
-router.post('/create', profileController.createProfile);
+router.post('/create', auth, profileController.createProfile);
 
 router.get(
     '/get-profiles',
