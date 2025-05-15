@@ -143,4 +143,11 @@ router.delete(
     bookingController.deleteBookingById
 )
 
+router.post(
+    '/create-booking-package',
+    auth,
+    authorizeRoles('admin', 'family_member'),
+    bookingController.createBookingByPackage
+)
+
 export default router

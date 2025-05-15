@@ -15,7 +15,7 @@ const Uploader = ({ setImage, image }) => {
     if (!file) return;
 
     const formData = new FormData();
-    formData.append('file', file); // 'file' phải trùng tên field Multer backend mong đợi
+    formData.append('file', file); 
 
     try {
       setLoading(true);

@@ -58,4 +58,12 @@ router.get(
   authController.searchCustomer
 )
 
+//Xóa nhân viên
+router.delete(
+  '/delete-staff/:staffId',
+  auth,
+  authorizeRoles('admin'),
+  authController.deleteStaff
+)
+
 export default router;
