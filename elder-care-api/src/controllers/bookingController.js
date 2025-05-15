@@ -174,6 +174,7 @@ const bookingController = {
             return res.status(201).json({
                 message: "Booking created successfully",
                 booking: newBooking,
+                wallet,
                 payment: newPayment
             });
         } catch (error) {
@@ -231,6 +232,14 @@ const bookingController = {
             const discountRate = packageData.serviceId?.percentage || 0;
             const totalDiscount = totalPrice * discountRate;
 
+            const wallet = await Wallet.findOne({ userId });
+            if (!wallet) {
+                return res.status(400).json({ message: "Không tìm thấy ví của người dùng" });
+            }
+
+            if (wallet.balance < totalPrice) {
+                return res.status(400).json({ message: "Số dư không đủ để thanh toán booking" });
+            }
 
             // Tạo booking
             const newBooking = await Booking.create({
@@ -248,7 +257,7 @@ const bookingController = {
                 createdBy: userId,
             });
 
-            const code = "BK" + new Date().getTime();
+            const code = "PAY_" + new Date().getTime();
             const orderId = "MOMO" + new Date().getTime();
 
             const newPayment = new Payments({
@@ -259,6 +268,47 @@ const bookingController = {
             });
 
             await newPayment.save();
+
+            const transactionId = "PAY_" + new Date().getTime();
+
+            // Trừ tiền và tạo transaction trong ví
+            wallet.balance -= totalPrice;
+            wallet.transactions.push({
+                transactionId: code,
+                type: "PAYMENT",
+                amount: totalPrice,
+                status: "pending",
+                description: `Thanh toán booking ${newBooking._id}`,
+            });
+            await wallet.save();
+            // Sau 1 tiếng, kiểm tra trạng thái payment, nếu chưa success thì hoàn tiền
+            setTimeout(async () => {
+                try {
+                    const bookingCheck = await Booking.findById(newBooking._id);
+                    if (bookingCheck && bookingCheck.status !== "accepted") {
+                        const walletToRefund = await Wallet.findOne({ userId });
+                        if (!walletToRefund) return;
+
+                        const transaction = walletToRefund.transactions.find(t => t.transactionId === transactionId);
+                        if (transaction && transaction.status === "pending") {
+                            // Hoàn tiền
+                            walletToRefund.balance += transaction.amount;
+                            transaction.status = "failed";
+                            transaction.description += " - Hoàn tiền do booking chưa được chấp nhận sau 1 tiếng";
+                            await walletToRefund.save();
+
+                            // Cập nhật payment
+                            const paymentCheck = await Payments.findOne({ transactionCode: code });
+                            if (paymentCheck) {
+                                paymentCheck.status = "failed";
+                                await paymentCheck.save();
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi xử lý hoàn tiền tự động:", error);
+                }
+            }, 60 * 60 * 1000);
 
             const io = getIO();
 
@@ -278,6 +328,8 @@ const bookingController = {
             return res.status(201).json({
                 message: "Tạo booking theo gói thành công.",
                 data: newBooking,
+                wallet,
+                newPayment
             });
         } catch (error) {
             console.error("Lỗi tạo booking:", error);
