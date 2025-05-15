@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
-const bookingSchema = new Schema(
-  {
+const bookingSchema = new Schema({
     profileId: {
       type: Schema.Types.ObjectId,
       ref: "Profile",
@@ -19,7 +18,6 @@ const bookingSchema = new Schema(
     notes: String,
     paymentId: { type: Schema.Types.ObjectId, ref: "Payment" },
     scheduleId: { type: Schema.Types.ObjectId, ref: "Schedule" },
-
     participants: [
       {
         userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -31,8 +29,8 @@ const bookingSchema = new Schema(
     repeatFrom: { type: Date, required: true },
     repeatTo: { type: Date, required: true },
     timeSlot: {
-      start: { type: String, required: true }, // Giờ bắt đầu: '08:00'
-      end: { type: String, required: true }, // Giờ kết thúc: '10:00'
+      start: { type: String }, 
+      end: { type: String }, 
     },
     repeatInterval: { type: Number, required: true },
     totalPrice: { type: Number, default: 0 },
@@ -43,8 +41,7 @@ const bookingSchema = new Schema(
       ref: "User",
       required: true,
     },
-  },
-  { timestamps: true }
+  }, { timestamps: true }
 );
 
 const Booking = mongoose.model("Booking", bookingSchema);

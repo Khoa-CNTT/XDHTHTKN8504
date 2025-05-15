@@ -12,6 +12,9 @@ import { Feather } from '@expo/vector-icons';
 import { createProfile } from "../../api/ProfileServiceApi";
 import useProfileStore from '../../stores/profileStore';
 import { log } from '../../utils/logger';
+import {Profile} from '../../types/profile';
+import { uploadAvatar } from '../../api/uploadService';
+import { formatDateToISO } from '../../utils/formatDateToISO';
 
 type RootStackParamList = {
     Home: undefined;
@@ -50,14 +53,16 @@ const AddProfileScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
 
     // Step 1 state
-    const [avatar, setAvatar] = useState<string | null>(null);
-    const [name, setName] = useState('');
-    const [dob, setDob] = useState('');
+    const [avatar, setAvatar] = useState("");
+    const [firstname, setFisrtname] = useState("");
+    const [lastname, setLastname] = useState("");
+    const [birthDate, setBirthDate] = useState("");
     const [gender, setGender] = useState('');
     const [province, setProvince] = useState('');
     const [district, setDistrict] = useState('');
-    const [address, setAddress] = useState('');
+    const [homeAddress, setHomeAddress] = useState('');
     const [phone, setPhone] = useState('');
+    const [relationship, setRelationship] = useState("");
 
     const [nameError, setNameError] = useState('');
     const [dobError, setDobError] = useState('');
@@ -77,50 +82,72 @@ const AddProfileScreen: React.FC = () => {
     const [weightError, setWeightError] = useState('');
     const [heightError, setHeightError] = useState('');
 
+    const [image, setImage] = useState<any>(null);
+    const [uploading, setUploading] = useState(false);
+
+    
+
+    const handleUpload = async () => {
+      try {
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          quality: 1,
+        });
+
+        if (result.canceled) return;
+
+        setUploading(true);
+        const url = await uploadAvatar(result.assets[0].uri);
+        setAvatar(url);
+      } catch (error: any) {
+        Alert.alert("Upload thất bại", error.message);
+      } finally {
+        setUploading(false);
+      }
+    };
+
+
+
+
+
     // Medical histories: array of { name, desc }
-    const [medicalHistories, setMedicalHistories] = useState([{ name: '', desc: '' }]);
+    const [medicalHistories, setMedicalHistories] = useState([
+      { name: "", description: "" },
+    ]);
 
     // Date picker
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const {addProfile} = useProfileStore.getState();
 
-    // Avatar picker
-    const pickAvatar = async () => {
-        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permissionResult.granted) {
-            Alert.alert("Thông báo", "Bạn cần cấp quyền truy cập ảnh để chọn avatar.");
-            return;
-        }
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.7,
-        });
-        if (!result.canceled && result.assets && result.assets.length > 0) {
-            setAvatar(result.assets[0].uri);
-        }
-    };
+    
 
     const handleConfirmDate = (date: Date) => {
         const formatted = date.toLocaleDateString('vi-VN'); // định dạng dd/mm/yyyy
-        setDob(formatted);
+        setBirthDate(formatted);
         setDatePickerVisibility(false);
     };
 
     const validateStep1 = () => {
         let valid = true;
 
-        setNameError(name ? '' : 'Vui lòng nhập họ và tên');
-        setDobError(dob ? '' : 'Vui lòng chọn ngày sinh');
+        setNameError(firstname ? '' : 'Vui lòng nhập họ và tên');
+        setDobError(birthDate ? "" : "Vui lòng chọn ngày sinh");
         setGenderError(gender ? '' : 'Vui lòng chọn giới tính');
         setProvinceError(province ? '' : 'Vui lòng nhập tỉnh/thành');
         setDistrictError(district ? '' : 'Vui lòng nhập quận/huyện');
-        setAddressError(address ? '' : 'Vui lòng nhập địa chỉ');
+        setAddressError( homeAddress? '' : 'Vui lòng nhập địa chỉ');
         setPhoneError(phone ? '' : 'Vui lòng nhập số điện thoại');
 
-        if (!name || !dob || !gender || !province || !district || !address || !phone) {
-            valid = false;
+        if (
+          !firstname ||
+          !birthDate ||
+          !gender ||
+          !province ||
+          !district ||
+          !homeAddress ||
+          !phone
+        ) {
+          valid = false;
         }
 
         return valid;
@@ -139,30 +166,32 @@ const AddProfileScreen: React.FC = () => {
 
         // Validate medical histories: nếu có bệnh án thì phải nhập tên bệnh án
         for (let i = 0; i < medicalHistories.length; i++) {
-            if (medicalHistories[i].name && !medicalHistories[i].desc) {
-                Alert.alert('Thông báo', `Vui lòng nhập mô tả cho bệnh án thứ ${i + 1}`);
-                return false;
+            if (medicalHistories[i].name && !medicalHistories[i].description) {
+              Alert.alert(
+                "Thông báo",
+                `Vui lòng nhập mô tả cho bệnh án thứ ${i + 1}`
+              );
+              return false;
             }
-            if (!medicalHistories[i].name && medicalHistories[i].desc) {
-                Alert.alert('Thông báo', `Vui lòng nhập tên bệnh án cho bệnh án thứ ${i + 1}`);
-                return false;
+            if (!medicalHistories[i].name && medicalHistories[i].description) {
+              Alert.alert(
+                "Thông báo",
+                `Vui lòng nhập tên bệnh án cho bệnh án thứ ${i + 1}`
+              );
+              return false;
             }
         }
 
         return valid;
     };
 
-    const handleSubmit = async () => {};
-
-        
       
-
     return (
       <ScrollView style={styles.container}>
         {step === 1 && (
           <View>
             <View style={styles.avatarContainer}>
-              <TouchableOpacity onPress={pickAvatar}>
+              <TouchableOpacity onPress={handleUpload}>
                 {avatar ? (
                   <Image source={{ uri: avatar }} style={styles.avatarCircle} />
                 ) : (
@@ -181,9 +210,35 @@ const AddProfileScreen: React.FC = () => {
             </Text>
             <TextInput
               style={[styles.input, nameError && styles.inputError]}
-              placeholder="Nhập họ và tên"
-              value={name}
-              onChangeText={setName}
+              placeholder="Nhập họ của bạn "
+              value={firstname}
+              onChangeText={setFisrtname}
+            />
+            {nameError ? (
+              <Text style={styles.errorText}>{nameError}</Text>
+            ) : null}
+
+            <Text style={styles.label}>
+              Tên <Text style={styles.required}>*</Text>
+            </Text>
+            <TextInput
+              style={[styles.input, nameError && styles.inputError]}
+              placeholder="Nhập tên của bạn"
+              value={lastname}
+              onChangeText={setLastname}
+            />
+            {nameError ? (
+              <Text style={styles.errorText}>{nameError}</Text>
+            ) : null}
+
+            <Text style={styles.label}>
+              Mối quan hệ <Text style={styles.required}>*</Text>
+            </Text>
+            <TextInput
+              style={[styles.input, nameError && styles.inputError]}
+              placeholder="Bạn có quan hệ gì với chủ tài khoản?"
+              value={relationship}
+              onChangeText={setRelationship}
             />
             {nameError ? (
               <Text style={styles.errorText}>{nameError}</Text>
@@ -196,7 +251,7 @@ const AddProfileScreen: React.FC = () => {
               <TextInput
                 style={[styles.input, dobError && styles.inputError]}
                 placeholder="Chọn ngày/tháng/năm"
-                value={dob}
+                value={birthDate}
                 editable={false}
                 pointerEvents="none"
               />
@@ -263,8 +318,8 @@ const AddProfileScreen: React.FC = () => {
             <TextInput
               style={[styles.input, addressError && styles.inputError]}
               placeholder="Nhập địa chỉ chi tiết"
-              value={address}
-              onChangeText={setAddress}
+              value={homeAddress}
+              onChangeText={setHomeAddress}
             />
             {addressError ? (
               <Text style={styles.errorText}>{addressError}</Text>
@@ -381,7 +436,7 @@ const AddProfileScreen: React.FC = () => {
                 onPress={() =>
                   setMedicalHistories([
                     ...medicalHistories,
-                    { name: "", desc: "" },
+                    { name: "", description: "" },
                   ])
                 }
               >
@@ -407,10 +462,10 @@ const AddProfileScreen: React.FC = () => {
                 <TextInput
                   style={styles.textArea}
                   placeholder="Mô tả bệnh án"
-                  value={item.desc}
+                  value={item.description}
                   onChangeText={(text) => {
                     const arr = [...medicalHistories];
-                    arr[idx].desc = text;
+                    arr[idx].description = text;
                     setMedicalHistories(arr);
                   }}
                   multiline
@@ -431,27 +486,35 @@ const AddProfileScreen: React.FC = () => {
               style={styles.saveButton}
               onPress={async () => {
                 if (validateStep2()) {
-                  const profileData = {
-                    avatar,
-                    name,
-                    dob,
-                    gender,
-                    province,
-                    district,
+                const formatDate = formatDateToISO(birthDate)
+                  const address = `${homeAddress}, ${district}, ${province}`;
+
+                  const payload: Profile = {
+                    avartar: avatar,
+                    firstName: firstname,
+                    lastName: lastname,
+                    birthDate: formatDate, // ISO format
+                    sex: gender as "male" | "female" | "other",
+                    relationship,
                     address,
                     phone,
-                    bloodGroup,
-                    weight,
-                    height,
-                    notes,
-                    medicalHistories: medicalHistories.filter(
-                      (item) => item.name && item.desc
-                    ), // loại bỏ mục trống
+                    healthInfo: [
+                      {
+                        typeBlood: bloodGroup,
+                        weight: Number(weight),
+                        height: Number(height),
+                        notes: notes || undefined,
+                        condition: medicalHistories.filter(
+                          (m) => m.name && m.description
+                        ),
+                      },
+                    ],
                   };
-                  log("data gửi lên csdl: ", profileData)
 
-                //   const respons = await createProfile(profileData);
-                  addProfile(profileData);
+                  log("Payload gửi lên:", payload);
+
+                  const respons = await createProfile(payload);
+                  addProfile(payload);
                   navigation.goBack(); // hoặc màn hình nào phù hợp
                 }
               }}

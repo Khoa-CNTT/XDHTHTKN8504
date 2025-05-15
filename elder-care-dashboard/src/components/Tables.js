@@ -1,7 +1,7 @@
 import React from "react";
 import { MenuSelect } from "./Form";
 import { BiDotsHorizontalRounded } from "react-icons/bi";
-import { FiEdit, FiEye } from "react-icons/fi";
+import { FiEdit, FiEye, FiTrash2 } from "react-icons/fi";
 import { RiDeleteBin6Line, RiDeleteBinLine } from "react-icons/ri";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -77,19 +77,18 @@ export function Transactiontable({ data, action, functions }) {
             <td className={tdclass}>{item.date}</td>
             <td className={tdclass}>
               <span
-                className={`py-1 px-4 ${
-                  item.status === "Paid"
+                className={`py-1 px-4 ${item.status === "Paid"
                     ? "bg-subMain text-subMain"
                     : item.status === "Pending"
-                    ? "bg-orange-500 text-orange-500"
-                    : item.status === "Cancel" && "bg-red-600 text-red-600"
-                } bg-opacity-10 text-xs rounded-xl`}
+                      ? "bg-orange-500 text-orange-500"
+                      : item.status === "Cancel" && "bg-red-600 text-red-600"
+                  } bg-opacity-10 text-xs rounded-xl`}
               >
                 {item.status === "Paid"
                   ? "Đã thanh toán"
                   : item.status === "Pending"
-                  ? "Đang chờ xử lý"
-                  : item.status === "Cancel" && "Đã hủy"}
+                    ? "Đang chờ xử lý"
+                    : item.status === "Cancel" && "Đã hủy"}
               </span>
             </td>
             <td className={`${tdclass} font-semibold`}>{item.amount}</td>
@@ -236,11 +235,10 @@ export function MedicineTable({ data, onEdit }) {
             <td className={`${tdclass} font-semibold`}>{item?.price}</td>
             <td className={tdclass}>
               <span
-                className={`text-xs font-medium ${
-                  item?.status === "Out of stock"
+                className={`text-xs font-medium ${item?.status === "Out of stock"
                     ? "text-red-600"
                     : "text-green-600"
-                }`}
+                  }`}
               >
                 {item?.status === "Out of stock" ? "Hết hàng" : "Còn hàng"}
               </span>
@@ -284,7 +282,7 @@ export function ServiceTable({ data, onEdit, onDelete }) {
             : "Không rõ";
           const servicePrice = item?.price || "Không rõ";
           const isActive = item?.isActive;
-          const serviceStatus = isActive === true ? "Bật" : "Tắt";
+          const serviceStatus = isActive === true ? "Đã duyệt" : "Chưa duyệt";
           const statusColor =
             isActive === true ? "text-green-600" : "text-red-600";
           const imageUrl = item?.imgUrl || "https://via.placeholder.com/150";
@@ -317,13 +315,13 @@ export function ServiceTable({ data, onEdit, onDelete }) {
                 <div className="flex gap-2">
                   <button
                     onClick={() => onEdit(item)}
-                    className="text-blue-500 underline text-sm"
+                    className="px-3 py-1 bg-blue-100 text-blue-600 rounded-md text-sm hover:bg-blue-200 transition"
                   >
                     Sửa
                   </button>
                   <button
                     onClick={() => onDelete(item._id)}
-                    className="text-red-500 underline text-sm"
+                    className="px-3 py-1 bg-red-100 text-red-600 rounded-md text-sm hover:bg-red-200 transition"
                   >
                     Xoá
                   </button>
@@ -339,32 +337,6 @@ export function ServiceTable({ data, onEdit, onDelete }) {
 
 // patient table
 export function PatientTable({ data, functions, used }) {
-  const DropDown1 = !used
-    ? [
-        {
-          title: "Xem",
-          icon: FiEye,
-          onClick: (data) => {
-            functions.preview(data.id);
-          },
-        },
-        {
-          title: "Xóa",
-          icon: RiDeleteBin6Line,
-          onClick: () => {
-            toast.error("Tính năng này chưa được hỗ trợ");
-          },
-        },
-      ]
-    : [
-        {
-          title: "Xem",
-          icon: FiEye,
-          onClick: (data) => {
-            functions.preview(data.id);
-          },
-        },
-      ];
   const thclasse = "text-start text-sm font-medium py-3 px-2 whitespace-nowrap";
   const tdclasse = "text-start text-xs py-4 px-2 whitespace-nowrap";
 
@@ -382,7 +354,6 @@ export function PatientTable({ data, functions, used }) {
               <th className={thclasse}>Tuổi</th>
             </>
           )}
-
           <th className={thclasse}>Hành Động</th>
         </tr>
       </thead>
@@ -399,7 +370,7 @@ export function PatientTable({ data, functions, used }) {
           const phoneNumber = item.phone || "Không rõ";
           const createdDate =
             new Date(item.createdAt).toLocaleDateString("vi-VN") || "Không rõ";
-          const gender = "Male";
+          const gender = "Male"; // Bạn có thể sửa lại nếu dữ liệu có sẵn gender
           const bloodType = "Không rõ";
           const age = "Không rõ";
           const avatarUrl = item.avatar || "https://via.placeholder.com/150";
@@ -434,11 +405,10 @@ export function PatientTable({ data, functions, used }) {
 
               <td className={tdclasse}>
                 <span
-                  className={`py-1 px-4 ${
-                    gender === "Male"
+                  className={`py-1 px-4 ${gender === "Male"
                       ? "bg-subMain text-subMain"
                       : "bg-orange-500 text-orange-500"
-                  } bg-opacity-10 text-xs rounded-xl`}
+                    } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {gender === "Male" ? "Nam" : "Nữ"}
                 </span>
@@ -450,12 +420,20 @@ export function PatientTable({ data, functions, used }) {
                 </>
               )}
 
-              <td className={tdclasse}>
-                <MenuSelect datas={DropDown1} item={item}>
-                  <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
-                    <BiDotsHorizontalRounded />
-                  </div>
-                </MenuSelect>
+              <td className={`${tdclasse} flex gap-2`}>
+                <button
+                  onClick={() => functions.preview(item.id)}
+                  className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  <FiEye />
+                  Xem
+                </button>
+                {!used && (
+                  <button className="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm">
+                    <FiTrash2 />
+                    Xóa
+                  </button>
+                )}
               </td>
             </tr>
           );
@@ -467,22 +445,6 @@ export function PatientTable({ data, functions, used }) {
 
 // doctor table
 export function DoctorsTable({ data, functions, doctor }) {
-  const DropDown1 = [
-    {
-      title: "Xem",
-      icon: FiEye,
-      onClick: (data) => {
-        functions.preview(data);
-      },
-    },
-    {
-      title: "Xóa",
-      icon: RiDeleteBin6Line,
-      onClick: () => {
-        toast.error("Tính năng này chưa được hỗ trợ");
-      },
-    },
-  ];
   return (
     <table className="table-auto w-full">
       <thead className="bg-dry rounded-md overflow-hidden">
@@ -503,18 +465,15 @@ export function DoctorsTable({ data, functions, doctor }) {
           const createdDate = new Date(item.createdAt).toLocaleDateString(
             "vi-VN"
           );
+          const phone = item.userId?.phone || "Không rõ";
 
-          const phone = item.userId.phone || "Không rõ";
+          let title = "";
+          if (item.type === "doctor") title = "Bác sĩ";
+          else if (item.type === "nurse") title = "Điều dưỡng";
 
-          let title;
-          if (item.type === "doctor") {
-            title = "Bác sĩ";
-          } else if (item.type === "nurse") {
-            title = "Điều dưỡng";
-          }
           const email = item.email || "Không rõ";
-          let avatarUrl =
-            item.userId.avatar || "https://via.placeholder.com/150";
+          const avatarUrl =
+            item.userId?.avatar || "https://via.placeholder.com/150";
 
           return (
             <tr
@@ -542,18 +501,33 @@ export function DoctorsTable({ data, functions, doctor }) {
               <td className={tdclass}>{email}</td>
               <td className={tdclass}>
                 <Link
-                  to={`/staffs/preview/${data.id}?tab=4`}
+                  to={`/staffs/preview/${item.id}?tab=4`}
                   className="bg-blue-500 text-white px-3 py-1 rounded"
                 >
                   Xem lương
                 </Link>
               </td>
               <td className={tdclass}>
-                <MenuSelect datas={DropDown1} item={item}>
-                  <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
-                    <BiDotsHorizontalRounded />
-                  </div>
-                </MenuSelect>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => functions.preview(item)}
+                    className="text-green-600 hover:text-green-800 flex items-center gap-1"
+                  >
+                    <FiEye /> Xem
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm("Bạn có chắc chắn muốn xóa nhân viên này không?")
+                      ) {
+                        functions.onDelete(item._id);
+                      }
+                    }}
+                    className="text-red-600 hover:text-red-800 flex items-center gap-1"
+                  >
+                    <RiDeleteBin6Line /> Xóa
+                  </button>
+                </div>
               </td>
             </tr>
           );
@@ -571,28 +545,11 @@ export function BookingTable({ data, functions, doctor }) {
     cancelled: "Đã hủy",
   };
 
-  const DropDown1 = [
-    // {
-    //   title: "Xem",
-    //   icon: FiEye,
-    //   onClick: (data) => {
-    //     functions.preview(data);
-    //   },
-    // },
-    {
-      title: "Xóa",
-      icon: RiDeleteBin6Line,
-      onClick: () => {
-        toast.error("Tính năng này chưa được hỗ trợ");
-      },
-    },
-  ];
   return (
     <table className="table-auto w-full">
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
           <th className={thclass}>#</th>
-          {/* <th className={thclass}>{doctor ? "Điều dưỡng" : "Y Tá"}</th> */}
           <th className={thclass}>Khách hàng</th>
           <th className={thclass}>Người thực hiện</th>
           <th className={thclass}>Ngày bắt đầu</th>
@@ -604,9 +561,8 @@ export function BookingTable({ data, functions, doctor }) {
       </thead>
       <tbody>
         {data.map((item, index) => {
-          const userFullName = `${item?.profileId?.firstName || "Ẩn"} ${
-            item?.profileId?.lastName || ""
-          }`;
+          const userFullName = `${item?.profileId?.firstName || "Ẩn"} ${item?.profileId?.lastName || ""
+            }`;
           const staffFullName = item?.participants?.[0]?.fullName || "Chưa có";
           const serviceName = item?.serviceId?.name || "Không rõ";
           const startDate = new Date(item?.repeatFrom).toLocaleDateString(
@@ -624,13 +580,6 @@ export function BookingTable({ data, functions, doctor }) {
 
               <td className={tdclass}>
                 <div className="flex gap-4 items-center">
-                  {/* <span className="w-12">
-                    <img
-                      src={"https://via.placeholder.com/150"} // Hoặc lấy từ profile nếu có
-                      alt={userFullName}
-                      className="w-full h-12 rounded-full object-cover border border-border"
-                    />
-                  </span> */}
                   <h4 className="text-sm font-medium">{userFullName}</h4>
                 </div>
               </td>
@@ -643,37 +592,37 @@ export function BookingTable({ data, functions, doctor }) {
 
               <td className={tdclass}>
                 <span
-                  className={`py-1 px-4 ${
-                    item.status === "completed"
+                  className={`py-1 px-4 ${item.status === "completed"
                       ? "bg-green-500 text-green-500"
                       : item.status === "accepted"
-                      ? "bg-orange-500 text-orange-500"
-                      : item.status === "pending"
-                      ? "bg-red-600 text-red-600"
-                      : item.status === "paid"
-                      ? "bg-green-500 text-green-500"
-                      : item.status === "cancelled" &&
-                        "bg-gray-500 text-gray-500"
-                  } bg-opacity-10 text-xs rounded-xl`}
+                        ? "bg-orange-500 text-orange-500"
+                        : item.status === "pending"
+                          ? "bg-red-600 text-red-600"
+                          : item.status === "paid"
+                            ? "bg-green-500 text-green-500"
+                            : item.status === "cancelled" &&
+                            "bg-gray-500 text-gray-500"
+                    } bg-opacity-10 text-xs rounded-xl`}
                 >
-                  {item.status === "completed"
-                    ? "Hoàn thành"
-                    : item.status === "accepted"
-                    ? "Đã được nhận"
-                    : item.status === "pending"
-                    ? "Đang chờ xử lý"
-                    : item.status === "paid"
-                    ? "Đã thanh toán"
-                    : item.status === "cancelled" && "Đã hủy"}
+                  {statusText}
                 </span>
               </td>
 
               <td className={tdclass}>
-                <MenuSelect datas={DropDown1} item={item}>
-                  <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
-                    <BiDotsHorizontalRounded />
-                  </div>
-                </MenuSelect>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm("Bạn có chắc chắn muốn xóa booking này không?")
+                      ) {
+                        functions.onDelete(item._id);
+                      }
+                    }}
+                    className="px-3 py-1 bg-red-100 text-red-600 rounded-md text-sm hover:bg-red-200 transition"
+                  >
+                    Xoá
+                  </button>
+                </div>
               </td>
             </tr>
           );
@@ -716,19 +665,18 @@ export function AppointmentTable({ data, functions, doctor }) {
             </td>
             <td className={tdclass}>
               <span
-                className={`py-1 px-4 ${
-                  item.status === "Approved"
+                className={`py-1 px-4 ${item.status === "Approved"
                     ? "bg-subMain text-subMain"
                     : item.status === "Pending"
-                    ? "bg-orange-500 text-orange-500"
-                    : item.status === "Cancel" && "bg-red-600 text-red-600"
-                } bg-opacity-10 text-xs rounded-xl`}
+                      ? "bg-orange-500 text-orange-500"
+                      : item.status === "Cancel" && "bg-red-600 text-red-600"
+                  } bg-opacity-10 text-xs rounded-xl`}
               >
                 {item.status === "Approved"
                   ? "Đã chấp thuận"
                   : item.status === "Pending"
-                  ? "Đang chờ xử lý"
-                  : "Đã hủy"}
+                    ? "Đang chờ xử lý"
+                    : "Đã hủy"}
               </span>
             </td>
 
@@ -783,19 +731,18 @@ export function PaymentTable({ data, functions, doctor }) {
             </td>
             <td className={tdclass}>
               <span
-                className={`py-1 px-4 ${
-                  item.status === "Paid"
+                className={`py-1 px-4 ${item.status === "Paid"
                     ? "bg-subMain text-subMain"
                     : item.status === "Pending"
-                    ? "bg-orange-500 text-orange-500"
-                    : item.status === "Cancel" && "bg-red-600 text-red-600"
-                } bg-opacity-10 text-xs rounded-xl`}
+                      ? "bg-orange-500 text-orange-500"
+                      : item.status === "Cancel" && "bg-red-600 text-red-600"
+                  } bg-opacity-10 text-xs rounded-xl`}
               >
                 {item.status === "Paid"
                   ? "Đã thanh toán"
                   : item.status === "Pending"
-                  ? "Đang chờ xử lý"
-                  : "Đã hủy"}
+                    ? "Đang chờ xử lý"
+                    : "Đã hủy"}
               </span>
             </td>
             <td className={tdclass}>

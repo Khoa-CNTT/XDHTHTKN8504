@@ -11,6 +11,7 @@ import AddDoctorModal from "../components/Modals/AddDoctorModal";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBookings } from "../store/bookingSlice.js";
+import { deleteBooking } from "../store/bookingSlice.js";
 import { getUserIdFromToken } from "../utils/jwtHelper.js";
 import { io } from "socket.io-client";
 import * as XLSX from "xlsx"; // Import xlsx library
@@ -60,9 +61,8 @@ function Booking() {
     const ws = XLSX.utils.json_to_sheet(
       bookings.map((booking, index) => ({
         "#": index + 1,
-        "Khách hàng": `${booking?.profileId?.firstName || "Ẩn"} ${
-          booking?.profileId?.lastName || ""
-        }`,
+        "Khách hàng": `${booking?.profileId?.firstName || "Ẩn"} ${booking?.profileId?.lastName || ""
+          }`,
         "Người thực hiện": booking?.participants?.[0]?.fullName || "Chưa có",
         "Ngày bắt đầu": new Date(booking?.repeatFrom).toLocaleDateString(
           "vi-VN"
@@ -152,7 +152,12 @@ function Booking() {
           />
         </div>
         <div className="mt-8 w-full overflow-x-scroll">
-          <BookingTable doctor={true} data={bookings} functions={{ preview }} />
+          <BookingTable doctor={true} data={bookings} functions={{
+            preview, 
+            onDelete: (id) => {
+              dispatch(deleteBooking(id));
+            },
+          }} />
         </div>
       </div>
     </Layout>

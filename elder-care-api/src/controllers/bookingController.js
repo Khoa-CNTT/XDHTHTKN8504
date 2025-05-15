@@ -7,6 +7,8 @@ import { getIO } from "../config/socketConfig.js";
 import { getUserSocketId } from '../controllers/socketController.js';
 import Doctor from "../models/Doctor.js";
 import Nurse from "../models/Nurse.js";
+import Payments from "../models/Payment.js";
+import Packages from "../models/Package.js";
 
 const bookingController = {
     // create new booking
@@ -48,9 +50,6 @@ const bookingController = {
             // Kiểm tra thời gian lặp lại
             const fromDate = new Date(repeatFrom);
             const toDate = new Date(repeatTo);
-
-            console.log("From Date:", fromDate);
-            console.log("To Date:", toDate);
 
             if (fromDate >= toDate) {
                 return res.status(400).json({ message: "Ngày bắt đầu phải nhỏ hơn ngày kết thúc" });
@@ -96,6 +95,19 @@ const bookingController = {
                 createdBy: userId,
             });
             await newBooking.save();
+
+            const code = "BK" + new Date().getTime();
+            const orderId = "MOMO" + new Date().getTime();
+
+            const newPayment = new Payments({
+                orderId: orderId,
+                bookingId: newBooking._id,
+                amount: totalPrice,
+                transactionCode: code
+            });
+
+            await newPayment.save();
+
             const io = getIO();
 
             const populatedBooking = await Booking.findById(newBooking._id).populate('serviceId').populate("profileId");
@@ -115,11 +127,116 @@ const bookingController = {
             return res.status(201).json({
                 message: "Booking created successfully",
                 booking: newBooking,
+                payment: newPayment
             });
         } catch (error) {
             return res.status(500).json({
                 message: "Internal server error",
                 error: error.message,
+            });
+        }
+    },
+
+    createBookingByPackage: async (req, res) => {
+        try {
+            const { _id: userId, role } = req.user;
+            const { packageId, profileId, repeatFrom, timeSlot, notes } = req.body;
+
+            // Kiểm tra thông tin đầu vào
+            if (!packageId || !profileId || !repeatFrom || !timeSlot?.start) {
+                return res.status(400).json({ message: "Thiếu thông tin bắt buộc." });
+            }
+
+            // Lấy thông tin gói dịch vụ
+            const packageData = await Packages.findById(packageId).populate({
+                path: 'serviceId',
+                select: '_id percentage role', // chọn trường cần thiết
+            });
+            if (!packageData || !packageData.serviceId) {
+                return res.status(400).json({
+                    message: "Không tìm thấy service từ package!",
+                });
+            }
+
+            // Tính ngày kết thúc (repeatTo)
+            const repeatFromDate = new Date(repeatFrom);
+            const repeatToDate = new Date(repeatFromDate);
+            repeatToDate.setDate(repeatFromDate.getDate() + (packageData.totalDays - 1));
+
+            // Tính timeSlot.end từ timeSlot.start và package.timeWork
+            const [startHour, startMinute] = timeSlot.start.split(":").map(Number);
+            const startDate = new Date();
+            startDate.setHours(startHour);
+            startDate.setMinutes(startMinute);
+
+            const endDate = new Date(startDate);
+            endDate.setHours(startDate.getHours() + packageData.timeWork);
+
+            const formattedEnd = endDate.toTimeString().slice(0, 5);
+
+            const finalTimeSlot = {
+                start: timeSlot.start,
+                end: formattedEnd,
+            };
+
+            // Tính giá và giảm giá
+            const totalPrice = packageData.price;
+            const discountRate = packageData.serviceId?.percentage || 0;
+            const totalDiscount = totalPrice * discountRate;
+
+
+            // Tạo booking
+            const newBooking = await Booking.create({
+                profileId,
+                serviceId: packageData.serviceId._id,
+                status: "pending",
+                notes,
+                repeatFrom: repeatFromDate,
+                repeatTo: repeatToDate,
+                timeSlot: finalTimeSlot,
+                repeatInterval: packageData.repeatInterval,
+                totalPrice,
+                totalDiscount,
+                isRecurring: true,
+                createdBy: userId,
+            });
+
+            const code = "BK" + new Date().getTime();
+            const orderId = "MOMO" + new Date().getTime();
+
+            const newPayment = new Payments({
+                orderId: orderId,
+                bookingId: newBooking._id,
+                amount: totalPrice,
+                transactionCode: code
+            });
+
+            await newPayment.save();
+
+            const io = getIO();
+
+            const populatedBooking = await Booking.findById(newBooking._id).populate('serviceId').populate("profileId");
+
+            const targetRole = populatedBooking?.serviceId?.role;
+
+            if (targetRole === "nurse" || targetRole === "doctor") {
+                io.to(`staff_${targetRole}`).emit(
+                    "newBookingSignal",
+                    populatedBooking
+                );
+            }
+
+            io.to("staff_admin").emit("newBookingCreated", populatedBooking);
+
+            return res.status(201).json({
+                message: "Tạo booking theo gói thành công.",
+                data: newBooking,
+            });
+        } catch (error) {
+            console.error("Lỗi tạo booking:", error);
+            return res.status(500).json({
+                message: "Đã xảy ra lỗi khi tạo booking theo gói.",
+                error,
             });
         }
     },
@@ -529,6 +646,32 @@ const bookingController = {
         } catch (error) {
             console.error("Lỗi khi lấy danh sách bệnh nhân:", error);
             res.status(500).json({ message: 'Lỗi server', error: error.message });
+        }
+    },
+
+    deleteBookingById: async (req, res) => {
+        try {
+            const { userId } = req.user;
+            const { bookingId } = req.params;
+            console.log("ddddd", bookingId);
+
+            const deleteBooking = await Booking.findByIdAndDelete({ _id: bookingId })
+
+            if (!deleteBooking) {
+                return res.status(404).json({
+                    message: "Không tìm thấy booking"
+                })
+            }
+
+            return res.status(200).json({
+                message: "Xóa booking thành công!",
+                booking: deleteBooking,
+            })
+        } catch (error) {
+            return res.status(500).json({
+                message: "Lỗi khi xóa booking",
+                error
+            })
         }
     },
 

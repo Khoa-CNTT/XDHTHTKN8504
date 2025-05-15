@@ -422,6 +422,50 @@ const authController = {
       res.status(500).json({ message: "Lỗi server", error: error.message });
     }
   },
+
+  deleteStaff: async (req, res) => {
+    const io = getIO();
+    try {
+      const { userId, role } = req.user;
+      const { staffId } = req.params;
+
+      if (role !== 'admin') {
+        return res.status(403).json({ message: "Bạn không có quyền xóa nhân viên." });
+      }
+
+      // Danh sách các model nhân viên cần kiểm tra
+      const staffModels = [
+        { model: Doctor, name: 'Doctor' },
+        { model: Nurse, name: 'Nurse' }
+      ];
+
+      for (const { model, name } of staffModels) {
+        const staff = await model.findById(staffId);
+        if (staff) {
+          // Xóa user liên kết
+          await User.findByIdAndDelete(staff.userId);
+          // Xóa nhân viên
+          await model.findByIdAndDelete(staffId);
+
+          io.to('staff_admin').emit('newStaffCreated', staff);
+
+          return res.status(200).json({
+            message: `Đã xóa ${name} thành công.`,
+            staff
+          });
+        }
+      }
+
+      return res.status(404).json({ message: "Không tìm thấy nhân viên để xóa." });
+
+    } catch (error) {
+      console.error("Lỗi khi xóa nhân viên:", error);
+      return res.status(500).json({
+        message: "Lỗi khi xóa nhân viên!",
+        error
+      });
+    }
+  }
 };
 
 export default authController;

@@ -1,8 +1,8 @@
 // BookAService.tsx
 import React, { useState } from "react";
+import dayjs from "dayjs";
 import { View, ScrollView, StyleSheet } from "react-native";
 import { useNavigation } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 import StepIndicator from "react-native-step-indicator";
 import AppBar from "../components/AppBar";
 import PersonalInfo from "../components/booking2/PersonalInfoStep";
@@ -22,45 +22,66 @@ export default function BookAService() {
     service: null,
     packageService: null,
   });
+  
+  const getBookingPreview = (formData: StepFormData) => {
+    const { profile, service, packageService, startTime } = formData;
+
+    if (!profile || !service || !packageService || !startTime) return null;
+
+    const fullName = `${profile.lastName} ${profile.firstName}`;
+    const repeatFrom = dayjs(startTime).format("YYYY-MM-DD");
+    const repeatTo = dayjs(startTime)
+      .add(packageService.totalDays - 1, "day")
+      .format("YYYY-MM-DD");
+
+    const start = dayjs(startTime);
+    const end = start.add(packageService.timeWork, "hour");
+
+    return {
+      profileId: profile._id,
+      address: profile.address,
+      fullName,
+      phone: profile.phone,
+
+      serviceId: service._id,
+      serviceName: `${service.name} (${packageService.name})`,
+      price: packageService.price,
+      repeatInterval: packageService.repeatInterval,
+
+      repeatFrom,
+      repeatTo,
+
+      timeSlot: {
+        start: start.format("HH:mm"),
+        end: end.format("HH:mm"),
+      },
+    };
+  };
+
 
   const goToStep = (step: number) => setCurrentStep(step);
   const next = () => setCurrentStep((s) => s + 1);
-
   const updateData = (data: Partial<StepFormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
     next();
   };
-
   const handleSubmit = async () => {
-    log("dữ liệu gửi resqest Booking: ", formData)
-    if (
-      !formData.profile ||
-      !formData.service._id ||
-      !formData.startTime ||
-      !formData.endTime ||
-      !formData.repeatFrom ||
-      !formData.repeatTo
-    ) {
-      log("Thiếu dữ liệu cần thiết để gửi booking");
-      return;
-    }
-
+    const bookingPreview = getBookingPreview(formData);
     const body = {
-      profileId: formData.profile._id,
-      serviceId: formData.service._id,
-      notes: formData.note,
+      profileId: bookingPreview.profileId,
+      serviceId: bookingPreview.serviceId, // ID của service (Khám bệnh/Chăm sóc)
+      status: "pending", // Tình trạng booking
+      notes: "",
+      paymentId: null, 
       participants: [],
-      repeatFrom: formData.repeatFrom,
-      repeatTo: formData.repeatTo,
-      timeSlot: {
-        start: formData.startTime,
-        end: formData.endTime,
-      },
+      repeatFrom: bookingPreview.repeatFrom,
+      repeatTo: bookingPreview.repeatTo,
+      timeSlot: bookingPreview.timeSlot,
+      repeatInterval: bookingPreview.repeatInterval,
     };
-
+    log("request gửi booking", body)
     try {
       const result = await createBooking(body);
-      log("Booking thành công", result);
       navigation.goBack();
     } catch (error) {
       log("Lỗi khi tạo booking", error);
@@ -70,7 +91,6 @@ export default function BookAService() {
   return (
     <View style={styles.container}>
       <AppBar title="Đặt lịch chăm sóc" />
-
       <View style={styles.stepIndicatorWrapper}>
         <StepIndicator
           currentPosition={currentStep}
@@ -96,7 +116,7 @@ export default function BookAService() {
           )}
           {currentStep === 2 && (
             <ConfirmationStep
-              formData={formData}
+              formData={getBookingPreview(formData)}
               onConfirm={handleSubmit}
               goToStep={goToStep}
             />
@@ -136,20 +156,3 @@ const stepIndicatorStyles = {
   stepIndicatorUnFinishedColor: "#aaaaaa",
 };
 
-// import * as ImagePicker from "expo-image-picker";
-
-// async function pickImageAndUpload() {
-//   const result = await ImagePicker.launchImageLibraryAsync({
-//     mediaTypes: ImagePicker.MediaTypeOptions.Images,
-//     quality: 0.7,
-//   });
-
-//   if (!result.canceled) {
-//     const imageUri = result.assets[0].uri;
-//     const uploadedUrl = await uploadImageToCloudinary(imageUri);
-//     if (uploadedUrl) {
-//       // Lưu URL ảnh vào form data
-//       setFormData((prev) => ({ ...prev, avatar: uploadedUrl }));
-//     }
-//   }
-// }
