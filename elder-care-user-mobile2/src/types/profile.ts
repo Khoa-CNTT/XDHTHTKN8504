@@ -21,6 +21,7 @@ export type HealthInfo = {
 };
 
 export type Profile = {
+  avartar?: string;
   _id: string;
   userId: string;
   firstName: string;

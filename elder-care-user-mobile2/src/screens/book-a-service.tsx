@@ -135,3 +135,21 @@ const stepIndicatorStyles = {
   stepIndicatorCurrentColor: "#28a745",
   stepIndicatorUnFinishedColor: "#aaaaaa",
 };
+
+// import * as ImagePicker from "expo-image-picker";
+
+// async function pickImageAndUpload() {
+//   const result = await ImagePicker.launchImageLibraryAsync({
+//     mediaTypes: ImagePicker.MediaTypeOptions.Images,
+//     quality: 0.7,
+//   });
+
+//   if (!result.canceled) {
+//     const imageUri = result.assets[0].uri;
+//     const uploadedUrl = await uploadImageToCloudinary(imageUri);
+//     if (uploadedUrl) {
+//       // Lưu URL ảnh vào form data
+//       setFormData((prev) => ({ ...prev, avatar: uploadedUrl }));
+//     }
+//   }
+// }

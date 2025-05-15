@@ -15,6 +15,7 @@ const profileSchema = new Schema({
     relationship: { type: String, required: true },
     address: String,
     phone: String,
+    avartar: String,
     healthInfo: [{
         condition: [{
             name: String,
