@@ -19,7 +19,8 @@ export default function BookAService() {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<StepFormData>({
     profile: null,
-    serviceId: "",
+    service: null,
+    packageService: null,
   });
 
   const goToStep = (step: number) => setCurrentStep(step);
@@ -31,9 +32,10 @@ export default function BookAService() {
   };
 
   const handleSubmit = async () => {
+    log("dữ liệu gửi resqest Booking: ", formData)
     if (
       !formData.profile ||
-      !formData.serviceId ||
+      !formData.service._id ||
       !formData.startTime ||
       !formData.endTime ||
       !formData.repeatFrom ||
@@ -45,7 +47,7 @@ export default function BookAService() {
 
     const body = {
       profileId: formData.profile._id,
-      serviceId: formData.serviceId,
+      serviceId: formData.service._id,
       notes: formData.note,
       participants: [],
       repeatFrom: formData.repeatFrom,

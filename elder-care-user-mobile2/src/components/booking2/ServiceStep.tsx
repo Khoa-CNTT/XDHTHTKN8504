@@ -4,27 +4,44 @@ import { Text, Button, TextInput } from "react-native-paper";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { format } from "date-fns";
 import ServiceModal from "../ServiceModal";
-import PackageModal from "../PackageModal"; // Modal chọn gói dịch vụ
+import PackageModal from "../PackageModal";
+import {  Package } from "../../types/PackageService"; 
+import {Service} from "../../types/Service";
 
 interface AdditionalInfoProps {
-  onNext: (data: any) => void;
-  defaultValues: any;
+  onNext: (data: {
+    service: Service;
+    packageService: Package;
+    startTime: string;
+  }) => void;
+  defaultValues: {
+    service?: Service | null;
+    packageService?: Package | null;
+    startTime?: string;
+  };
 }
 
 const ServiceInfo: React.FC<AdditionalInfoProps> = ({
   onNext,
   defaultValues = {},
 }) => {
-    const [serviceName, setServiceName] = useState(
-      defaultValues?.serviceName || ""
-    );
-    const [serviceId, setServiceId] = useState(defaultValues?.serviceId || "");
-    const [servicePackage, setServicePackage] = useState(
-      defaultValues?.servicePackage || ""
-    );
+  const [service, setService] = useState<Service | null>(
+    defaultValues?.service || null
+  );
+  const [packageService, setPackageService] = useState<Package | null>(
+    defaultValues?.packageService || null
+  );
 
-  const [startDate, setStartDate] = useState(defaultValues.startDate || "");
-  const [startTime, setStartTime] = useState(defaultValues.startTime || "");
+  // Parse start date and time if startTime exists
+  const defaultDate = defaultValues.startTime
+    ? defaultValues.startTime.split("T")[0]
+    : "";
+  const defaultTime = defaultValues.startTime
+    ? defaultValues.startTime.split("T")[1]
+    : "";
+
+  const [startDate, setStartDate] = useState(defaultDate);
+  const [startTime, setStartTime] = useState(defaultTime);
 
   const [startDatePickerVisible, setStartDatePickerVisible] = useState(false);
   const [startTimePickerVisible, setStartTimePickerVisible] = useState(false);
@@ -33,12 +50,16 @@ const ServiceInfo: React.FC<AdditionalInfoProps> = ({
   const [isPackageModalVisible, setIsPackageModalVisible] = useState(false);
 
   const onSubmit = () => {
-    if (!serviceName || !servicePackage || !startDate || !startTime) {
+    if (!service || !packageService || !startDate || !startTime) {
       alert("Vui lòng điền đầy đủ thông tin!");
       return;
     }
 
-    onNext({ serviceId, serviceName, servicePackage, startDate, startTime });
+    onNext({
+      service,
+      packageService,
+      startTime: `${startDate}T${startTime}`,
+    });
   };
 
   return (
@@ -52,7 +73,7 @@ const ServiceInfo: React.FC<AdditionalInfoProps> = ({
       <TouchableOpacity onPress={() => setIsServiceModalVisible(true)}>
         <TextInput
           placeholder="Chọn dịch vụ"
-          value={serviceName}
+          value={service?.name || ""}
           editable={false}
           style={styles.input}
           left={<TextInput.Icon icon="briefcase" color="#28a745" />}
@@ -63,7 +84,7 @@ const ServiceInfo: React.FC<AdditionalInfoProps> = ({
       <Text style={styles.label}>Gói dịch vụ</Text>
       <TouchableOpacity
         onPress={() => {
-          if (!serviceId) {
+          if (!service) {
             alert("Vui lòng chọn dịch vụ trước");
             return;
           }
@@ -72,7 +93,7 @@ const ServiceInfo: React.FC<AdditionalInfoProps> = ({
       >
         <TextInput
           placeholder="Chọn gói"
-          value={servicePackage}
+          value={packageService?.name || ""}
           editable={false}
           style={styles.input}
           left={<TextInput.Icon icon="folder" color="#28a745" />}
@@ -132,10 +153,9 @@ const ServiceInfo: React.FC<AdditionalInfoProps> = ({
       <ServiceModal
         visible={isServiceModalVisible}
         onClose={() => setIsServiceModalVisible(false)}
-        onSelect={(service) => {
-          setServiceId(service._id);
-          setServiceName(service.name);
-          setServicePackage("");
+        onSelect={(selectedService) => {
+          setService(selectedService);
+          setPackageService(null); // Reset package
           setIsServiceModalVisible(false);
         }}
       />
@@ -143,14 +163,11 @@ const ServiceInfo: React.FC<AdditionalInfoProps> = ({
       {/* Modal chọn gói dịch vụ */}
       <PackageModal
         visible={isPackageModalVisible}
-        serviceId={serviceId}
+        serviceId={service?._id || ""}
         onClose={() => setIsPackageModalVisible(false)}
         onSelect={(pkg) => {
-          // Set the service package first, then close the modal
-          setServicePackage(pkg.name);
-          setTimeout(() => {
-            setIsPackageModalVisible(false); // Delay closing the modal
-          }, 0);
+          setPackageService(pkg);
+          setIsPackageModalVisible(false);
         }}
       />
     </View>

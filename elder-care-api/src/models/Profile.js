@@ -14,10 +14,7 @@ const profileSchema = new Schema({
     },
     relationship: { type: String, required: true },
     address: String,
-    emergencyContact: {
-        name: String,
-        phone: String
-    },
+    phone: String,
     healthInfo: [{
         condition: [{
             name: String,
