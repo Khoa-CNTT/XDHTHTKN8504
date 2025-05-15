@@ -41,7 +41,8 @@ const PaymentInfoScreen: React.FC = () => {
       <View style={styles.balanceCard}>
         <Text style={styles.balanceLabel}>Số dư ví ElderCare</Text>
         <Text style={styles.balanceAmount}>
-          {wallet.balance} <Text style={styles.currency}>đ</Text>
+          {wallet.balance.toLocaleString("vi-VN")}{" "}
+          <Text style={styles.currency}>đ</Text>
         </Text>
       </View>
 

@@ -2,10 +2,23 @@ import API from "../utils/api";
 import useAuthStore from "../stores/authStore";
 import { CreateBookingRequest } from "../types/CreateBookingRequest";
 import { Booking } from "../types/Booking";
+import { log } from "../utils/logger";
 
 interface ApiResponse<T> {
   message: string;
   data: Booking[];
+}
+
+export interface TimeSlot {
+  start: string; // "08:00"
+}
+
+export interface CreateBookingByPackagePayload {
+  packageId: string;
+  profileId: string;
+  repeatFrom: string; // ví dụ: "2025-05-16"
+  timeSlot: TimeSlot;
+  notes?: string;
 }
 
 export const createBooking = async (body: CreateBookingRequest) => {
@@ -31,6 +44,25 @@ export const createBooking = async (body: CreateBookingRequest) => {
     throw error;
   }
 };
+
+
+
+
+export const createBookingByPackage = async (data: CreateBookingByPackagePayload) => {
+  const token = useAuthStore.getState().token;
+  try {
+    const response = await API.post("/bookings/create-booking-package", data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }); 
+    return response.data;
+  } catch (error: any) {
+    log("Lỗi gọi API createBookingByPackage:", error);
+    throw error.response?.data || { message: "Lỗi không xác định." };
+  }
+};
+
 
 export const getBookings = async (): Promise<Booking[]> => {
   const token = useAuthStore.getState().token;
