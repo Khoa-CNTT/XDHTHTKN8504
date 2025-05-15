@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "../../Layout";
 import { memberData, sortsDatas } from "../../components/Datas";
 import { Link, useNavigate } from "react-router-dom";
@@ -11,9 +11,9 @@ import { PatientTable } from "../../components/Tables";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCustomers } from "../../store/customerSlice.js";
 import { getUserIdFromToken } from "../../utils/jwtHelper.js";
-import { io } from 'socket.io-client';
-
-const socket = io('http://localhost:5000')
+import { io } from "socket.io-client";
+import axios from "axios";
+const socket = io("http://localhost:5000");
 
 function Patients() {
   const [status, setStatus] = useState(sortsDatas.filterPatient[0]);
@@ -66,7 +66,7 @@ function Patients() {
     navigate(`/customers/preview/${id}`);
   };
 
-  const { data, loading, error } = useSelector(state => state.customers);
+  const { data, loading, error } = useSelector((state) => state.customers);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -92,6 +92,7 @@ function Patients() {
       socket.off("newFamilyMember");
     };
   }, [dispatch]);
+  // Hàm xóa khách hàng
 
   // console.log("data", data);
 
@@ -124,8 +125,8 @@ function Patients() {
                 {box.title === "Khách hàng hôm nay"
                   ? "hôm nay"
                   : box.title === "Khách hàng hàng tháng"
-                    ? "tháng này"
-                    : "năm này"}
+                  ? "tháng này"
+                  : "năm này"}
               </p>
             </div>
             <div
