@@ -7,6 +7,7 @@ import { getIO } from "../config/socketConfig.js";
 import { getUserSocketId } from '../controllers/socketController.js';
 import Doctor from "../models/Doctor.js";
 import Nurse from "../models/Nurse.js";
+import Payments from "../models/Payment.js";
 
 const bookingController = {
     // create new booking
@@ -48,9 +49,6 @@ const bookingController = {
             // Kiểm tra thời gian lặp lại
             const fromDate = new Date(repeatFrom);
             const toDate = new Date(repeatTo);
-
-            console.log("From Date:", fromDate);
-            console.log("To Date:", toDate);
 
             if (fromDate >= toDate) {
                 return res.status(400).json({ message: "Ngày bắt đầu phải nhỏ hơn ngày kết thúc" });
@@ -96,6 +94,19 @@ const bookingController = {
                 createdBy: userId,
             });
             await newBooking.save();
+
+            const code = "BK" + new Date().getTime();
+            const orderId = "MOMO" + new Date().getTime();
+
+            const newPayment = new Payments({
+                orderId: orderId,
+                bookingId: newBooking._id,
+                amount: totalPrice,
+                transactionCode: code
+            });
+
+            await newPayment.save();
+
             const io = getIO();
 
             const populatedBooking = await Booking.findById(newBooking._id).populate('serviceId').populate("profileId");
@@ -115,6 +126,7 @@ const bookingController = {
             return res.status(201).json({
                 message: "Booking created successfully",
                 booking: newBooking,
+                payment: newPayment
             });
         } catch (error) {
             return res.status(500).json({
@@ -529,6 +541,32 @@ const bookingController = {
         } catch (error) {
             console.error("Lỗi khi lấy danh sách bệnh nhân:", error);
             res.status(500).json({ message: 'Lỗi server', error: error.message });
+        }
+    },
+
+    deleteBookingById: async(req, res) => {
+        try {
+            const { userId } = req.user;
+            const { bookingId } = req.params;
+            console.log("ddddd", bookingId);
+            
+            const deleteBooking = await Booking.findByIdAndDelete({ _id: bookingId })
+
+            if (!deleteBooking) {
+                return res.status(404).json({
+                    message: "Không tìm thấy booking"
+                })
+            }
+
+            return res.status(200).json({
+                message: "Xóa booking thành công!",
+                booking: deleteBooking,
+            })
+        } catch (error) {
+            return res.status(500).json({
+                message: "Lỗi khi xóa booking",
+                error
+            })
         }
     },
 

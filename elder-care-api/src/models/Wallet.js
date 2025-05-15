@@ -11,7 +11,7 @@ const walletSchema = new Schema(
         transactionId: { type: String },
         type: {
           type: String,
-          enum: ["TOP_UP", "PAYMENT"],
+          enum: ["TOP_UP", "PAYMENT", "MOMO"],
           required: true,
         },
         amount: { type: Number, required: true },

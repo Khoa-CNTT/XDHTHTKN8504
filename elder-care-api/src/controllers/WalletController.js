@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import crypto from "crypto";
 import axios from "axios";
 import mongoose from "mongoose";
+import Payments from "../models/Payment.js";
 
 const walletController = {
   getWallet: async (req, res) => {
@@ -181,12 +182,12 @@ const walletController = {
         // Cộng tiền vào ví
         wallet.balance += Number(amount);
         wallet.transactions.push({
-          type: "TOP_UP",
+          type: "MOMO",
           amount: amount,
+          description: "Nạp tiền vào ví qua MOMO thành công!"
         });
 
         await wallet.save();
-        console.log("Cập nhật ví thành công:", wallet);
 
         return res.status(200).json({ msg: "Nạp tiền thành công", wallet });
       } else {
@@ -197,6 +198,5 @@ const walletController = {
       return res.status(500).json({ msg: "Lỗi server callback" });
     }
   },
-
 };
 export default walletController;

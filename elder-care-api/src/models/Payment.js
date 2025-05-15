@@ -7,8 +7,8 @@ const paymentSchema = new Schema({
   amount: { type: Number, required: true },
   method: {
     type: String,
-    enum: ["Momo", "VNPay", "Cash"],
-    default: "Momo"
+    enum: ["Momo", "VNPay", "Cash", "Wallet"],
+    default: "Wallet"
   },
   status: {
     type: String,
