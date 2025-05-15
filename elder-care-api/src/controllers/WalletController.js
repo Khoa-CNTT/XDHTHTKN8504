@@ -1,11 +1,10 @@
 import Wallet from "../models/Wallet.js";
 import User from "../models/User.js";
-import crypto from 'crypto';
-import axios from 'axios';
+import crypto from "crypto";
+import axios from "axios";
 import mongoose from "mongoose";
 
 const walletController = {
-
   getWallet: async (req, res) => {
     try {
       const { _id: userId } = req.user;
@@ -198,5 +197,6 @@ const walletController = {
       return res.status(500).json({ msg: "Lỗi server callback" });
     }
   },
+
 };
 export default walletController;
