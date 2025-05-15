@@ -477,7 +477,7 @@ export function DoctorsTable({ data, functions, doctor }) {
 
           return (
             <tr
-              key={item.id}
+              key={item._id}
               className="border-b border-border hover:bg-greyed transitions"
             >
               <td className={tdclass}>{index + 1}</td>
@@ -501,7 +501,7 @@ export function DoctorsTable({ data, functions, doctor }) {
               <td className={tdclass}>{email}</td>
               <td className={tdclass}>
                 <Link
-                  to={`/staffs/preview/${item.id}?tab=4`}
+                  to={`/staffs/preview/${item._id}?tab=4`}
                   className="bg-blue-500 text-white px-3 py-1 rounded"
                 >
                   Xem lương

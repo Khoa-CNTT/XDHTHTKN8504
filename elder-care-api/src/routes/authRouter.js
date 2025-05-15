@@ -66,4 +66,10 @@ router.delete(
   authController.deleteStaff
 )
 
+//Tìm nhân viên qua id
+router.get(
+  '/get-staff-id/:_id',
+  authController.getStaffById
+)
+
 export default router;

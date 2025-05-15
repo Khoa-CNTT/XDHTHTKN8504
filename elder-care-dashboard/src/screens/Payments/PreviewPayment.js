@@ -85,21 +85,20 @@ function PreviewPayment() {
             />
             <span
               className={`text-xs px-4
-              ${
-                payment.status === "Paid"
+              ${payment?.status === "Paid"
                   ? "bg-subMain text-subMain border-subMain"
-                  : payment.status === "Pending"
-                  ? "bg-orange-500 text-orange-500 border-orange-500"
-                  : payment.status === "Cancel" &&
+                  : payment?.status === "Pending"
+                    ? "bg-orange-500 text-orange-500 border-orange-500"
+                    : payment?.status === "Cancel" &&
                     "bg-red-600 text-red-600 border-red-600"
-              }
+                }
                py-1 border bg-opacity-10 border-opacity-40 rounded-full`}
             >
-              {payment.status === "Paid"
+              {payment?.status === "Paid"
                 ? "Đã Thanh Toán"
-                : payment.status === "Pending"
-                ? "Đang Chờ"
-                : payment.status === "Cancel" && "Hủy"}
+                : payment?.status === "Pending"
+                  ? "Đang Chờ"
+                  : payment?.status === "Cancel" && "Hủy"}
             </span>
           </div>
 
@@ -115,7 +114,7 @@ function PreviewPayment() {
             </div>
           </div>
         </div>
-        <SenderReceverComp item={payment.user} functions={{}} button={false} />
+        <SenderReceverComp item={payment?.user} functions={{}} button={false} />
         <div className="grid grid-cols-6 gap-6 mt-8 items-start">
           <div className="lg:col-span-4 col-span-6">
             <div className="p-6 border border-border rounded-xl overflow-x-scroll">

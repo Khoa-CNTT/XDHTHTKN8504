@@ -50,7 +50,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Middlewares
 app.use(
   cors({
-    origin: "*",
+    origin: "http://localhost:3000",
     methods: ["POST", "GET", "PUT", "DELETE", "PATCH"],
     credentials: true,
   })

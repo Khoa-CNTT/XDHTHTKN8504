@@ -465,6 +465,32 @@ const authController = {
         error
       });
     }
+  },
+
+  getStaffById: async (req, res) => {
+    try {
+      const { _id } = req.params;
+
+      let staff = await Doctor.findById(_id).populate('userId');
+
+      if (!staff) {
+        staff = await Nurse.findById(_id).populate('userId');
+      }
+
+      if (!staff) {
+        return res.status(404).json({
+          message: "Không tìm thấy nhân viên!",
+        });
+      }
+
+      return res.status(200).json(staff);
+
+    } catch (error) {
+      return res.status(500).json({
+        message: "Lỗi khi lấy thông in nhân viên!",
+        error
+      })
+    }
   }
 };
 

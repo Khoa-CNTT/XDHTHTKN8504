@@ -2,9 +2,23 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const paymentSchema = new Schema({
-  orderId: { type: String, required: true },
-  bookingId: { type: Schema.Types.ObjectId, ref: "Booking", required: true },
-  amount: { type: Number, required: true },
+  orderId: {
+    type: String,
+    required: true
+  },
+  bookingId: {
+    type: Schema.Types.ObjectId,
+    ref: "Booking",
+    required: true
+  },
+  staffId: {
+    type: Schema.Types.ObjectId,
+    ref: "User"
+  },
+  amount: {
+    type: Number,
+    required: true
+  },
   method: {
     type: String,
     enum: ["Momo", "VNPay", "Cash", "Wallet"],
