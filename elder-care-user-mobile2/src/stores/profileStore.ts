@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { Profile } from "../types/profile";
 import {
   getProfiles,
-  //   getProfileById,
   createProfile,
   updateProfile,
   deleteProfile,

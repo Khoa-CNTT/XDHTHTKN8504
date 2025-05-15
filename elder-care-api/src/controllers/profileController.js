@@ -5,7 +5,7 @@ const profileController = {
     // Create a new profile
     createProfile: async (req, res) => {
         try {
-            const { userId, firstName, lastName, birthDate, sex, relationship, address, emergencyContact, healthInfo } = req.body;
+            const { userId, firstName, lastName, birthDate, sex, relationship, address, phone, healthInfo, notes } = req.body;
 
             // Check if the userId is provided
             const existingUser = await User.findById(userId)
@@ -16,6 +16,7 @@ const profileController = {
             }
 
             const newProfile = new Profiles({
+                // thêm avatar nếu cần
                 userId,
                 firstName,
                 lastName,
@@ -23,8 +24,9 @@ const profileController = {
                 sex,
                 relationship,
                 address,
-                emergencyContact,
+                phone,
                 healthInfo,
+                notes
             })
 
             await newProfile.save();

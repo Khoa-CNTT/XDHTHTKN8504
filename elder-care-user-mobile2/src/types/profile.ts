@@ -1,22 +1,37 @@
-export interface EmergencyContact {
+export type HealthCondition = {
   name: string;
-  phone: string;
-}
+  description: string;
+};
 
-export interface HealthCondition {
-  condition: string;
-  notes: string;
-}
+export type HealthInfo = {
+  condition: HealthCondition[];
+  height?: number;
+  weight?: number;
+  typeBlood:
+    | "A+"
+    | "A-"
+    | "B+"
+    | "B-"
+    | "AB+"
+    | "AB-"
+    | "O+"
+    | "O-"
+    | "Unknown";
+  notes?: string;
+};
 
-export interface Profile {
+export type Profile = {
+  avartar?: string;
   _id: string;
   userId: string;
   firstName: string;
   lastName: string;
+  birthDate: string; // ISO date string
+  sex: "male" | "female" | "other";
   relationship: string;
-  address: string;
-  emergencyContact: EmergencyContact;
-  healthConditions: HealthCondition[];
-  createdAt: string; // ISO date string
-  updatedAt: string; // ISO date string
-}
+  address?: string;
+  phone?: string;
+  healthInfo?: HealthInfo[];
+  createdAt?: string;
+  updatedAt?: string;
+};

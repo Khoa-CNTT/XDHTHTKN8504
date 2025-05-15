@@ -100,6 +100,18 @@ const serviceController = {
             console.error("Error in deleteService:", error);
             return res.status(500).json({ success: false, message: "Server error" });            
         }
+    },
+    deleteAllServices: async (req, res) => {
+        try {
+          const result = await Service.deleteMany({});
+          res.status(200).json({
+            message: "All services have been deleted",
+            deletedCount: result.deletedCount,
+          });
+        } catch (error) {
+          console.error("Error deleting services:", error);
+          res.status(500).json({ message: "Failed to delete services", error });
+        }
     }
 
 }

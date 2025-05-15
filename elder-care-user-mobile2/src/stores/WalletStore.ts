@@ -42,7 +42,6 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     try {
       const wallet = await getWallet();
       set({ wallet });
-      log("Fetched wallet to store", wallet);
     } catch (error) {
       console.error("Failed to fetch wallet:", error);
       throw error;

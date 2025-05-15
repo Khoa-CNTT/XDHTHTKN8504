@@ -19,7 +19,8 @@ export default function BookAService() {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<StepFormData>({
     profile: null,
-    serviceId: "",
+    service: null,
+    packageService: null,
   });
 
   const goToStep = (step: number) => setCurrentStep(step);
@@ -31,9 +32,10 @@ export default function BookAService() {
   };
 
   const handleSubmit = async () => {
+    log("dữ liệu gửi resqest Booking: ", formData)
     if (
       !formData.profile ||
-      !formData.serviceId ||
+      !formData.service._id ||
       !formData.startTime ||
       !formData.endTime ||
       !formData.repeatFrom ||
@@ -45,7 +47,7 @@ export default function BookAService() {
 
     const body = {
       profileId: formData.profile._id,
-      serviceId: formData.serviceId,
+      serviceId: formData.service._id,
       notes: formData.note,
       participants: [],
       repeatFrom: formData.repeatFrom,
@@ -133,3 +135,21 @@ const stepIndicatorStyles = {
   stepIndicatorCurrentColor: "#28a745",
   stepIndicatorUnFinishedColor: "#aaaaaa",
 };
+
+// import * as ImagePicker from "expo-image-picker";
+
+// async function pickImageAndUpload() {
+//   const result = await ImagePicker.launchImageLibraryAsync({
+//     mediaTypes: ImagePicker.MediaTypeOptions.Images,
+//     quality: 0.7,
+//   });
+
+//   if (!result.canceled) {
+//     const imageUri = result.assets[0].uri;
+//     const uploadedUrl = await uploadImageToCloudinary(imageUri);
+//     if (uploadedUrl) {
+//       // Lưu URL ảnh vào form data
+//       setFormData((prev) => ({ ...prev, avatar: uploadedUrl }));
+//     }
+//   }
+// }

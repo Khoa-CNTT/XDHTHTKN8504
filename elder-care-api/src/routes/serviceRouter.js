@@ -19,5 +19,6 @@ router.delete(
     '/delete-service/:serviceId',
     serviceController.deleteService
 )
+router.delete('/delete-all', serviceController.deleteAllServices)
 
 export default router;

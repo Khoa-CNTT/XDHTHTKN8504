@@ -8,25 +8,22 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useServicesStore } from "../stores/serviceStore";
+import { Service } from "../types/Service";
 
 
 type ServiceModalProps = {
   visible: boolean;
-  role: string;
   onClose: () => void;
-  onSelect: (serviceId: string) => void;
+  onSelect: (service: Service) => void;
 };
 
 const ServiceModal: React.FC<ServiceModalProps> = ({
   visible,
   onClose,
   onSelect,
-  role,
 }) => {
-  const { isLoading, getServicesByRole } = useServicesStore();
+  const { isLoading, services } = useServicesStore();
   
-
-  const filteredServices = getServicesByRole(role); // lọc tại đây
   
   
 
@@ -54,12 +51,12 @@ const ServiceModal: React.FC<ServiceModalProps> = ({
             <ActivityIndicator />
           ) : (
             <FlatList
-              data={filteredServices}
+              data={services}
               keyExtractor={(item) => item._id}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   onPress={() => {
-                    onSelect(item._id);
+                    onSelect(item);
                     onClose();
                   }}
                   style={{

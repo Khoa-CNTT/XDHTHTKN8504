@@ -1,11 +1,16 @@
+
+
+export type Role = "doctor" | "nurse";
+
 export interface Service {
-  _id: string;
+  _id: string; // ID do MongoDB tạo ra
   name: string;
-  description: string;
+  description?: string;
   price: number;
-  role: "doctor" | "nurse";
   percentage: number;
   isActive: boolean;
-  createdAt: string; // hoặc Date nếu bạn xử lý ngày dưới dạng Date object
-  updatedAt: string; // hoặc Date
+  role: Role;
+  imgUrl?: string;
+  createdAt: string;
+  updatedAt: string;
 }
