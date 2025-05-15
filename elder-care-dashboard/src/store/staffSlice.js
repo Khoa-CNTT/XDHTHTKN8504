@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axios from '../api/axios.js';
 
 const token = localStorage.getItem('token');
 
@@ -8,7 +8,7 @@ export const fetchStaffList = createAsyncThunk(
     'staff/fetchStaffList',
     async (_, { rejectWithValue }) => {
         try {
-            const res = await axios.get('http://localhost:5000/api/v1/auth/get-staff');
+            const res = await axios.get('/auth/get-staff');
             return res.data.data;
         } catch (error) {
             return rejectWithValue(error.response.data);
@@ -20,7 +20,7 @@ export const deleteStaff = createAsyncThunk(
     'staff, deleteStaff',
     async (staffId, thunkAPI) => {
         try {
-            await axios.delete(`http://localhost:5000/api/v1/auth/delete-staff/${staffId}`, {
+            await axios.delete(`/auth/delete-staff/${staffId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -32,10 +32,24 @@ export const deleteStaff = createAsyncThunk(
     }
 )
 
+export const fetchStaffById = createAsyncThunk(
+    'staff/fetchStaffById',
+    async (_id, { rejectWithValue }) => {
+        try {
+            const res = await axios.get(`/auth/get-staff-id/${_id}`);
+            console.log("ddd", res.data);
+            return res.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || 'Lỗi không xác định');
+        }
+    }
+)
+
 const staffSlice = createSlice({
     name: 'staff',
     initialState: {
         staffList: [],
+        selectedStaff: null,
         loading: false,
         error: null,
     },
@@ -61,7 +75,20 @@ const staffSlice = createSlice({
             .addCase(deleteStaff.rejected, (state, action) => {
                 state.error = action.payload || 'Failed to delete staff';
             })
-
+            // Fetch chi tiết nhân viên
+            .addCase(fetchStaffById.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+                state.selectedStaff = null;
+            })
+            .addCase(fetchStaffById.fulfilled, (state, action) => {
+                state.loading = false;
+                state.selectedStaff = action.payload;
+            })
+            .addCase(fetchStaffById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || 'Lỗi khi lấy thông tin nhân viên';
+            });
     },
 });
 

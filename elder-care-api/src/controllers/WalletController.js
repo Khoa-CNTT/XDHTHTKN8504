@@ -52,7 +52,7 @@ const walletController = {
         return res.status(400).json({ msg: "Số dư không đủ" });
       }
 
-      const transactionId = "PAY_" + Date.now();
+      const transactionId = "PAY_" + new Date().getTime();
 
       // Trừ tiền và tạo giao dịch mới
       wallet.balance -= amount;

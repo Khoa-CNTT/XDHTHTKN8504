@@ -60,30 +60,30 @@ function App() {
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/invoices" element={<Invoices />} />
                   <Route path="/invoices/create" element={<CreateInvoice />} />
-                  <Route path="/invoices/edit/:id" element={<EditInvoice />} />
+                  <Route path="/invoices/edit/:_id" element={<EditInvoice />} />
                   <Route
-                    path="/invoices/preview/:id"
+                    path="/invoices/preview/:_id"
                     element={<PreviewInvoice />}
                   />
                   <Route path="/payments" element={<Payments />} />
-                  <Route path="/payments/edit/:id" element={<EditPayment />} />
+                  <Route path="/payments/edit/:_id" element={<EditPayment />} />
                   <Route
-                    path="/payments/preview/:id"
+                    path="/payments/preview/:_id"
                     element={<PreviewPayment />}
                   />
                   <Route path="/customers" element={<Patients />} />
                   <Route
-                    path="/customers/preview/:id"
+                    path="/customers/preview/:_id"
                     element={<PatientProfile />}
                   />
                   <Route path="/customers/create" element={<CreatePatient />} />
                   <Route
-                    path="/customers/visiting/:id"
+                    path="/customers/visiting/:_id"
                     element={<NewMedicalRecode />}
                   />
                   <Route path="/staffs" element={<Staffs />} />
                   <Route
-                    path="/staffs/preview/:id"
+                    path="/staffs/preview/:_id"
                     element={<DoctorProfile />}
                   />
                   <Route path="/receptions" element={<Receptions />} />

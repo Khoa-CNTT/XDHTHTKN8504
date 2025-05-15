@@ -9,6 +9,7 @@ import Doctor from "../models/Doctor.js";
 import Nurse from "../models/Nurse.js";
 import Payments from "../models/Payment.js";
 import Packages from "../models/Package.js";
+import Wallet from "../models/Wallet.js";
 
 const bookingController = {
     // create new booking
@@ -74,6 +75,15 @@ const bookingController = {
             const totalPrice = hoursPerDay * daysDiff * service.price || 0;
             const totalDiscount = totalPrice * (service.percentage || 0);
 
+            const wallet = await Wallet.findOne({ userId });
+            if (!wallet) {
+                return res.status(400).json({ message: "Không tìm thấy ví của người dùng" });
+            }
+
+            if (wallet.balance < totalPrice) {
+                return res.status(400).json({ message: "Số dư không đủ để thanh toán booking" });
+            }
+
             // Xác định nếu là lịch lặp lại
             const isRecurring = new Date(repeatFrom).toDateString() !== new Date(repeatTo).toDateString();
 
@@ -96,7 +106,7 @@ const bookingController = {
             });
             await newBooking.save();
 
-            const code = "BK" + new Date().getTime();
+            const code = "PAY_" + new Date().getTime();
             const orderId = "MOMO" + new Date().getTime();
 
             const newPayment = new Payments({
@@ -108,13 +118,50 @@ const bookingController = {
 
             await newPayment.save();
 
+            const transactionId = "PAY_" + new Date().getTime();
+
+            // Trừ tiền và tạo transaction trong ví
+            wallet.balance -= totalPrice;
+            wallet.transactions.push({
+                transactionId,
+                type: "PAYMENT",
+                amount: totalPrice,
+                status: "pending",
+                description: `Thanh toán booking ${newBooking._id}`,
+            });
+            await wallet.save();
+            // Sau 1 tiếng, kiểm tra trạng thái payment, nếu chưa success thì hoàn tiền
+            setTimeout(async () => {
+                try {
+                    const bookingCheck = await Booking.findById(newBooking._id);
+                    if (bookingCheck && bookingCheck.status !== "accepted") {
+                        const walletToRefund = await Wallet.findOne({ userId });
+                        if (!walletToRefund) return;
+
+                        const transaction = walletToRefund.transactions.find(t => t.transactionId === transactionId);
+                        if (transaction && transaction.status === "pending") {
+                            // Hoàn tiền
+                            walletToRefund.balance += transaction.amount;
+                            transaction.status = "failed";
+                            transaction.description += " - Hoàn tiền do booking chưa được chấp nhận sau 1 tiếng";
+                            await walletToRefund.save();
+
+                            // Cập nhật payment
+                            const paymentCheck = await Payments.findOne({ transactionCode: code });
+                            if (paymentCheck) {
+                                paymentCheck.status = "failed";
+                                await paymentCheck.save();
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi xử lý hoàn tiền tự động:", error);
+                }
+            }, 60 * 60 * 1000);
+
             const io = getIO();
-
             const populatedBooking = await Booking.findById(newBooking._id).populate('serviceId').populate("profileId");
-
-
             const targetRole = populatedBooking?.serviceId?.role;
-
             if (targetRole === "nurse" || targetRole === "doctor") {
                 io.to(`staff_${targetRole}`).emit(
                     "newBookingSignal",
@@ -357,6 +404,25 @@ const bookingController = {
 
             await booking.save();
             await Promise.all(schedules.map(s => s.save()));
+
+            // Cập nhật payment và wallet transaction sang success
+            const payment = await Payments.findOne({ bookingId: booking._id });
+            if (payment) {
+                payment.status = 'success';
+                payment.staffId = staff._id;
+                await payment.save();
+
+                // Cập nhật transaction trong ví
+                const wallet = await Wallet.findOne({ userId: booking.createdBy });
+                if (wallet) {
+                    const transaction = wallet.transactions.find(t => t.transactionId === payment.transactionCode);
+                    if (transaction) {
+                        transaction.status = 'success';
+                        transaction.description += ' - Booking đã được chấp nhận, thanh toán thành công';
+                        await wallet.save();
+                    }
+                }
+            }
 
             // Gửi thông báo socket cho người tạo và tất cả người tham gia
             const allUserIds = new Set([
