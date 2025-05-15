@@ -109,28 +109,30 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas, onSuccess }) {
             <p className="text-sm text-red-500">{errors.phoneNumber}</p>
           )}
         </div>
-
-        <Input
-          type="password"
-          label="Mật khẩu"
-          color={true}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        {errors.password && (
-          <p className="text-sm text-red-500">{errors.password}</p>
-        )}
-
-        <Input
-          type="password"
-          label="Xác nhận mật khẩu"
-          color={true}
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-        {errors.confirmPassword && (
-          <p className="text-sm text-red-500">{errors.confirmPassword}</p>
-        )}
+        <div className="grid sm:grid-cols-1 gap-4 w-full">
+          <Input
+            type="password"
+            label="Mật khẩu"
+            color={true}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {errors.password && (
+            <p className="text-sm text-red-500">{errors.password}</p>
+          )}
+        </div>
+        <div className="grid sm:grid-cols-1 gap-4 w-full">
+          <Input
+            type="password"
+            label="Xác nhận mật khẩu"
+            color={true}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          {errors.confirmPassword && (
+            <p className="text-sm text-red-500">{errors.confirmPassword}</p>
+          )}
+        </div>
 
         <div className="grid sm:grid-cols-1 gap-4 w-full">
           <div className="flex flex-col gap-2 w-full">

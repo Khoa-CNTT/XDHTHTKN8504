@@ -33,9 +33,16 @@ const AddEditServiceModal = ({ closeModal, isOpen, datas }) => {
     const newErrors = {};
 
     if (!name) newErrors.name = "Tên dịch vụ không được để trống";
-    if (!price || isNaN(price)) newErrors.price = "Giá phải là số";
-    if (percentage === "" || isNaN(percentage))
+    if (!price || isNaN(price)) {
+      newErrors.price = "Giá phải là số";
+    } else if (parseFloat(price) < 0) {
+      newErrors.price = "Giá không được nhỏ hơn 0";
+    }
+    if (percentage === "" || isNaN(percentage)) {
       newErrors.percentage = "Tỉ lệ phần trăm phải là số";
+    } else if (parseFloat(percentage) < 0 || parseFloat(percentage) > 100) {
+      newErrors.percentage = "Tỉ lệ phần trăm phải từ 0 đến 100";
+    }
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
@@ -84,36 +91,57 @@ const AddEditServiceModal = ({ closeModal, isOpen, datas }) => {
       <div className="flex-colo gap-6">
         <Uploader setImage={setImage} image={image} />
 
-        <Input
+        {/* <Input
           label="Tên dịch vụ"
           color={true}
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Nhập tên dịch vụ"
         />
-        {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+        {errors.name && <p className="text-sm text-red-500">{errors.name}</p>} */}
+
+        <div className="w-full">
+          <Input
+            label="Tên dịch vụ"
+            color={true}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Nhập tên dịch vụ"
+          />
+          {errors.name && (
+            <p className="text-sm text-red-500 mt-1 ml-1">{errors.name}</p>
+          )}
+        </div>
 
         <div className="w-full grid sm:grid-cols-2 gap-4">
-          <Input
-            label="Giá (vnd)"
-            type="number"
-            color={true}
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-          />
-          {errors.price && (
-            <p className="text-sm text-red-500">{errors.price}</p>
-          )}
-          <Input
-            label="Tỉ lệ phần trăm (%)"
-            type="number"
-            color={true}
-            value={percentage}
-            onChange={(e) => setPercentage(e.target.value)}
-          />
-          {errors.percentage && (
-            <p className="text-sm text-red-500">{errors.percentage}</p>
-          )}
+          <div className="w-full">
+            <Input
+              label="Giá (vnd)"
+              type="number"
+              min="0"
+              color={true}
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+            {errors.price && (
+              <p className="text-sm text-red-500 mt-1 ml-1">{errors.price}</p>
+            )}
+          </div>
+
+          <div className="w-full">
+            <Input
+              label="Tỉ lệ phần trăm (%)"
+              type="number"
+              color={true}
+              value={percentage}
+              onChange={(e) => setPercentage(e.target.value)}
+            />
+            {errors.percentage && (
+              <p className="text-sm text-red-500 mt-1 ml-1">
+                {errors.percentage}
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="w-full">
