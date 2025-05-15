@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchStaffList } from "../../store/staffSlice.js";
 import { getUserIdFromToken } from "../../utils/jwtHelper.js";
+import { deleteStaff } from "../../store/staffSlice.js";
 import { io } from "socket.io-client";
 import * as XLSX from "xlsx"; // Import xlsx library
 
@@ -90,8 +91,8 @@ function Staffs() {
           item.type === "doctor"
             ? "Bác sĩ"
             : item.type === "nurse"
-            ? "Điều dưỡng"
-            : "Không xác định",
+              ? "Điều dưỡng"
+              : "Không xác định",
         Email: item.email || "Không rõ",
       }))
     );
@@ -180,6 +181,9 @@ function Staffs() {
             data={staffList}
             functions={{
               preview: preview,
+              onDelete: (id) => {
+                dispatch(deleteStaff(id));
+              },
             }}
           />
         </div>
