@@ -97,7 +97,7 @@ const walletController = {
       var partnerCode = "MOMO";
       var redirectUrl = process.env.REDIRECT_URI || "https://www.facebook.com/"; // Địa chỉ trang sau khi thanh toán
       var ipnUrl =
-        "https://ebd2-171-225-184-232.ngrok-free.app/api/v1/wallet/callback"; //
+        "https://9464-171-225-184-232.ngrok-free.app/api/v1/wallet/callback"; //
       //  https://1382-103-156-58-116.ngrok-free.app Callback URL để nhận kết quả thanh toán
       var requestType = "captureWallet";
       var orderId = partnerCode + new Date().getTime();

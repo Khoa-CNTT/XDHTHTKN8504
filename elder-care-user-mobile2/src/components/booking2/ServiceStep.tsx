@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Text, Button, TextInput } from "react-native-paper";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { format, isBefore, isSameDay, parse } from "date-fns";
+import Feather from "react-native-vector-icons/Feather";
 import ServiceModal from "../ServiceModal";
 import PackageModal from "../PackageModal";
 import { Service } from "../../types/Service";
 import { Package } from "../../types/PackageService";
+import { parse, isSameDay, addHours, isBefore, format } from "date-fns";
 
 interface Props {
   onNext: (data: {
@@ -28,7 +29,6 @@ const ServiceInfo: React.FC<Props> = ({ onNext, defaultValues = {} }) => {
   const [packageService, setPackageService] = useState<Package | null>(
     defaultValues.packageService || null
   );
-
   const [startDate, setStartDate] = useState(
     defaultValues.startTime?.split("T")[0] || ""
   );
@@ -36,74 +36,72 @@ const ServiceInfo: React.FC<Props> = ({ onNext, defaultValues = {} }) => {
     defaultValues.startTime?.split("T")[1] || ""
   );
 
-  const [errorService, setErrorService] = useState("");
-  const [errorPackage, setErrorPackage] = useState("");
-  const [errorDate, setErrorDate] = useState("");
-  const [errorTime, setErrorTime] = useState("");
+  const [errors, setErrors] = useState({
+    service: "",
+    package: "",
+    date: "",
+    time: "",
+  });
 
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
-  const [isServiceModalVisible, setServiceModalVisible] = useState(false);
-  const [isPackageModalVisible, setPackageModalVisible] = useState(false);
+  const [modals, setModals] = useState({
+    service: false,
+    package: false,
+    datePicker: false,
+    timePicker: false,
+  });
 
   const validate = () => {
+    const newErrors = { service: "", package: "", date: "", time: "" };
     let valid = true;
 
     if (!service) {
-      setErrorService("Vui lòng chọn dịch vụ");
+      newErrors.service = "Vui lòng chọn dịch vụ";
       valid = false;
-    } else {
-      setErrorService("");
     }
 
     if (!packageService) {
-      setErrorPackage("Vui lòng chọn gói dịch vụ");
+      newErrors.package = "Vui lòng chọn gói dịch vụ";
       valid = false;
-    } else {
-      setErrorPackage("");
     }
 
     if (!startDate) {
-      setErrorDate("Vui lòng chọn ngày");
+      newErrors.date = "Vui lòng chọn ngày";
       valid = false;
     } else {
       const selectedDate = parse(startDate, "yyyy-MM-dd", new Date());
       if (isBefore(selectedDate, new Date().setHours(0, 0, 0, 0))) {
-        setErrorDate("Không thể chọn ngày trong quá khứ");
+        newErrors.date = "Không thể chọn ngày trong quá khứ";
         valid = false;
-      } else {
-        setErrorDate("");
       }
     }
 
     if (!startTime) {
-      setErrorTime("Vui lòng chọn giờ");
+      newErrors.time = "Vui lòng chọn giờ";
       valid = false;
     } else if (startDate) {
-      const selectedTime = parse(
+      const selectedDateTime = parse(
         `${startDate}T${startTime}`,
         "yyyy-MM-dd'T'HH:mm",
         new Date()
       );
       const now = new Date();
-      if (isSameDay(parse(startDate, "yyyy-MM-dd", new Date()), now)) {
-        const minTime = new Date();
-        const maxTime = new Date();
-        maxTime.setHours(minTime.getHours() + 1);
-        if (
-          isBefore(selectedTime, minTime) ||
-          isBefore(maxTime, selectedTime)
-        ) {
-          setErrorTime("Thời gian phải trong vòng 1 giờ tới");
+      const isToday = isSameDay(
+        parse(startDate, "yyyy-MM-dd", new Date()),
+        now
+      );
+
+      if (isToday) {
+        const oneHourLater = addHours(now, 1);
+
+        if (isBefore(selectedDateTime, oneHourLater)) {
+          newErrors.time =
+            "Vui lòng chọn giờ ít nhất sau 1 tiếng kể từ thời điểm hiện tại.";
           valid = false;
-        } else {
-          setErrorTime("");
         }
-      } else {
-        setErrorTime("");
       }
     }
 
+    setErrors(newErrors);
     return valid;
   };
 
@@ -116,48 +114,60 @@ const ServiceInfo: React.FC<Props> = ({ onNext, defaultValues = {} }) => {
     });
   };
 
+  // Auto-clear lỗi khi người dùng sửa
   useEffect(() => {
-    if (service) setErrorService("");
+    if (service) setErrors((prev) => ({ ...prev, service: "" }));
   }, [service]);
 
   useEffect(() => {
-    if (packageService) setErrorPackage("");
+    if (packageService) setErrors((prev) => ({ ...prev, package: "" }));
   }, [packageService]);
 
   useEffect(() => {
-    if (startDate) setErrorDate("");
+    if (startDate) setErrors((prev) => ({ ...prev, date: "" }));
   }, [startDate]);
 
   useEffect(() => {
-    if (startTime) setErrorTime("");
+    if (startTime) setErrors((prev) => ({ ...prev, time: "" }));
   }, [startTime]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Thông tin dịch vụ</Text>
 
+      {/* Dịch vụ */}
       <Text style={styles.label}>Dịch vụ</Text>
-      <TouchableOpacity onPress={() => setServiceModalVisible(true)}>
+      <TouchableOpacity
+        onPress={() => setModals((m) => ({ ...m, service: true }))}
+      >
         <TextInput
           placeholder="Chọn dịch vụ"
           value={service?.name || ""}
           editable={false}
           style={styles.input}
-          left={<TextInput.Icon icon="briefcase" />}
+          left={
+            <TextInput.Icon
+              icon={() => <Feather name="shopping-bag" size={20} />}
+            />
+          }
         />
       </TouchableOpacity>
-      {errorService ? (
-        <Text style={styles.errorText}>{errorService}</Text>
+      {errors.service ? (
+        <Text style={styles.errorText}>{errors.service}</Text>
       ) : null}
 
+      {/* Gói dịch vụ */}
       <Text style={styles.label}>Gói dịch vụ</Text>
       <TouchableOpacity
         onPress={() => {
           if (!service) {
-            setErrorService("Vui lòng chọn dịch vụ trước");
+            setErrors((prev) => ({
+              ...prev,
+              service: "Vui lòng chọn dịch vụ trước",
+            }));
             return;
           }
-          setPackageModalVisible(true);
+          setModals((m) => ({ ...m, package: true }));
         }}
       >
         <TextInput
@@ -165,33 +175,42 @@ const ServiceInfo: React.FC<Props> = ({ onNext, defaultValues = {} }) => {
           value={packageService?.name || ""}
           editable={false}
           style={styles.input}
-          left={<TextInput.Icon icon="folder" />}
+          left={
+            <TextInput.Icon icon={() => <Feather name="package" size={20} />} />
+          }
         />
       </TouchableOpacity>
-      {errorPackage ? (
-        <Text style={styles.errorText}>{errorPackage}</Text>
+      {errors.package ? (
+        <Text style={styles.errorText}>{errors.package}</Text>
       ) : null}
 
+      {/* Ngày */}
       <Text style={styles.label}>Ngày bắt đầu</Text>
       <TextInput
         placeholder="Chọn ngày"
         value={startDate}
-        onFocus={() => setShowDatePicker(true)}
+        onFocus={() => setModals((m) => ({ ...m, datePicker: true }))}
         style={styles.input}
-        left={<TextInput.Icon icon="calendar" />}
+        left={
+          <TextInput.Icon icon={() => <Feather name="calendar" size={20} />} />
+        }
       />
-      {errorDate ? <Text style={styles.errorText}>{errorDate}</Text> : null}
+      {errors.date ? <Text style={styles.errorText}>{errors.date}</Text> : null}
 
+      {/* Giờ */}
       <Text style={styles.label}>Giờ bắt đầu</Text>
       <TextInput
         placeholder="Chọn giờ"
         value={startTime}
-        onFocus={() => setShowTimePicker(true)}
+        onFocus={() => setModals((m) => ({ ...m, timePicker: true }))}
         style={styles.input}
-        left={<TextInput.Icon icon="clock" />}
+        left={
+          <TextInput.Icon icon={() => <Feather name="clock" size={20} />} />
+        }
       />
-      {errorTime ? <Text style={styles.errorText}>{errorTime}</Text> : null}
+      {errors.time ? <Text style={styles.errorText}>{errors.time}</Text> : null}
 
+      {/* Nút tiếp tục */}
       <Button
         mode="contained"
         icon="arrow-right"
@@ -201,43 +220,46 @@ const ServiceInfo: React.FC<Props> = ({ onNext, defaultValues = {} }) => {
         Tiếp tục
       </Button>
 
+      {/* Pickers */}
       <DateTimePickerModal
-        isVisible={showDatePicker}
+        isVisible={modals.datePicker}
         mode="date"
         onConfirm={(date) => {
           setStartDate(format(date, "yyyy-MM-dd"));
-          setShowDatePicker(false);
+          setModals((m) => ({ ...m, datePicker: false }));
         }}
-        onCancel={() => setShowDatePicker(false)}
+        onCancel={() => setModals((m) => ({ ...m, datePicker: false }))}
       />
 
       <DateTimePickerModal
-        isVisible={showTimePicker}
+        isVisible={modals.timePicker}
         mode="time"
         onConfirm={(time) => {
           setStartTime(format(time, "HH:mm"));
-          setShowTimePicker(false);
+          setModals((m) => ({ ...m, timePicker: false }));
         }}
-        onCancel={() => setShowTimePicker(false)}
+        onCancel={() => setModals((m) => ({ ...m, timePicker: false }))}
       />
 
+      {/* Modal chọn dịch vụ */}
       <ServiceModal
-        visible={isServiceModalVisible}
-        onClose={() => setServiceModalVisible(false)}
+        visible={modals.service}
+        onClose={() => setModals((m) => ({ ...m, service: false }))}
         onSelect={(svc) => {
           setService(svc);
           setPackageService(null);
-          setServiceModalVisible(false);
+          setModals((m) => ({ ...m, service: false }));
         }}
       />
 
+      {/* Modal chọn gói */}
       <PackageModal
-        visible={isPackageModalVisible}
+        visible={modals.package}
         serviceId={service?._id || ""}
-        onClose={() => setPackageModalVisible(false)}
+        onClose={() => setModals((m) => ({ ...m, package: false }))}
         onSelect={(pkg) => {
           setPackageService(pkg);
-          setPackageModalVisible(false);
+          setModals((m) => ({ ...m, package: false }));
         }}
       />
     </View>
@@ -268,6 +290,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   button: {
+    paddingVertical:7,
     marginTop: 32,
     borderRadius: 24,
     backgroundColor: "#28a745",

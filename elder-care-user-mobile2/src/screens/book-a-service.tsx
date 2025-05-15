@@ -9,22 +9,29 @@ import PersonalInfo from "../components/booking2/PersonalInfoStep";
 import ServiceInfo from "../components/booking2/ServiceStep";
 import ConfirmationStep from "../components/booking2/ConfirmationStep";
 import { log } from "../utils/logger";
-import { createBooking } from "../api/BookingService";
+import { createBookingByPackage } from "../api/BookingService";
 import { StepFormData } from "../types/StepFormData";
+import { useWalletStore } from "../stores/WalletStore";
+import { Modal, Text, Button } from "react-native-paper";
+import Feather from "react-native-vector-icons/Feather";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../navigation/navigation"; 
 
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const labels = ["Cá Nhân", "Dịch Vụ", "Xác Nhận"];
 
 export default function BookAService() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
+  const Wallet = useWalletStore((state) => state.wallet);
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<StepFormData>({
     profile: null,
     service: null,
     packageService: null,
   });
-  
+  const [modalVisible, setModalVisible] = useState(false);
   const getBookingPreview = (formData: StepFormData) => {
-    const { profile, service, packageService, startTime } = formData;
+    const { profile, service, packageService, startTime, note } = formData;
 
     if (!profile || !service || !packageService || !startTime) return null;
 
@@ -42,6 +49,7 @@ export default function BookAService() {
       address: profile.address,
       fullName,
       phone: profile.phone,
+      packageId: packageService._id,
 
       serviceId: service._id,
       serviceName: `${service.name} (${packageService.name})`,
@@ -50,7 +58,7 @@ export default function BookAService() {
 
       repeatFrom,
       repeatTo,
-
+      note,
       timeSlot: {
         start: start.format("HH:mm"),
         end: end.format("HH:mm"),
@@ -58,7 +66,10 @@ export default function BookAService() {
     };
   };
 
-
+  const handleTopUp = () => {
+    setModalVisible(false);
+    navigation.navigate("TopUpScreen"); // đổi "TopUpScreen" thành tên màn hình nạp tiền của bạn
+  };
   const goToStep = (step: number) => setCurrentStep(step);
   const next = () => setCurrentStep((s) => s + 1);
   const updateData = (data: Partial<StepFormData>) => {
@@ -67,21 +78,22 @@ export default function BookAService() {
   };
   const handleSubmit = async () => {
     const bookingPreview = getBookingPreview(formData);
+    if (!bookingPreview) return;
+
+    if (bookingPreview.price > Wallet.balance) {
+      setModalVisible(true);
+      return;
+    }
     const body = {
+      packageId: bookingPreview.packageId,
       profileId: bookingPreview.profileId,
-      serviceId: bookingPreview.serviceId, // ID của service (Khám bệnh/Chăm sóc)
-      status: "pending", // Tình trạng booking
-      notes: "",
-      paymentId: null, 
-      participants: [],
       repeatFrom: bookingPreview.repeatFrom,
-      repeatTo: bookingPreview.repeatTo,
-      timeSlot: bookingPreview.timeSlot,
-      repeatInterval: bookingPreview.repeatInterval,
+      timeSlot: { start: bookingPreview.timeSlot.start },
+      notes: bookingPreview.note,
     };
     log("request gửi booking", body)
     try {
-      const result = await createBooking(body);
+      const result = await createBookingByPackage(body);
       navigation.goBack();
     } catch (error) {
       log("Lỗi khi tạo booking", error);
@@ -123,6 +135,43 @@ export default function BookAService() {
           )}
         </View>
       </ScrollView>
+
+      <Modal
+        visible={modalVisible}
+        onDismiss={() => setModalVisible(false)}
+        contentContainerStyle={styles.modalContainer}
+      >
+        <View style={{ alignItems: "center", marginBottom: 16 }}>
+          <Feather name="alert-triangle" size={48} color="#e53935" />
+        </View>
+        <Text style={styles.modalText}>
+          Ví của bạn không đủ để thực hiện giao dịch, vui lòng nạp thêm tiền vào
+          ví.
+        </Text>
+
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginTop: 24,
+          }}
+        >
+          <Button
+            mode="outlined"
+            onPress={() => setModalVisible(false)}
+            style={{ flex: 1, marginRight: 8 }}
+          >
+            Đóng
+          </Button>
+          <Button
+            mode="contained"
+            onPress={handleTopUp}
+            style={{ flex: 1, marginLeft: 8 }}
+          >
+            Nạp tiền
+          </Button>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -143,6 +192,19 @@ const styles = StyleSheet.create({
   },
   stepCard: {
     backgroundColor: "#fff",
+  },
+  modalContainer: {
+    backgroundColor: "white",
+    padding: 20,
+    margin: 20,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 12,
+    color: "#e53935",
+    fontWeight: "bold",
   },
 });
 

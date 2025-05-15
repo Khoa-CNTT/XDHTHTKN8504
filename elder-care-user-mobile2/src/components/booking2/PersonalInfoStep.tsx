@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
-import { Text, Button } from "react-native-paper";
+import { View, StyleSheet } from "react-native";
+import { Text, Button, TextInput } from "react-native-paper";
 import { Feather } from "@expo/vector-icons";
 import CareRecipientModal from "../CareRecipientModal";
 import { Profile } from "../../types/profile";
+import InputDisplay from "../InputDisplay";
 
 interface PersonalInfoProps {
-  onNext: (data: Profile) => void;
+  onNext: (data: Profile & { notes?: string }) => void;
   defaultValues?: Partial<Profile>;
 }
 
@@ -16,8 +17,9 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
 }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const [notes, setNotes] = useState("");
+  const [showError, setShowError] = useState(false);
 
-  // Khi có defaultValues truyền vào (chuyển lại step), giữ lại dữ liệu đã chọn
   useEffect(() => {
     if (defaultValues?.firstName) {
       setSelectedProfile(defaultValues as Profile);
@@ -29,14 +31,16 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
       setSelectedProfile(profile);
     }
     setModalVisible(false);
+    setShowError(false);
   };
 
   const handleSubmit = () => {
-    if (selectedProfile) {
-      onNext(selectedProfile);
-    } else {
-      alert("Vui lòng chọn hồ sơ trước khi tiếp tục.");
+    if (!selectedProfile) {
+      setShowError(true);
+      return;
     }
+    setShowError(false);
+    onNext({ ...selectedProfile, notes });
   };
 
   return (
@@ -48,74 +52,62 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
         Chọn hồ sơ để tự động điền thông tin vào biểu mẫu.
       </Text>
 
-      {/* Họ và tên */}
       <Text style={styles.label}>Họ và tên</Text>
-      <TouchableOpacity
+      <InputDisplay
+        icon="user"
+        value={
+          selectedProfile
+            ? `${selectedProfile.firstName} ${selectedProfile.lastName}`
+            : undefined
+        }
+        placeholder="Chọn hồ sơ chăm sóc"
         onPress={() => setModalVisible(true)}
-        activeOpacity={0.9}
-      >
-        <View style={styles.inputBox}>
-          <Text
-            style={
-              selectedProfile?.firstName ? styles.inputText : styles.placeholder
-            }
-          >
-            {`${selectedProfile?.firstName} ${selectedProfile?.lastName}` ||
-              "Chọn hồ sơ chăm sóc"}
-          </Text>
-          <Feather name="chevron-down" size={20} color="#888" />
-        </View>
-      </TouchableOpacity>
+      />
+      {showError && (
+        <Text style={styles.errorText}>
+          Vui lòng chọn hồ sơ chăm sóc trước khi tiếp tục.
+        </Text>
+      )}
 
-      {/* Số điện thoại */}
       <Text style={styles.label}>Số điện thoại</Text>
-      <View style={styles.inputBox}>
-        <Text
-          style={
-            selectedProfile?.phone
-              ? styles.inputText
-              : styles.placeholder
-          }
-        >
-          {selectedProfile?.phone || "Chưa có số điện thoại"}
-        </Text>
-        <Feather name="phone" size={18} color="#888" />
-      </View>
+      <InputDisplay
+        icon="phone"
+        value={selectedProfile?.phone}
+        placeholder="Chưa có số điện thoại"
+      />
 
-      {/* Địa chỉ */}
       <Text style={styles.label}>Địa chỉ</Text>
-      <View style={styles.inputBox}>
-        <Text
-          style={
-            selectedProfile?.address ? styles.inputText : styles.placeholder
-          }
-        >
-          {selectedProfile?.address || "Chưa có địa chỉ"}
-        </Text>
-        <Feather name="map-pin" size={18} color="#888" />
-      </View>
+      <InputDisplay
+        icon="map-pin"
+        value={selectedProfile?.address}
+        placeholder="Chưa có địa chỉ"
+        multiline
+      />
 
-      {/* Lưu ý */}
-      <Text style={styles.label}>Lưu ý chăm sóc</Text>
-      <View style={styles.inputBox}>
-        <Text
-          style={
-            selectedProfile?.relationship
-              ? styles.inputText
-              : styles.placeholder
-          }
-        >
-          {selectedProfile?.avartar || "Chưa có ghi chú"}
-        </Text>
-        <Feather name="info" size={18} color="#888" />
+      <Text style={styles.label}>Ghi chú chăm sóc (không bắt buộc)</Text>
+      <View style={styles.notesContainer}>
+        <Feather
+          name="info"
+          size={18}
+          color="#666"
+          style={{ marginRight: 8 }}
+        />
+        <TextInput
+          placeholder="Nhập ghi chú chăm sóc"
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+          style={styles.notesInput}
+          underlineColor="transparent"
+          outlineColor="#ccc"
+        />
       </View>
 
       <Button
         mode="contained"
-        onPress={handleSubmit}
+        icon="arrow-right"
         style={styles.button}
-        contentStyle={{ paddingVertical: 6 }}
-        labelStyle={{ fontSize: 16 }}
+        onPress={handleSubmit}
       >
         Tiếp tục
       </Button>
@@ -133,55 +125,62 @@ export default PersonalInfo;
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 24,
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 16,
     flex: 1,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
   },
   title: {
-    fontWeight: "bold",
-    marginBottom: 6,
-    color: "#333",
+    fontWeight: "700",
+    marginBottom: 10,
+    color: "#222",
   },
   description: {
-    marginBottom: 16,
+    marginBottom: 20,
     color: "#666",
-    fontSize: 14,
+    fontSize: 15,
+    lineHeight: 22,
   },
   label: {
     fontWeight: "600",
-    marginBottom: 4,
-    marginTop: 12,
+    marginBottom: 6,
+    marginTop: 14,
     color: "#444",
-    fontSize: 14,
+    fontSize: 15,
   },
-  inputBox: {
-    backgroundColor: "#f3f4f6",
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+  notesContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 1,
+    backgroundColor: "#fafafa",
   },
-  inputText: {
-    fontSize: 15,
-    color: "#111",
-  },
-  placeholder: {
-    fontSize: 15,
-    color: "#888",
+  notesInput: {
+    flex: 1,
+    fontSize: 16,
+    minHeight: 30,
+    maxHeight: 120,
+    backgroundColor: "transparent",
     fontStyle: "italic",
+    color: "#999",
   },
   button: {
-    marginTop: 24,
+    paddingVertical: 7,
+    marginTop: 32,
+    borderRadius: 24,
     backgroundColor: "#28a745",
-    borderRadius: 8,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 13,
+    marginTop: 4,
   },
 });
