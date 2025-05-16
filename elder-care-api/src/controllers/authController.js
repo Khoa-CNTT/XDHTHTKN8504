@@ -491,7 +491,119 @@ const authController = {
         error
       })
     }
-  }
+  },
+
+  //Xóa khách hàng bởi Admin
+  deleteCustomerByAdmin: async (req, res) => {
+    try {
+      const { customerId } = req.params;
+
+      const deletedUser = await User.findOneAndDelete({
+        _id: customerId,
+        role: "family_member"
+      });
+
+      if (!deletedUser) {
+        return res.status(404).json({ message: "Không tìm thấy khách hàng để xóa." });
+      }
+
+      return res.status(200).json({ message: "Xóa khách hàng thành công." });
+    } catch (error) {
+      console.error("Lỗi khi xóa khách hàng:", error);
+      return res.status(500).json({
+        message: "Lỗi khi xóa khách hàng!",
+        error: error.message
+      });
+    }
+  },
+
+  //Đếm khách hàng 
+  countCustomersTodayMonthYear: async (req, res) => {
+    try {
+      const now = new Date();
+
+      // Đầu ngày hôm nay
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      // Đầu tháng này
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      // Đầu năm nay
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+      // Đếm khách hàng tạo hôm nay
+      const countToday = await User.countDocuments({
+        role: "family_member",
+        createdAt: { $gte: startOfToday }
+      });
+
+      // Đếm khách hàng tạo trong tháng này
+      const countMonth = await User.countDocuments({
+        role: "family_member",
+        createdAt: { $gte: startOfMonth }
+      });
+
+      // Đếm khách hàng tạo trong năm nay
+      const countYear = await User.countDocuments({
+        role: "family_member",
+        createdAt: { $gte: startOfYear }
+      });
+
+      res.status(200).json({
+        today: countToday,
+        month: countMonth,
+        year: countYear
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  //Lấy thông tin của khách hàng
+  getCustomerById: async (req, res) => {
+    try {
+      const { customerId } = req.params;
+      const user = await User.findOne({ _id: customerId, role: "family_member" }).populate("profiles");
+      if (!user) {
+        return res.status(404).json({ message: "Không tìm thấy khách hàng." });
+      }
+      let firstProfileName = null;
+      if (user.profiles && user.profiles.length > 0) {
+        const profile = user.profiles[0];
+        const firstName = profile.firstName || "";
+        const lastName = profile.lastName || "";
+        firstProfileName = `${firstName} ${lastName}`.trim() || null;
+      }
+      return res.status(200).json({
+        message: "Lấy thông tin khách hàng thành công.",
+        customer: {
+          _id: user._id,
+          phone: user.phone,
+          avatar: user.avatar || "",
+          name: firstProfileName
+        }
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  sortCustomersByCreatedAt: async (req, res) => {
+    try {
+      const { order } = req.query; // order = 'asc' (cũ nhất) hoặc 'desc' (mới nhất)
+      const sortOrder = order === 'asc' ? 1 : -1;
+
+      const customers = await User.find({ role: "family_member" })
+        .select("-password")
+        .sort({ createdAt: sortOrder })
+        .populate("profiles");
+
+      res.status(200).json({
+        message: "Sắp xếp khách hàng thành công",
+        data: customers,
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
 };
 
 export default authController;

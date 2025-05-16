@@ -1,7 +1,7 @@
 import React from "react";
 import Layout from "../../Layout";
 import { patientTab } from "../../components/Datas";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { IoArrowBackOutline } from "react-icons/io5";
 import MedicalRecord from "./MedicalRecord";
 import AppointmentsUsed from "../../components/UsedComp/AppointmentsUsed";
@@ -11,9 +11,23 @@ import PersonalInfo from "../../components/UsedComp/PersonalInfo";
 import PatientImages from "./PatientImages";
 import HealthInfomation from "./HealthInfomation";
 import DentalChart from "./DentalChart";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { fetchCustomerById } from '../../store/customerSlice.js'
 
 function PatientProfile() {
   const [activeTab, setActiveTab] = React.useState(1);
+  const { _id } = useParams();
+  const { selectedCustomer, loading, error } = useSelector((state) => state.customers)
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchCustomerById(_id));
+  }, [dispatch, _id])
+
+  console.log("dd", selectedCustomer);
+  
+  const avatarUrl = selectedCustomer?.avatar || "https://res.cloudinary.com/dqlut408r/image/upload/v1747430190/elder-care/avatar/vrke4e0bni6xtnplicxf.jpg";
 
   const tabPanel = () => {
     switch (activeTab) {
@@ -47,7 +61,7 @@ function PatientProfile() {
         >
           <IoArrowBackOutline />
         </Link>
-        <h1 className="text-xl font-semibold">Trần Minh Nghĩa</h1>
+        <h1 className="text-xl font-semibold">{selectedCustomer?.name}</h1>
       </div>
       <div className=" grid grid-cols-12 gap-6 my-8 items-start">
         <div
@@ -58,14 +72,14 @@ function PatientProfile() {
           className="col-span-12 flex-colo gap-6 lg:col-span-4 bg-white rounded-xl border-[1px] border-border p-6 lg:sticky top-28"
         >
           <img
-            src="/images/user7.png"
+            src={avatarUrl}
             alt="cài đặt"
             className="w-40 h-40 rounded-full object-cover border border-dashed border-subMain"
           />
           <div className="gap-2 flex-colo">
-            <h2 className="text-sm font-semibold">Trần Minh Nghĩa</h2>
-            <p className="text-xs text-textGray">123456789@gmail.com</p>
-            <p className="text-xs">+84 712 345 678</p>
+            <h2 className="text-sm font-semibold">{selectedCustomer?.name}</h2>
+            {/* <p className="text-xs text-textGray">123456789@gmail.com</p> */}
+            <p className="text-xs">{selectedCustomer?.phone}</p>
           </div>
           {/* tabs */}
           <div className="flex-colo gap-3 px-2 xl:px-12 w-full">

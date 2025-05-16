@@ -9,7 +9,7 @@ import { toast } from "react-hot-toast";
 import { Button, FromToDate, Select } from "../../components/Form";
 import { PatientTable } from "../../components/Tables";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchCustomers } from "../../store/customerSlice.js";
+import { fetchCustomers, deleteCustomerByAdmin, fetchCustomerCounts } from "../../store/customerSlice.js";
 import { getUserIdFromToken } from "../../utils/jwtHelper.js";
 import { io } from "socket.io-client";
 import axios from "axios";
@@ -21,6 +21,8 @@ function Patients() {
   const [dateRange, setDateRange] = useState([new Date(), new Date()]);
   const [startDate, endDate] = dateRange;
   const navigate = useNavigate();
+  const { data, counts, loading, error } = useSelector((state) => state.customers);
+  const dispatch = useDispatch();
 
   const sorts = [
     {
@@ -41,40 +43,36 @@ function Patients() {
     {
       id: 1,
       title: "Khách hàng hôm nay",
-      value: "10",
+      value: counts?.today,
       color: ["bg-subMain", "text-subMain"],
       icon: BiTime,
     },
     {
       id: 2,
       title: "Khách hàng hàng tháng",
-      value: "230",
+      value: counts?.month,
       color: ["bg-orange-500", "text-orange-500"],
       icon: BsCalendarMonth,
     },
     {
       id: 3,
       title: "Khách hàng hàng năm",
-      value: "1,500",
+      value: counts?.year,
       color: ["bg-green-500", "text-green-500"],
       icon: MdOutlineCalendarMonth,
     },
   ];
 
   // preview
-  const previewPayment = (id) => {
-    navigate(`/customers/preview/${id}`);
+  const previewPayment = (_id) => {
+    navigate(`/customers/preview/${_id}`);
   };
 
-  const { data, loading, error } = useSelector((state) => state.customers);
-  const dispatch = useDispatch();
-
   useEffect(() => {
-    // console.log("useEffect is running");
     dispatch(fetchCustomers());
+    dispatch(fetchCustomerCounts());
 
     const user = getUserIdFromToken();
-    // console.log("user", user);
 
     if (user) {
       socket.emit("join", {
@@ -92,9 +90,9 @@ function Patients() {
       socket.off("newFamilyMember");
     };
   }, [dispatch]);
-  // Hàm xóa khách hàng
 
   // console.log("data", data);
+  // console.log("countsCT", counts);
 
   if (loading) return <p>Đang tải...</p>;
   if (error) return <p>Lỗi: {error}</p>;
@@ -125,8 +123,8 @@ function Patients() {
                 {box.title === "Khách hàng hôm nay"
                   ? "hôm nay"
                   : box.title === "Khách hàng hàng tháng"
-                  ? "tháng này"
-                  : "năm này"}
+                    ? "tháng này"
+                    : "năm này"}
               </p>
             </div>
             <div
@@ -186,6 +184,9 @@ function Patients() {
             data={data}
             functions={{
               preview: previewPayment,
+              onDelete: (id) => {
+                dispatch(deleteCustomerByAdmin(id));
+              },
             }}
             used={false}
           />

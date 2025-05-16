@@ -17,8 +17,33 @@ export const fetchSalaryByStaff = createAsyncThunk(
     'payments/fetchSalaryByStaff',
     async (_id, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`/payment/get-salary/${_id}`);
-            return response.data; // giả sử { salary: 15000000 }
+            const response = await axios.get(`/payment/get-salary/${_id}`,);
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
+    }
+);
+
+export const fetchAllPayment = createAsyncThunk(
+    'payments/fetchAllPayment',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axios.get('/payment/get-all');
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
+    }
+)
+
+export const fetchPaymentCounts = createAsyncThunk(
+    'payments/fetchPaymentCounts',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axios.get('/payment/count-payments');
+            console.log("count", response.data);            
+            return response.data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || err.message);
         }
@@ -29,18 +54,28 @@ const paymentSlice = createSlice({
     name: 'payments',
     initialState: {
         data: [],
-        salary: 0,
+        salary: null,
         loading: false,
         error: null,
         salaryLoading: false,
         salaryError: null,
+        allPayments: [],
+        allPaymentsLoading: false,
+        allPaymentsError: null,
+        paymentCounts: null,
+        paymentCountsLoading: false,
+        paymentCountsError: null,
     },
     reducers: {
         clearPayments: (state) => {
             state.data = [];
             state.salary = 0;
+            state.allPayments = [];
             state.loading = false;
             state.error = null;
+            state.paymentCounts = null;
+            state.paymentCountsLoading = false;
+            state.paymentCountsError = null;
         },
     },
     extraReducers: (builder) => {
@@ -65,11 +100,38 @@ const paymentSlice = createSlice({
             })
             .addCase(fetchSalaryByStaff.fulfilled, (state, action) => {
                 state.salaryLoading = false;
-                state.salary = action.payload.salary;
+                state.salary = action.payload;
             })
             .addCase(fetchSalaryByStaff.rejected, (state, action) => {
                 state.salaryLoading = false;
                 state.salaryError = action.payload;
+            })
+
+            .addCase(fetchAllPayment.pending, (state) => {
+                state.allPaymentsLoading = true;
+                state.allPaymentsError = null;
+            })
+            .addCase(fetchAllPayment.fulfilled, (state, action) => {
+                state.allPaymentsLoading = false;
+                state.allPayments = action.payload;
+            })
+            .addCase(fetchAllPayment.rejected, (state, action) => {
+                state.allPaymentsLoading = false;
+                state.allPaymentsError = action.payload;
+            })
+
+            // fetch payment counts
+            .addCase(fetchPaymentCounts.pending, (state) => {
+                state.paymentCountsLoading = true;
+                state.paymentCountsError = null;
+            })
+            .addCase(fetchPaymentCounts.fulfilled, (state, action) => {
+                state.paymentCountsLoading = false;
+                state.paymentCounts = action.payload;
+            })
+            .addCase(fetchPaymentCounts.rejected, (state, action) => {
+                state.paymentCountsLoading = false;
+                state.paymentCountsError = action.payload;
             });
     },
 });

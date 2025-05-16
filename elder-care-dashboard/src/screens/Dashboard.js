@@ -22,17 +22,24 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { countUsers } from "../api/auth.js";
 import { getPatients } from "../api/bookings.js";
+import { io } from 'socket.io-client'
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAllPayment } from "../store/paymentSlice.js";
+
+const socket = io('http://localhost:5000/');
 
 function Dashboard() {
   const [userCount, setUserCount] = useState([]);
   const [patients, setPatients] = useState([]);
+  const { allPayments: payments, loading, error } = useSelector((state) => state.payment)
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await countUsers();
         setUserCount(data);
-        console.log(data);
+        // console.log(data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -45,7 +52,7 @@ function Dashboard() {
       try {
         const data = await getPatients();
         setPatients(data);
-        console.log("patients:", patients);
+        // console.log("patients:", patients);
       } catch (error) {
         console.error("Error fetching patients:", error);
       }
@@ -53,8 +60,13 @@ function Dashboard() {
     fetchPatients();
   }, []);
 
-  
-  
+  useEffect(() => {
+    dispatch(fetchAllPayment());
+  }, [dispatch])
+
+  // console.log("paymentss", payments);
+
+
   const appointmentsData = [20, 50, 75, 15, 108, 97, 70, 41, 50, 20, 90, 60]
   const revenueData = [20, 50, 75, 15, 108, 97, 70, 41, 50, 20, 90, 60]
   const staffsData = [92, 80, 45, 15, 49, 77, 70, 51, 110, 20, 90, 60]
@@ -139,7 +151,7 @@ function Dashboard() {
             {/* table */}
             <div className="mt-4 overflow-x-scroll">
               <Transactiontable
-                data={transactionData.slice(0, 5)}
+                data={payments.slice(0, 5)}
                 action={false}
               />
             </div>

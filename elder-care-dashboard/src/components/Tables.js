@@ -52,60 +52,75 @@ export function Transactiontable({ data, action, functions }) {
         </tr>
       </thead>
       <tbody>
-        {data.map((item, index) => (
-          <tr
-            key={item.id}
-            className="border-b border-border hover:bg-greyed transitions"
-          >
-            <td className={tdclass}>{index + 1}</td>
-            <td className={tdclass}>
-              <div className="flex gap-4 items-center">
-                <span className="w-12">
-                  <img
-                    src={item.user.image}
-                    alt={item.user.title}
-                    className="w-full h-12 rounded-full object-cover border border-border"
-                  />
-                </span>
+        {data.map((item, index) => {
+          const avatarUrl = item?.bookingId?.profileId?.avartar || "https://scontent.fdad8-2.fna.fbcdn.net/v/t39.30808-1/453072859_908668704639042_7014970388308944883_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=1&ccb=1-7&_nc_sid=2d3e12&_nc_eui2=AeEg-UXOgqW74CRH95x_vpPfMDEPn7GasIkwMQ-fsZqwiaTDML4C_AjQ9G4mJk502SC6mNYg1kbsI6j2IjDb_RqB&_nc_ohc=os7jBcSY43wQ7kNvwFjnh4Z&_nc_oc=AdmzOOO8hZeJeXo0q0qz7Va4_lzOA7GZ8JwgNLDqq9AjAPkTV2N3ZPRpOGeR_CKP8Iw&_nc_zt=24&_nc_ht=scontent.fdad8-2.fna&_nc_gid=jxjl2Qe12i52CPcsacSiZA&oh=00_AfLDvAifihod_-c9AU2sgSGv7R_zcmF30poydHRK92I_4w&oe=682D29C9";
+          const fullName = (`${item?.bookingId?.profileId?.firstName} ${item?.bookingId?.profileId?.lastName}`) || "N/A";
+          const phone = item.bookingId?.profileId?.phone || "N/A";
+          const formattedDate = item.createdAt
+            ? format(new Date(item.createdAt), 'MMM dd, yyyy')
+            : 'Null';
+          const status = item.status
+          const totalAmount = item.amount
+            ? `${item.amount.toLocaleString("vi")} VND`
+            : "Null";
 
-                <div>
-                  <h4 className="text-sm font-medium">{item.user.title}</h4>
-                  <p className="text-xs mt-1 text-textGray">
-                    {item.user.phone}
-                  </p>
-                </div>
-              </div>
-            </td>
-            <td className={tdclass}>{item.date}</td>
-            <td className={tdclass}>
-              <span
-                className={`py-1 px-4 ${item.status === "Paid"
-                  ? "bg-subMain text-subMain"
-                  : item.status === "Pending"
-                    ? "bg-orange-500 text-orange-500"
-                    : item.status === "Cancel" && "bg-red-600 text-red-600"
-                  } bg-opacity-10 text-xs rounded-xl`}
-              >
-                {item.status === "Paid"
-                  ? "Đã thanh toán"
-                  : item.status === "Pending"
-                    ? "Đang chờ xử lý"
-                    : item.status === "Cancel" && "Đã hủy"}
-              </span>
-            </td>
-            <td className={`${tdclass} font-semibold`}>{item.amount}</td>
-            <td className={tdclass}>{item.method}</td>
-            {action && (
+
+
+          return (
+            <tr
+              key={item._id}
+              className="border-b border-border hover:bg-greyed transitions"
+            >
+              <td className={tdclass}>{index + 1}</td>
               <td className={tdclass}>
-                <MenuSelect datas={DropDown1} item={item}>
-                  <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
-                    <BiDotsHorizontalRounded />
+                <div className="flex gap-4 items-center">
+                  <span className="w-12">
+                    <img
+                      src={avatarUrl}
+                      alt={avatarUrl}
+                      className="w-full h-12 rounded-full object-cover border border-border"
+                    />
+                  </span>
+
+                  <div>
+                    <h4 className="text-sm font-medium">{fullName}</h4>
+                    <p className="text-xs mt-1 text-textGray">
+                      {phone}
+                    </p>
                   </div>
-                </MenuSelect>
+                </div>
               </td>
-            )}
-          </tr>
-        ))}
+              <td className={tdclass}>{formattedDate}</td>
+              <td className={tdclass}>
+                <span
+                  className={`py-1 px-4 ${status === "success"
+                    ? "bg-subMain text-subMain"
+                    : status === "pending"
+                      ? "bg-orange-500 text-orange-500"
+                      : status === "fail" && "bg-red-600 text-red-600"
+                    } bg-opacity-10 text-xs rounded-xl`}
+                >
+                  {status === "success"
+                    ? "Đã thanh toán"
+                    : status === "pending"
+                      ? "Đang chờ xử lý"
+                      : status === "fail" && "Đã hủy"}
+                </span>
+              </td>
+              <td className={`${tdclass} font-semibold`}>{totalAmount}</td>
+              <td className={tdclass}>{item.method === "Wallet" ? "Ví điện tử" : item.method}</td>
+              {action && (
+                <td className={tdclass}>
+                  <MenuSelect datas={DropDown1} item={item}>
+                    <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
+                      <BiDotsHorizontalRounded />
+                    </div>
+                  </MenuSelect>
+                </td>
+              )}
+            </tr>
+          )
+        })}
       </tbody>
     </table>
   );
@@ -379,7 +394,7 @@ export function PatientTable({ data, functions, used }) {
 
           return (
             <tr
-              key={item.id}
+              key={item._id}
               className="border-b border-border hover:bg-greyed transitions"
             >
               <td className={tdclasse}>{index + 1}</td>
@@ -424,14 +439,23 @@ export function PatientTable({ data, functions, used }) {
 
               <td className={`${tdclasse} flex gap-2`}>
                 <button
-                  onClick={() => functions.preview(item.id)}
+                  onClick={() => functions.preview(item._id)}
                   className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
                 >
                   <FiEye />
                   Xem
                 </button>
                 {!used && (
-                  <button className="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm">
+                  <button
+                    className="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm"
+                    onClick={() => {
+                      if (
+                        window.confirm("Bạn có chắc chắn muốn xóa khách hàng này không này không?")
+                      ) {
+                        functions.onDelete(item._id);
+                      }
+                    }}
+                  >
                     <FiTrash2 />
                     Xóa
                   </button>
@@ -720,14 +744,14 @@ export function PaymentTable({ data, functions, doctor }) {
             ? format(new Date(item.createdAt), 'MMM dd, yyyy')
             : 'Null';
 
-          const customerName = `${item?.bookingId?.profileId?.firstName} ${item?.bookingId?.profileId?.lastName}` || "N/A"
+          const customerName = `${item?.bookingId?.profileId?.firstName} ${item?.bookingId?.profileId?.lastName}` || "N/A";
 
           const status = item.status
           const phone = item.bookingId?.profileId?.phone || "N/A";
           const totalAmount = item.amount
             ? `${item.amount.toLocaleString("en-US")} VND`
             : "Null";
-          
+
 
           return (
             <tr

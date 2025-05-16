@@ -46,7 +46,7 @@ function Booking() {
     };
   }, [dispatch]);
 
-  console.log("bookings", bookings);
+  // console.log("bookings", bookings);
 
   const onCloseModal = () => {
     setIsOpen(false);

@@ -192,14 +192,10 @@ const paymentController = {
                 return res.status(400).json({ message: "ID không hợp lệ!" });
             }
 
-            console.log("⏳ Bắt đầu tìm staff với _id:", _id);
-
             let staff = await Doctor.findById(_id);
-            console.log("👨‍⚕️ Doctor:", staff);
 
             if (!staff) {
                 staff = await Nurse.findById(_id);
-                console.log("👩‍⚕️ Nurse:", staff);
             }
 
             if (!staff) {
@@ -210,8 +206,6 @@ const paymentController = {
             if (!staffId) {
                 return res.status(400).json({ message: "Nhân viên không có staffId!" });
             }
-
-            console.log("🔍 Tìm payment theo userId:", staffId);
 
             const payments = await Payments.find({
                 staffId: new mongoose.Types.ObjectId(staffId),
@@ -238,6 +232,7 @@ const paymentController = {
         try {
             const { _id } = req.params;
 
+            // Tìm doctor hoặc nurse
             let staff = await Doctor.findById(_id);
             if (!staff) {
                 staff = await Nurse.findById(_id);
@@ -248,11 +243,11 @@ const paymentController = {
 
             const userId = staff.userId;
 
+            // Tính tổng lương và thống kê đơn
             const result = await Payments.aggregate([
                 {
                     $match: {
-                        staffId: userId,
-                        status: "success"
+                        staffId: userId
                     }
                 },
                 {
@@ -272,32 +267,124 @@ const paymentController = {
                 {
                     $group: {
                         _id: "$staffId",
-                        totalAmount: { $sum: "$amount" },
-                        totalDiscount: { $sum: { $ifNull: ["$booking.totalDiscount", 0] } },
-                        paymentCount: { $sum: 1 }
+                        totalAmount: {
+                            $sum: {
+                                $cond: [{ $eq: ["$status", "success"] }, "$amount", 0]
+                            }
+                        },
+                        totalDiscount: {
+                            $sum: {
+                                $cond: [
+                                    { $eq: ["$status", "success"] },
+                                    { $ifNull: ["$booking.totalDiscount", 0] },
+                                    0
+                                ]
+                            }
+                        },
+                        successCount: {
+                            $sum: {
+                                $cond: [{ $eq: ["$status", "success"] }, 1, 0]
+                            }
+                        },
+                        pendingCount: {
+                            $sum: {
+                                $cond: [{ $ne: ["$status", "success"] }, 1, 0]
+                            }
+                        }
                     }
                 },
                 {
                     $project: {
                         totalSalary: { $add: ["$totalAmount", "$totalDiscount"] },
-                        paymentCount: 1
+                        successCount: 1,
+                        pendingCount: 1
                     }
                 }
             ]);
 
             if (result.length === 0) {
                 return res.status(200).json({
-                    staffId,
+                    staff,
                     totalSalary: 0,
-                    paymentCount: 0
+                    successCount: 0,
+                    pendingCount: 0
                 });
             }
 
-            return res.status(200).json(result[0]);
+            return res.status(200).json({
+                ...result[0]
+            });
         } catch (error) {
             return res.status(500).json({
                 message: "Lỗi khi tính tiền lương",
                 error: error.message
+            });
+        }
+    },
+
+    getAllPayment: async (req, res) => {
+        try {
+            const payments = await Payments.find({})
+                .populate({
+                    path: "bookingId",
+                    populate: {
+                        path: "profileId",
+                        model: "Profile"
+                    }
+                })
+                .sort({ createdAt: -1 });
+            return res.status(200).json(payments);
+        } catch (error) {
+            console.error("Lỗi khi lấy tất cả Payment:", error);
+            return res.status(500).json({
+                message: "Lỗi khi lấy tất cả Payment",
+                error: error.message,
+            });
+        }
+    },
+
+    countPayments: async (req, res) => {
+        try {
+            const now = new Date();
+
+            // Lấy ngày hiện tại
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+
+            // Lấy tháng hiện tại
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+            // Lấy năm hiện tại
+            const yearStart = new Date(now.getFullYear(), 0, 1);
+            const nextYear = new Date(now.getFullYear() + 1, 0, 1);
+
+            // Đếm payment trong ngày
+            const countToday = await Payments.countDocuments({
+            createdAt: { $gte: today, $lt: tomorrow }
+            });
+
+            // Đếm payment trong tháng
+            const countMonth = await Payments.countDocuments({
+            createdAt: { $gte: monthStart, $lt: nextMonth }
+            });
+
+            // Đếm payment trong năm
+            const countYear = await Payments.countDocuments({
+            createdAt: { $gte: yearStart, $lt: nextYear }
+            });
+
+            return res.status(200).json({
+            today: countToday,
+            month: countMonth,
+            year: countYear
+            });
+        } catch (error) {
+            console.error("Lỗi khi lấy Payment:", error);
+            return res.status(500).json({
+            message: "Lỗi khi lấy Payment",
+            error: error.message,
             });
         }
     }

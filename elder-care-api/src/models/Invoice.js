@@ -1,22 +1,41 @@
-const mongoose = require("mongoose");
+import mongoose from 'mongoose'
 const Schema = mongoose.Schema;
 
 const invoiceSchema = new Schema({
-    bookingId: { type: Schema.Types.ObjectId, ref: "Booking", required: true },
-    nurseId: { type: Schema.Types.ObjectId, ref: "Nurse", required: true },
-    patientId: { type: Schema.Types.ObjectId, ref: "Profile", required: true },
-    totalAmount: { type: Number, required: true },
-    paymentDate: { type: Date, default: Date.now },
+    invoiceId: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true,
+    },
+    bookingId: {
+        type: Schema.Types.ObjectId,
+        ref: "Booking",
+        required: true,
+    },
+    totalAmount: {
+        type: Number,
+        required: true,
+        min: 0,
+    },
+    paymentDate: {
+        type: Date,
+        default: Date.now,
+    },
+    dueDate: {
+        type: Date,
+        default: () => {
+            const now = new Date();
+            return new Date(now.setDate(now.getDate() + 4));
+        },
+    },
     paymentMethod: {
         type: String,
-        enum: ["Momo", "VNPay", "Cash"],
-        required: true
+        enum: ["cash", "credit_card", "bank_transfer", "wallet"],
+        default: "wallet",
     },
-    status: {
-        type: String,
-        enum: ["paid", "unpaid"],
-        default: "unpaid"
-    }
 }, { timestamps: true });
 
-module.exports = mongoose.model("Invoice", invoiceSchema);
+const Invoice = mongoose.model("Invoice", invoiceSchema);
+
+export default Invoice
