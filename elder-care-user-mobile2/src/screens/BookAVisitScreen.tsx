@@ -298,10 +298,10 @@ const BookVisitScreen: React.FC = () => {
 
                 <ServiceModal
                     visible={modalServiceVisible}
-                    role={role}
+                    
                     onClose={() => setModalServiceVisible(false)}
-                    onSelect={(id) => {
-                        setSelectedServiceId(id);
+                    onSelect={(service) => {
+                        setSelectedServiceId(service._id);
                         setServiceError(null); // Xóa lỗi khi chọn dịch vụ
                         setModalServiceVisible(false);
                     }}

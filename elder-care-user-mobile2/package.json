@@ -34,6 +34,7 @@
     "expo-linear-gradient": "~14.1.4",
     "expo-linking": "^7.1.4",
     "expo-location": "~18.1.4",
+    "expo-notifications": "^0.31.2",
     "expo-router": "~5.0.5",
     "expo-status-bar": "~2.2.3",
     "lucide-react-native": "^0.503.0",

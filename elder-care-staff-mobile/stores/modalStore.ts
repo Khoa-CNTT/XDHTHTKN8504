@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Vibration } from "react-native";
 import { playNotificationSound } from "../utils/soundService";
+import { sendLocalNotification } from "../utils/notificationService";
 
 interface ModalState {
   visible: boolean;
@@ -8,8 +9,6 @@ interface ModalState {
   message?: string;
   autoHideDuration?: number;
   onDetailPress?: () => void;
-  onConfirm?: () => void;
-  onCancel?: () => void;
   type?: "popup" | "dialog";
 
   showModal: (
@@ -19,10 +18,9 @@ interface ModalState {
       type?: "popup" | "dialog";
       autoHideDuration?: number;
       onDetailPress?: () => void;
-      onConfirm?: () => void;
-      onCancel?: () => void;
     }
   ) => void;
+
   hideModal: () => void;
 }
 
@@ -32,25 +30,31 @@ export const useModalStore = create<ModalState>((set) => ({
   message: "",
   autoHideDuration: undefined,
   onDetailPress: undefined,
-  onConfirm: undefined,
-  onCancel: undefined,
   type: "popup",
 
   showModal: async (title, message, options) => {
-    Vibration.vibrate(300);
-    await playNotificationSound(options?.type ?? "popup");
+    const type = options?.type ?? "popup";
 
+    // 1. Rung thiết bị
+    Vibration.vibrate(300);
+
+    // 2. Phát âm thanh thông báo
+    await playNotificationSound(type);
+
+    // 3. Gửi local notification của hệ thống
+    await sendLocalNotification({title, body: message});
+
+    // 4. Hiển thị modal
     set({
       visible: true,
       title,
       message,
       autoHideDuration: options?.autoHideDuration,
       onDetailPress: options?.onDetailPress,
-      onConfirm: options?.onConfirm,
-      onCancel: options?.onCancel,
-      type: options?.type ?? "popup",
+      type,
     });
 
+    // 5. Tự động ẩn nếu có autoHideDuration
     if (options?.autoHideDuration) {
       setTimeout(() => {
         set({
@@ -59,8 +63,6 @@ export const useModalStore = create<ModalState>((set) => ({
           message: "",
           autoHideDuration: undefined,
           onDetailPress: undefined,
-          onConfirm: undefined,
-          onCancel: undefined,
           type: "popup",
         });
       }, options.autoHideDuration);
@@ -74,8 +76,6 @@ export const useModalStore = create<ModalState>((set) => ({
       message: "",
       autoHideDuration: undefined,
       onDetailPress: undefined,
-      onConfirm: undefined,
-      onCancel: undefined,
       type: "popup",
     });
   },

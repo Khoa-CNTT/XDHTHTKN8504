@@ -58,13 +58,9 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
     try {
       // Gọi hàm lấy lịch trình gần nhất
       const schedule = await ScheduleStatusApi.getNextScheduleForStaff();
-      if (!schedule) {
-        throw new Error("Không có lịch trình gần nhất");
-      }
       // Cập nhật trạng thái nearestSchedule
       set({ nearestSchedule: schedule });
     } catch (error: any) {
-      console.log("Error fetching nearest schedule:", error);
       set({ error: error?.message || "Lỗi khi tải lịch trình gần nhất" });
     }
   },

@@ -1,51 +1,38 @@
 import React, { useEffect } from "react";
-import { router, useLocalSearchParams } from "expo-router";
-import { ScrollView, StyleSheet, View } from "react-native";
-import { Text } from "react-native-paper";
-import { formatTime } from "../../../utils/dateHelper";
+import { ScrollView, View, StyleSheet, ActivityIndicator } from "react-native";
+import { Text, Button } from "react-native-paper";
+import { format } from "date-fns";
+import { useLocalSearchParams } from "expo-router";
 import useBookingStore from "../../../stores/BookingStore";
-import { ActivityIndicator } from "react-native-paper";
-import { Button } from "react-native-paper";
 
-import {
-  Clock,
-  ClipboardList,
-  User,
-  CheckCircle,
-  DollarSign,
-} from "lucide-react-native";
-import { MotiView } from "moti";
-
-const LabeledText = ({ label, value }: { label: string; value: string }) => (
-  <Text style={styles.text}>
-    <Text style={styles.bold}>{label}: </Text>
-    {value}
-  </Text>
+const Section = ({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) => (
+  <View style={styles.section}>
+    <Text style={styles.sectionTitle}>{title}</Text>
+    {subtitle ? <Text style={styles.sectionSubtitle}>{subtitle}</Text> : null}
+    <View style={styles.sectionContent}>{children}</View>
+    <View style={styles.separator} />
+  </View>
 );
 
-const AnimatedCard = ({
-  icon,
-  title,
-  children,
-  delay = 0,
+const LabelText = ({
+  label,
+  value,
 }: {
-  icon: React.ReactNode;
-  title: string;
-  children: React.ReactNode;
-  delay?: number;
+  label: string;
+  value?: string | number | null;
 }) => (
-  <MotiView
-    from={{ opacity: 0, translateY: 20 }}
-    animate={{ opacity: 1, translateY: 0 }}
-    transition={{ type: "timing", duration: 500, delay }}
-    style={styles.card}
-  >
-    {icon}
-    <View style={styles.cardContent}>
-      <Text style={styles.cardTitle}>{title}</Text>
-      {children}
-    </View>
-  </MotiView>
+  <View style={styles.labelContainer}>
+    <Text style={styles.labelText}>{label}</Text>
+    <Text style={styles.valueText}>{value ?? "-"}</Text>
+  </View>
 );
 
 const BookingDetailScreen = () => {
@@ -56,12 +43,12 @@ const BookingDetailScreen = () => {
     if (!booking && typeof bookingId === "string") {
       fetchBooking(bookingId);
     }
-  }, [booking, bookingId]);
+  }, [bookingId]);
 
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#28A745" />
+        <ActivityIndicator size="large" color="#000" />
         <Text style={styles.loadingText}>Đang tải thông tin...</Text>
       </View>
     );
@@ -73,165 +60,194 @@ const BookingDetailScreen = () => {
         <Text style={styles.loadingText}>
           Không tìm thấy thông tin lịch hẹn.
         </Text>
+        <Button
+          mode="outlined"
+          onPress={() => {
+            if (typeof bookingId === "string") {
+              fetchBooking(bookingId);
+            }
+          }}
+          style={styles.retryButton}
+          labelStyle={{ color: "#000" }}
+        >
+          Thử lại
+        </Button>
       </View>
     );
   }
 
   const {
     timeSlot,
-    totalDiscount,
-    profileId,
-    serviceId,
-    status,
-    notes,
     repeatFrom,
     repeatTo,
+    serviceId,
+    profileId,
+    totalDiscount,
+    totalPrice,
+    createdAt,
   } = booking;
+
+  const healthInfo = profileId?.healthInfo?.[0];
+  const finalPrice = Math.max(0, totalPrice - totalDiscount);
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Chi tiết lịch hẹn</Text>
-
-      <AnimatedCard
-        icon={<Clock color="#28A745" size={24} />}
-        title="Thông tin công việc"
-        delay={100}
+      <Section
+        title="Thông tin đặt lịch"
+        subtitle={
+          createdAt
+            ? `Lên lịch lúc ${format(new Date(createdAt), "dd/MM/yyyy")}`
+            : undefined
+        }
       >
-        <LabeledText label="Dịch vụ" value={serviceId.name} />
-        <LabeledText
-          label="Ca"
-          value={`${timeSlot.start} - ${timeSlot.end}`}
+        <LabelText label="Dịch vụ" value={serviceId?.name} />
+        <LabelText
+          label="Ngày bắt đầu"
+          value={
+            repeatFrom ? format(new Date(repeatFrom), "dd/MM/yyyy") : undefined
+          }
         />
-        <LabeledText
-          label="Ngày"
-          value={`${formatTime(repeatFrom, "date")} - ${formatTime(
-            repeatTo,
-            "date"
-          )}`}
+        <LabelText
+          label="Ngày kết thúc"
+          value={
+            repeatTo ? format(new Date(repeatTo), "dd/MM/yyyy") : undefined
+          }
         />
-      </AnimatedCard>
-
-      <AnimatedCard
-        icon={<User color="#28A745" size={24} />}
-        title="Thông tin khách hàng"
-        delay={200}
-      >
-        <LabeledText
-          label="Họ tên"
-          value={`${profileId.firstName} ${profileId.lastName}`}
+        <LabelText
+          label="Thời gian"
+          value={timeSlot ? `${timeSlot.start} - ${timeSlot.end}` : undefined}
         />
-        <LabeledText label="Địa chỉ" value={profileId.address} />
-      </AnimatedCard>
-
-      <AnimatedCard
-        icon={<ClipboardList color="#28A745" size={24} />}
-        title="Lưu ý & Sức khỏe"
-        delay={300}
-      >
-        <LabeledText label="Ghi chú" value={notes} />
-        <LabeledText
-          label="Sức khỏe"
-          value={profileId.healthConditions
-            .map((h) => `${h.condition} - ${h.notes}`)
-            .join(", ")}
+        <LabelText
+          label="Khách hàng"
+          value={
+            profileId
+              ? `${profileId.firstName ?? ""} ${
+                  profileId.lastName ?? ""
+                }`.trim()
+              : undefined
+          }
         />
-        <LabeledText
-          label="Liên hệ khẩn"
-          value={`${profileId.emergencyContact.name} (${profileId.emergencyContact.phone})`}
+        <LabelText
+          label="Địa chỉ"
+          value={profileId?.address ?? "Không có địa chỉ"}
         />
-      </AnimatedCard>
+        <LabelText
+          label="Số điện thoại"
+          value={profileId?.phone ?? "Không có số điện thoại"}
+        />
+      </Section>
 
-      <AnimatedCard
-        icon={<DollarSign color="#28A745" size={24} />}
-        title="Thu nhập"
-        delay={400}
+      <Section
+        title="Thông tin sức khỏe"
+        subtitle="Thông tin được cập nhật từ hồ sơ cá nhân"
       >
-        <LabeledText label="Tổng tiền" value={`${totalDiscount} VND`} />
-      </AnimatedCard>
+        <LabelText
+          label="Chiều cao"
+          value={healthInfo?.height ? `${healthInfo.height} cm` : "?"}
+        />
+        <LabelText
+          label="Cân nặng"
+          value={healthInfo?.weight ? `${healthInfo.weight} kg` : "?"}
+        />
+        <LabelText
+          label="Nhóm máu"
+          value={healthInfo?.typeBlood ?? "Không rõ"}
+        />
+      </Section>
 
-      <AnimatedCard
-        icon={<CheckCircle color="#28A745" size={24} />}
-        title="Trạng thái"
-        delay={500}
+      <Section
+        title="Thông tin thanh toán"
+        subtitle="Chi tiết về chi phí và ưu đãi"
       >
-        <LabeledText label="Tình trạng" value={status} />
-      </AnimatedCard>
-
-      <Button
-        mode="contained"
-        onPress={() => {
-          router.back();
-        }}
-        style={{
-          marginTop: 24,
-          width: "80%",
-          alignSelf: "center",
-          backgroundColor: "#28A745",
-        }}
-        labelStyle={{
-          color: "white",
-          fontWeight: "bold",
-        }}
-      >
-        Quay lại
-      </Button>
+        <LabelText
+          label="Tổng giá gốc"
+          value={totalPrice ? `${totalPrice.toLocaleString()} VND` : undefined}
+        />
+        <LabelText
+          label="Tổng đã giảm"
+          value={
+            totalDiscount ? `${totalDiscount.toLocaleString()} VND` : undefined
+          }
+        />
+        <View style={{ marginTop: 8 }}>
+          <Text style={styles.finalPrice}>
+            Thành tiền cuối cùng: {finalPrice.toLocaleString()} VND
+          </Text>
+        </View>
+      </Section>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fff",
+    padding: 24,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#000",
+    marginBottom: 4,
+    fontFamily: "serif",
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: "#444",
+    marginBottom: 12,
+    fontStyle: "italic",
+  },
+  sectionContent: {
+    paddingLeft: 8,
+  },
+  labelContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  labelText: {
+    fontSize: 16,
+    color: "#000",
+    fontFamily: "serif",
+  },
+  valueText: {
+    fontSize: 16,
+    color: "#000",
+    fontFamily: "serif",
+    maxWidth: "65%",
+    textAlign: "right",
+  },
+  finalPrice: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#000",
+    fontFamily: "serif",
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#aaa",
+    marginTop: 16,
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#28A745",
-    textAlign: "center",
-    marginBottom: 24,
+    backgroundColor: "#fff",
   },
   loadingText: {
-    fontSize: 16,
     marginTop: 12,
-    color: "#666",
-  },
-  card: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    padding: 16,
-    backgroundColor: "#f2fdf4",
-    borderRadius: 12,
-    marginBottom: 16,
-    gap: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  cardContent: {
-    flex: 1,
-  },
-  cardTitle: {
-    fontSize:20,
-    fontWeight: "bold",
-    marginBottom: 6,
-    color: "#28A745",
-  },
-  text: {
     fontSize: 16,
-    marginBottom: 4,
-    color: "#333",
-  },
-  bold: {
-    fontWeight: "bold",
     color: "#000",
+    fontFamily: "serif",
+  },
+  retryButton: {
+    borderColor: "#000",
   },
 });
 
