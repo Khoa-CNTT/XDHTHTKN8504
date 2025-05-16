@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// Profile.tsx
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,8 +14,19 @@ import { Ionicons } from '@expo/vector-icons';
 import Footer from '../components/Footer';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../navigation/StackNavigator';
 import useAuthStore from '../stores/authStore';
+import type User from '../types/auth';
+import * as ImagePicker from 'expo-image-picker';
+import { uploadAvatar } from '../api/uploadService'; // Đảm bảo đường dẫn này đúng
+
+type RootStackParamList = {
+  Login: undefined;
+  ServiceScreenTest: undefined;
+  Notifications: undefined;
+  ProfileList: undefined;
+  BookAService: undefined;
+  PaymentInfoScreen: undefined;
+};
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -60,7 +72,47 @@ const menuItems: MenuItem[] = [
 const Profile: React.FC = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigation = useNavigation<NavigationProp>();
-  const { logout } = useAuthStore();
+  const { logout, user, updateUser } = useAuthStore(); // Lấy hàm updateUser từ store
+  const [avatarSource, setAvatarSource] = useState<string | ReturnType<typeof require> | null>(
+    user?.avatarUrl || require('../asset/img/hinh1.png')
+  );
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Bạn cần cấp quyền truy cập vào thư viện ảnh!');
+      }
+      if (user?.avatarUrl) {
+        setAvatarSource(user.avatarUrl);
+      }
+    })();
+  }, [user?.avatarUrl]);
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 4],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const selectedImageUri = result.assets[0].uri;
+      setAvatarSource(selectedImageUri);
+      try {
+        const uploadedAvatarUrl = await uploadAvatar(selectedImageUri);
+        if (uploadedAvatarUrl) {
+          updateUser({ ...user, avatarUrl: uploadedAvatarUrl });
+        } else {
+          alert('Có lỗi khi tải lên ảnh đại diện.');
+        }
+      } catch (error: any) {
+        console.error('Lỗi tải lên avatar:', error);
+        alert('Có lỗi khi tải lên ảnh đại diện.');
+      }
+    }
+  };
 
   const handleLogout = async () => {
     setShowLogoutModal(false);
@@ -77,12 +129,12 @@ const Profile: React.FC = () => {
       navigation.navigate('Notifications');
     } else if (id === 'profile') {
       navigation.navigate('ProfileList');
-    }else if (id === 'help') {
+    } else if (id === 'help') {
       navigation.navigate('BookAService');
-    }else if (id === 'payment') {
+    } else if (id === 'payment') {
       navigation.navigate('PaymentInfoScreen');
-    }else if (id === 'terms'){
-      navigation.navigate("ServiceScreenTest");
+    } else if (id === 'terms') {
+      navigation.navigate('ServiceScreenTest');
     }
   };
 
@@ -111,17 +163,16 @@ const Profile: React.FC = () => {
         <Text style={styles.headerTitle}>Trang cá nhân</Text>
 
         <View style={styles.profileSection}>
-          <View style={styles.avatarContainer}>
+          <TouchableOpacity style={styles.avatarContainer} onPress={pickImage}>
             <Image
-              source={require('../asset/img/hinh1.png')}
+              source={typeof avatarSource === 'string' ? { uri: avatarSource } : avatarSource}
               style={styles.avatar}
             />
             <View style={styles.editIconContainer}>
               <Ionicons name="create" size={14} color="#fff" />
             </View>
-          </View>
-          <Text style={styles.name}>Daniel Martinez</Text>
-          <Text style={styles.name}>+84 856479683</Text>
+          </TouchableOpacity>
+          <Text style={styles.name}>{user?.phone || '+84'}</Text>
         </View>
 
         <View style={styles.menuContainer}>
