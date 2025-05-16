@@ -3,6 +3,7 @@ import bookingReducer from '../store/bookingSlice.js';
 import serviceReducer from '../store/serviceSlice.js';
 import staffReducer from '../store/staffSlice.js';
 import customerReducer from '../store/customerSlice.js'
+import paymentReducer from '../store/paymentSlice.js'
 
 export const store = configureStore({
     reducer: {
@@ -10,5 +11,6 @@ export const store = configureStore({
         service: serviceReducer,
         staff: staffReducer,
         customers: customerReducer,
+        payment: paymentReducer
     }
 })
