@@ -7,7 +7,8 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
 type RootStackParamList = {
-    Booking: undefined;
+    BookAService: undefined;
+
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -134,7 +135,7 @@ const ServiceScreen: React.FC = () => {
             {/* Appointment Button */}
             <TouchableOpacity
                 style={styles.appointmentButton}
-                onPress={() => navigation.navigate("Booking")}
+                onPress={() => navigation.navigate("BookAService")}
             >
                 <Text style={styles.appointmentButtonText}>Đặt lịch hẹn</Text>
             </TouchableOpacity>
