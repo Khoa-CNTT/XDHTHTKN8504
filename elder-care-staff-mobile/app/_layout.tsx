@@ -5,12 +5,13 @@ import { Stack } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import BookingModal from "@/components/BookingModal";
 import GlobalModal from "@/components/GlobalModal";
-
-
-
 import useInitService from "@/hooks/useInitService";
+import * as Notifications from "expo-notifications";
+
+
 
 export default function RootLayout() {
+
   useInitService();
 
 

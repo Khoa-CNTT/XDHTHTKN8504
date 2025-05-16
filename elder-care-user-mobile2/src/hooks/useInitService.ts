@@ -4,9 +4,12 @@ import { useSocketStore } from "../stores/socketStore";
 import initData from "../utils/initData";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../navigation/StackNavigator";
+import { RootStackParamList } from "../navigation/navigation";
 import useScheduleStore from "../stores/scheduleStore";
 import { loadAllSounds } from "../utils/soundService";
+
+import * as Notifications from "expo-notifications";
+import { Platform } from "react-native";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -27,6 +30,39 @@ const useInitService = () => {
   useEffect(() => {
     restoreSession();
   }, [restoreSession]);
+
+  // Xin quyền thông báo (Expo)
+  useEffect(() => {
+    async function registerForPushNotificationsAsync() {
+      if (Platform.OS === "android") {
+        await Notifications.setNotificationChannelAsync("default", {
+          name: "default",
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: "#FF231F7C",
+        });
+      }
+
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+
+      if (finalStatus !== "granted") {
+        alert("Permission for notifications not granted!");
+        return;
+      }
+
+      // Bạn có thể lấy token gửi về server ở đây nếu cần
+      // const token = (await Notifications.getExpoPushTokenAsync()).data;
+      // console.log("Push token:", token);
+    }
+    registerForPushNotificationsAsync();
+  }, []);
 
   // Khi đã có token và user thì khởi tạo kết nối
   useEffect(() => {

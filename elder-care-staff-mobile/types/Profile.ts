@@ -1,4 +1,3 @@
-// src/types/PatientProfile.ts
 export type HealthCondition = {
   name: string;
   description: string;
@@ -12,7 +11,7 @@ export type HealthInfo = {
   notes?: string;
 };
 
-export type PatientProfile = {
+export type Profile = {
   avartar?: string;
   _id?: string;
   userId?: string;

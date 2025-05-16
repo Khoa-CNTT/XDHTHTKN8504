@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Vibration } from "react-native";
 import { playNotificationSound } from "../utils/soundService";
+import { sendLocalNotification } from "../utils/notificationService";
 
 interface ModalState {
   visible: boolean;
@@ -8,13 +9,13 @@ interface ModalState {
   message?: string;
   autoHideDuration?: number;
   onDetailPress?: () => void;
-  type?: "popup" | "dialog"; // Kiểu modal: popup hoặc dialog
+  type?: "popup" | "dialog";
 
   showModal: (
     title: string,
     message: string,
     options?: {
-      type?: "popup" | "dialog"; // Xác định kiểu modal
+      type?: "popup" | "dialog";
       autoHideDuration?: number;
       onDetailPress?: () => void;
     }
@@ -29,25 +30,34 @@ export const useModalStore = create<ModalState>((set) => ({
   message: "",
   autoHideDuration: undefined,
   onDetailPress: undefined,
-  type: "popup", // Mặc định là popup
+  type: "popup",
 
   showModal: async (title, message, options) => {
-    // Rung nhẹ 300ms
+    const type = options?.type ?? "popup";
+
+    // 1. Rung thiết bị
     Vibration.vibrate(300);
 
-    // Phát âm thanh thông báo
-    await playNotificationSound(options?.type ?? "popup");  
+    // 2. Phát âm thanh thông báo
+    await playNotificationSound(type);
 
+    // 3. Gửi local notification của hệ thống
+    await sendLocalNotification(
+      title,
+      message,
+    );
+
+    // 4. Hiển thị modal
     set({
       visible: true,
       title,
       message,
       autoHideDuration: options?.autoHideDuration,
-      onDetailPress: options?.onDetailPress ?? undefined,
-      type: options?.type ?? "popup", // Xác định kiểu modal
+      onDetailPress: options?.onDetailPress,
+      type,
     });
 
-    // Tự động ẩn sau thời gian nếu có
+    // 5. Tự động ẩn nếu có autoHideDuration
     if (options?.autoHideDuration) {
       setTimeout(() => {
         set({
@@ -56,7 +66,7 @@ export const useModalStore = create<ModalState>((set) => ({
           message: "",
           autoHideDuration: undefined,
           onDetailPress: undefined,
-          type: "popup", // Đảm bảo khi ẩn modal, kiểu mặc định là popup
+          type: "popup",
         });
       }, options.autoHideDuration);
     }
@@ -69,7 +79,7 @@ export const useModalStore = create<ModalState>((set) => ({
       message: "",
       autoHideDuration: undefined,
       onDetailPress: undefined,
-      type: "popup", // Đảm bảo khi ẩn modal, kiểu mặc định là popup
+      type: "popup",
     });
   },
 }));

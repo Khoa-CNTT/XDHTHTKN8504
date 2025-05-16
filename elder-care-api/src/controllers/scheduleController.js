@@ -166,16 +166,14 @@ const scheduleController = {
         updatedSchedule.bookingId
       );
 
-
       // Thay đổi: Emit vào phòng có tên là `schedule_${scheduleId}`
-            io.to(`schedule_${scheduleId}`).emit("scheduleStatusUpdated", {
-                message: "Lịch hẹn của bạn đã được cập nhật",
-                scheduleId: updatedSchedule._id,
-                newStatus: updatedSchedule.status,
-                bookingId: updatedSchedule.bookingId,
-                bookingStatus: updatedBooking?.status || null,
-              });
-          
+      io.to(`schedule_${scheduleId}`).emit("scheduleStatusUpdated", {
+        message: "Lịch hẹn của bạn đã được cập nhật",
+        scheduleId: updatedSchedule._id,
+        newStatus: updatedSchedule.status,
+        bookingId: updatedSchedule.bookingId,
+        bookingStatus: updatedBooking?.status || null,
+      });
 
       return res.status(200).json({
         message: updatedBooking
@@ -279,7 +277,7 @@ const scheduleController = {
     const now = new Date();
 
     try {
-      // 1. Lấy lịch hiện tại
+      // 1. Tìm lịch làm việc hiện tại
       let schedule = await Schedule.findOne({
         staffId,
         timeSlots: {
@@ -290,14 +288,13 @@ const scheduleController = {
         },
       });
 
-      // 2. Nếu không có, tìm lịch kế tiếp gần nhất
+      // 2. Nếu không có, tìm lịch gần nhất trong tương lai
       if (!schedule) {
         const upcomingSchedules = await Schedule.find({
           staffId,
           timeSlots: { $elemMatch: { start: { $gt: now } } },
         });
 
-        // Lấy lịch có timeSlot sớm nhất
         schedule = upcomingSchedules.sort((a, b) => {
           const aStart = a.timeSlots.find((slot) => slot.start > now)?.start;
           const bStart = b.timeSlots.find((slot) => slot.start > now)?.start;
@@ -306,27 +303,28 @@ const scheduleController = {
       }
 
       if (!schedule) {
-        return res
-          .status(404)
-          .json({ message: "No current or upcoming schedule found." });
+        return res.status(404).json({
+          message: "No current or upcoming schedule found.",
+        });
       }
+
+      // 3. Tìm thông tin booking liên quan
       const booking = await Booking.findOne({ _id: schedule.bookingId })
-        .populate("serviceId") // Tìm thông tin dịch vụ
-        .populate("profileId");
+        .populate("serviceId") // Lấy thông tin dịch vụ
+        .populate("profileId"); // Lấy thông tin hồ sơ người dùng
 
       if (!booking) {
-        return res
-          .status(404)
-          .json({ message: "No booking found for the schedule." });
+        return res.status(404).json({
+          message: "No booking found for the schedule.",
+        });
       }
 
-      // 4. Lấy tên dịch vụ, địa chỉ khách hàng và ca làm việc từ booking
+      // 4. Trích xuất thông tin cần thiết từ booking
       const serviceName = booking.serviceId?.name || "No service name";
       const customerAddress = booking.profileId?.address || "No address";
-      const phoneNumber =
-        booking.profileId?.emergencyContact.phone || "No phone number";
+      const phoneNumber = booking.profileId?.phone || "No phone number";
 
-      // 5. Trả về kết quả
+      // 5. Trả kết quả về client
       return res.status(200).json({
         schedule,
         serviceName,
@@ -334,10 +332,11 @@ const scheduleController = {
         phoneNumber,
       });
     } catch (error) {
-      console.error(error);
+      console.error("getNextScheduleForStaff error:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   },
+
   getNextScheduleForUser: async (req, res) => {
     const { userId } = req.user;
 

@@ -59,39 +59,12 @@ const BookingScreen: React.FC = () => {
         <TouchableOpacity activeOpacity={0.7}>
           <Ionicons name="menu-outline" size={33} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Chọn dịch vụ</Text>
+        <Text style={styles.headerTitle}>Dịch Vụ</Text>
         <TouchableOpacity
           onPress={() => navigation.navigate("ProfileList")}
           activeOpacity={0.7}
         >
           <Ionicons name="person-circle-outline" size={33} color="#333" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Care Recipient */}
-      <View style={styles.careRecipient}>
-        <TouchableOpacity
-          style={styles.careBox}
-          onPress={handleCareRecipientClick}
-          activeOpacity={0.8}
-        >
-          <View style={styles.avatarContainer}>
-            {selectedCareRecipient ? (
-              <Text style={styles.avatarLetter}>
-                {selectedCareRecipient.firstName.charAt(0).toUpperCase()}
-              </Text>
-            ) : (
-              <Ionicons name="person" size={22} color="#fff" />
-            )}
-          </View>
-          <Text style={styles.careText}>
-            {selectedCareRecipient
-              ? `${selectedCareRecipient.firstName} ${
-                  selectedCareRecipient.lastName || ""
-                }`
-              : "Chọn người được chăm sóc"}
-          </Text>
-          <Ionicons name="pencil-outline" size={22} color="#777" />
         </TouchableOpacity>
       </View>
 
