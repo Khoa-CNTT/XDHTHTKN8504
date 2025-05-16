@@ -5,7 +5,9 @@ import { FiEdit, FiEye, FiTrash2 } from "react-icons/fi";
 import { RiDeleteBin6Line, RiDeleteBinLine } from "react-icons/ri";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 import { Link } from "react-router-dom";
+
 
 const thclass = "text-start text-sm font-medium py-3 px-2 whitespace-nowrap";
 const tdclass = "text-start text-sm py-4 px-2 whitespace-nowrap";
@@ -78,10 +80,10 @@ export function Transactiontable({ data, action, functions }) {
             <td className={tdclass}>
               <span
                 className={`py-1 px-4 ${item.status === "Paid"
-                    ? "bg-subMain text-subMain"
-                    : item.status === "Pending"
-                      ? "bg-orange-500 text-orange-500"
-                      : item.status === "Cancel" && "bg-red-600 text-red-600"
+                  ? "bg-subMain text-subMain"
+                  : item.status === "Pending"
+                    ? "bg-orange-500 text-orange-500"
+                    : item.status === "Cancel" && "bg-red-600 text-red-600"
                   } bg-opacity-10 text-xs rounded-xl`}
               >
                 {item.status === "Paid"
@@ -236,8 +238,8 @@ export function MedicineTable({ data, onEdit }) {
             <td className={tdclass}>
               <span
                 className={`text-xs font-medium ${item?.status === "Out of stock"
-                    ? "text-red-600"
-                    : "text-green-600"
+                  ? "text-red-600"
+                  : "text-green-600"
                   }`}
               >
                 {item?.status === "Out of stock" ? "Hết hàng" : "Còn hàng"}
@@ -406,8 +408,8 @@ export function PatientTable({ data, functions, used }) {
               <td className={tdclasse}>
                 <span
                   className={`py-1 px-4 ${gender === "Male"
-                      ? "bg-subMain text-subMain"
-                      : "bg-orange-500 text-orange-500"
+                    ? "bg-subMain text-subMain"
+                    : "bg-orange-500 text-orange-500"
                     } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {gender === "Male" ? "Nam" : "Nữ"}
@@ -593,15 +595,15 @@ export function BookingTable({ data, functions, doctor }) {
               <td className={tdclass}>
                 <span
                   className={`py-1 px-4 ${item.status === "completed"
-                      ? "bg-green-500 text-green-500"
-                      : item.status === "accepted"
-                        ? "bg-orange-500 text-orange-500"
-                        : item.status === "pending"
-                          ? "bg-red-600 text-red-600"
-                          : item.status === "paid"
-                            ? "bg-green-500 text-green-500"
-                            : item.status === "cancelled" &&
-                            "bg-gray-500 text-gray-500"
+                    ? "bg-green-500 text-green-500"
+                    : item.status === "accepted"
+                      ? "bg-orange-500 text-orange-500"
+                      : item.status === "pending"
+                        ? "bg-red-600 text-red-600"
+                        : item.status === "paid"
+                          ? "bg-green-500 text-green-500"
+                          : item.status === "cancelled" &&
+                          "bg-gray-500 text-gray-500"
                     } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {statusText}
@@ -666,10 +668,10 @@ export function AppointmentTable({ data, functions, doctor }) {
             <td className={tdclass}>
               <span
                 className={`py-1 px-4 ${item.status === "Approved"
-                    ? "bg-subMain text-subMain"
-                    : item.status === "Pending"
-                      ? "bg-orange-500 text-orange-500"
-                      : item.status === "Cancel" && "bg-red-600 text-red-600"
+                  ? "bg-subMain text-subMain"
+                  : item.status === "Pending"
+                    ? "bg-orange-500 text-orange-500"
+                    : item.status === "Cancel" && "bg-red-600 text-red-600"
                   } bg-opacity-10 text-xs rounded-xl`}
               >
                 {item.status === "Approved"
@@ -713,56 +715,71 @@ export function PaymentTable({ data, functions, doctor }) {
         </tr>
       </thead>
       <tbody>
-        {data.map((item) => (
-          <tr
-            key={item.id}
-            className="border-b border-border hover:bg-greyed transitions"
-          >
-            <td className={tdclass}>
-              <p className="text-xs">{item.date}</p>
-            </td>
-            <td className={tdclass}>
-              <h4 className="text-xs font-medium">
-                {doctor ? item.user.title : item.doctor.title}
-              </h4>
-              <p className="text-xs mt-1 text-textGray">
-                {doctor ? item.user.phone : item.doctor.phone}
-              </p>
-            </td>
-            <td className={tdclass}>
-              <span
-                className={`py-1 px-4 ${item.status === "Paid"
+        {data.map((item) => {
+          const formattedDate = item.createdAt
+            ? format(new Date(item.createdAt), 'MMM dd, yyyy')
+            : 'Null';
+
+          const customerName = `${item?.bookingId?.profileId?.firstName} ${item?.bookingId?.profileId?.lastName}` || "N/A"
+
+          const status = item.status
+          const phone = item.bookingId?.profileId?.phone || "N/A";
+          const totalAmount = item.amount
+            ? `${item.amount.toLocaleString("en-US")} VND`
+            : "Null";
+          
+
+          return (
+            <tr
+              key={item._id}
+              className="border-b border-border hover:bg-greyed transitions"
+            >
+              <td className={tdclass}>
+                <p className="text-xs">{formattedDate}</p>
+              </td>
+              <td className={tdclass}>
+                <h4 className="text-xs font-medium">
+                  {customerName}
+                </h4>
+                <p className="text-xs mt-1 text-textGray">
+                  {phone}
+                </p>
+              </td>
+              <td className={tdclass}>
+                <span
+                  className={`py-1 px-4 ${status === "success"
                     ? "bg-subMain text-subMain"
-                    : item.status === "Pending"
+                    : status === "Pending"
                       ? "bg-orange-500 text-orange-500"
-                      : item.status === "Cancel" && "bg-red-600 text-red-600"
-                  } bg-opacity-10 text-xs rounded-xl`}
-              >
-                {item.status === "Paid"
-                  ? "Đã thanh toán"
-                  : item.status === "Pending"
-                    ? "Đang chờ xử lý"
-                    : "Đã hủy"}
-              </span>
-            </td>
-            <td className={tdclass}>
-              <p className="text-xs font-semibold">{`$${item.amount}`}</p>
-            </td>
-            <td className={tdclass}>
-              <p className="text-xs">
-                {item.method === "CreditCard" ? "Thẻ tín dụng" : item.method}
-              </p>
-            </td>
-            <td className={tdclass}>
-              <button
-                onClick={() => functions.preview(item.id)}
-                className="text-sm flex-colo bg-white text-subMain border rounded-md w-10 h-10"
-              >
-                <FiEye />
-              </button>
-            </td>
-          </tr>
-        ))}
+                      : status === "Cancel" && "bg-red-600 text-red-600"
+                    } bg-opacity-10 text-xs rounded-xl`}
+                >
+                  {status === "success"
+                    ? "Đã thanh toán"
+                    : status === "Pending"
+                      ? "Đang chờ xử lý"
+                      : "Đã hủy"}
+                </span>
+              </td>
+              <td className={tdclass}>
+                <p className="text-xs font-semibold">{totalAmount}</p>
+              </td>
+              <td className={tdclass}>
+                <p className="text-xs">
+                  {item.method === "Wallet" ? "Ví điện tử" : item.method}
+                </p>
+              </td>
+              <td className={tdclass}>
+                <button
+                  onClick={() => functions.preview(item._id)}
+                  className="text-sm flex-colo bg-white text-subMain border rounded-md w-10 h-10"
+                >
+                  <FiEye />
+                </button>
+              </td>
+            </tr>
+          )
+        })}
       </tbody>
     </table>
   );

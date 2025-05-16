@@ -2,6 +2,11 @@ import axios from 'axios';
 import crypto from 'crypto';
 import Payments from '../models/Payment.js';
 import Booking from '../models/Booking.js';
+import Doctor from '../models/Doctor.js'
+import Nurse from '../models/Nurse.js'
+import User from '../models/User.js'
+import mongoose from 'mongoose';
+import Profile from '../models/Profile.js'
 
 const paymentController = {
     createPayment: async (req, res) => {
@@ -178,6 +183,124 @@ const paymentController = {
             });
         }
     },
+
+    getPaymentByStaff: async (req, res) => {
+        try {
+            const { _id } = req.params;
+
+            if (!mongoose.Types.ObjectId.isValid(_id)) {
+                return res.status(400).json({ message: "ID không hợp lệ!" });
+            }
+
+            console.log("⏳ Bắt đầu tìm staff với _id:", _id);
+
+            let staff = await Doctor.findById(_id);
+            console.log("👨‍⚕️ Doctor:", staff);
+
+            if (!staff) {
+                staff = await Nurse.findById(_id);
+                console.log("👩‍⚕️ Nurse:", staff);
+            }
+
+            if (!staff) {
+                return res.status(404).json({ message: "Không tìm thấy nhân viên!" });
+            }
+
+            const staffId = staff.userId;
+            if (!staffId) {
+                return res.status(400).json({ message: "Nhân viên không có staffId!" });
+            }
+
+            console.log("🔍 Tìm payment theo userId:", staffId);
+
+            const payments = await Payments.find({
+                staffId: new mongoose.Types.ObjectId(staffId),
+            }).populate({
+                path: "bookingId",
+                populate: {
+                    path: "profileId",
+                    model: "Profile",
+                },
+            });
+
+            return res.status(200).json(payments);
+
+        } catch (error) {
+            console.error("❌ Lỗi server:", error);
+            return res.status(500).json({
+                message: "Lỗi khi lấy Payment",
+                error: error.message,
+            });
+        }
+    },
+
+    calculateSalary: async (req, res) => {
+        try {
+            const { _id } = req.params;
+
+            let staff = await Doctor.findById(_id);
+            if (!staff) {
+                staff = await Nurse.findById(_id);
+            }
+            if (!staff) {
+                return res.status(404).json({ message: "Không tìm thấy nhân viên" });
+            }
+
+            const userId = staff.userId;
+
+            const result = await Payments.aggregate([
+                {
+                    $match: {
+                        staffId: userId,
+                        status: "success"
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "bookings",
+                        localField: "bookingId",
+                        foreignField: "_id",
+                        as: "booking"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$booking",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$staffId",
+                        totalAmount: { $sum: "$amount" },
+                        totalDiscount: { $sum: { $ifNull: ["$booking.totalDiscount", 0] } },
+                        paymentCount: { $sum: 1 }
+                    }
+                },
+                {
+                    $project: {
+                        totalSalary: { $add: ["$totalAmount", "$totalDiscount"] },
+                        paymentCount: 1
+                    }
+                }
+            ]);
+
+            if (result.length === 0) {
+                return res.status(200).json({
+                    staffId,
+                    totalSalary: 0,
+                    paymentCount: 0
+                });
+            }
+
+            return res.status(200).json(result[0]);
+        } catch (error) {
+            return res.status(500).json({
+                message: "Lỗi khi tính tiền lương",
+                error: error.message
+            });
+        }
+    }
 }
 
 export default paymentController;

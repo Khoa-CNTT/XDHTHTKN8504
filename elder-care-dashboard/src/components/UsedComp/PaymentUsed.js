@@ -1,13 +1,36 @@
 import { transactionData } from "../Datas";
 import { PaymentTable } from "../Tables";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { fetchPaymentsByStaff, fetchSalaryByStaff } from "../../store/paymentSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { useState, useEffect } from "react";
 
 function PaymentsUsed({ doctor }) {
   const navigate = useNavigate();
+  const { _id } = useParams();
+  const dispatch = useDispatch();
+  const { data: payments, salary, loading, error } = useSelector((state) => state.payment)
+
+  useEffect(() => {
+    if (_id) {
+      dispatch(fetchSalaryByStaff(_id));
+      dispatch(fetchPaymentsByStaff(_id));
+    }
+  }, [dispatch, _id]);
+
+  if (loading) return <p>Đang tải dữ liệu...</p>;
+  if (error) return <p className="text-red-500">{error.message || error}</p>;
+
   // onClick event handler
-  const handleEventClick = (id) => {
-    navigate(`/payments/preview/${id}`);
+  const handleEventClick = (_id) => {
+    navigate(`/payments/preview/${_id}`);
   };
+
+  console.log("salary", salary);
+  console.log("fff", payments);
+  
+  
+
   return (
     <div className="w-full">
       {/* Three summary boxes */}
@@ -35,7 +58,7 @@ function PaymentsUsed({ doctor }) {
       <h1 className="text-sm font-medium mb-6">Payments</h1>
       <div className="w-full overflow-x-scroll">
         <PaymentTable
-          data={transactionData}
+          data={payments}
           doctor={doctor}
           functions={{
             preview: handleEventClick,

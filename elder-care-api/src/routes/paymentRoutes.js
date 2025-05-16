@@ -5,5 +5,7 @@ const router = express.Router();
 
 router.post('/create', paymentController.createPayment);
 router.post('/callback', paymentController.paymentCallback);
+router.get('/get-payments/:_id', paymentController.getPaymentByStaff)
+router.get('/get-salary/:_id', paymentController.calculateSalary)
 
 export default router;
