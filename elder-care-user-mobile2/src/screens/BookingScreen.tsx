@@ -11,8 +11,16 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Ionicons } from "@expo/vector-icons";
 import Footer from "../components/Footer";
-import { RootStackParamList } from "../navigation/navigation";
+// import { RootStackParamList } from "../navigation/navigation";
 import { useServicesStore } from "../stores/serviceStore";
+
+type RootStackParamList = {
+  Home: undefined;
+  ServiceScreen: { serviceId: string };
+  ProfileList: undefined;
+};
+
+
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -65,26 +73,28 @@ const BookingScreen: React.FC = () => {
         />
 
         {/* Danh sách dịch vụ */}
-        {filteredServices.map((service) => (
-          <TouchableOpacity
-            key={service._id}
-            style={styles.card}
-            onPress={() => {}}
-          >
-            <Image
-              source={getImageByRole(service.role)}
-              style={styles.cardImage}
-              resizeMode="cover"
-            />
-            <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>{service.name}</Text>
-              <Text style={styles.cardDescription} numberOfLines={2}>
-                {service.description}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward-outline" size={22} color="#999" />
-          </TouchableOpacity>
-        ))}
+       {filteredServices.map((service) => (
+  <TouchableOpacity
+    key={service._id}
+    style={styles.card}
+    onPress={() => {
+      navigation.navigate("ServiceScreen", { serviceId: service._id });
+    }}
+  >
+    <Image
+      source={getImageByRole(service.role)}
+      style={styles.cardImage}
+      resizeMode="cover"
+    />
+    <View style={styles.cardContent}>
+      <Text style={styles.cardTitle}>{service.name}</Text>
+      <Text style={styles.cardDescription} numberOfLines={2}>
+        {service.description}
+      </Text>
+    </View>
+    <Ionicons name="chevron-forward-outline" size={22} color="#999" />
+  </TouchableOpacity>
+))}
       </View>
 
       {/* Footer cố định */}
