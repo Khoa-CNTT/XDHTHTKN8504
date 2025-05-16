@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { format } from "date-fns";
 import { Schedule } from "@/types/Schedule";
 import { Clock, User, Info, BadgeCheck} from "lucide-react-native";
+import { formatTime } from "@/utils/dateHelper";
 
 
 const getStatusLabel = (status: string) => {
@@ -48,8 +49,8 @@ const ScheduleItem: React.FC<ScheduleItemProps> = ({ schedule, onPress }) => {
       .map((slot) => {
         if (!slot.start || !slot.end) return null;
         try {
-          const start = format(new Date(slot.start), "HH:mm");
-          const end = format(new Date(slot.end), "HH:mm");
+          const start = formatTime(slot.start,'time');
+          const end = formatTime(slot.end, "time");
           return `${start} ${end}`;
         } catch {
           return null;

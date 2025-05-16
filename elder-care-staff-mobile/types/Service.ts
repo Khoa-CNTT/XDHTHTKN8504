@@ -1,11 +1,14 @@
+export type RoleType = "doctor" | "nurse";
+
 export interface Service {
-  _id: string;
+  _id?: string; // Có thể có hoặc không nếu dùng cho create/update
   name: string;
-  description: string;
+  description?: string;
   price: number;
   percentage: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
+  isActive?: boolean;
+  role: RoleType;
+  imgUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

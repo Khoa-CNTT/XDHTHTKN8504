@@ -52,12 +52,13 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     backgroundColor: "#f9fafb",
-    borderRadius: 10,
+    borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 16,
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#ddd",
+    marginBottom: 5
   },
   icon: {
     marginRight: 8,

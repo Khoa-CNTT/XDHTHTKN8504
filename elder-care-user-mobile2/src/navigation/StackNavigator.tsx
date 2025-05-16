@@ -40,18 +40,27 @@ import TransferGuideScreen from '../screens/TransferGuideScreen';
 import HomeServiceScreen from '../screens/Service';
 import AddProfileScreen from '../screens/DanhSachProfile/AddProfileScreen';
 import { RootStackParamList } from "./navigation";
+import SplashScreen from '../screens/SplashScreen';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
-
+type StackNavigatorProps = {
+  initialRouteName?: keyof RootStackParamList;
+};
 const defaultScreenOptions: StackNavigationOptions = {
   headerShown: false,
 };
 
-const StackNavigator = (): JSX.Element => {
+const StackNavigator = ({
+  initialRouteName,
+}: StackNavigatorProps): JSX.Element => {
   return (
-
-    <Stack.Navigator id={undefined} screenOptions={defaultScreenOptions}>
+    <Stack.Navigator
+      id={undefined}
+      initialRouteName={initialRouteName}
+      screenOptions={defaultScreenOptions}
+    >
+      <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
@@ -70,7 +79,7 @@ const StackNavigator = (): JSX.Element => {
       <Stack.Screen name="Chat" component={ChatScreen} />
       <Stack.Screen name="FeaturedService" component={FeaturedServiceScreen} />
       <Stack.Screen name="Booking" component={BookingScreen} />
-      <Stack.Screen name="BookAService" component={BookAService}/>
+      <Stack.Screen name="BookAService" component={BookAService} />
       <Stack.Screen
         name="AddCareRecipient"
         component={AddCareRecipientScreen}
@@ -87,14 +96,19 @@ const StackNavigator = (): JSX.Element => {
       <Stack.Screen name="ReviewScreen" component={ReviewScreen} />
       <Stack.Screen name="PaymentInfoScreen" component={PaymentInfoScreen} />
       <Stack.Screen name="TopUpScreen" component={TopUpScreen} />
-      <Stack.Screen name="PaymentMethodScreen" component={PaymentMethodScreen} />
-      <Stack.Screen name="TransferGuideScreen" component={TransferGuideScreen} />
-
+      <Stack.Screen
+        name="PaymentMethodScreen"
+        component={PaymentMethodScreen}
+      />
+      <Stack.Screen
+        name="TransferGuideScreen"
+        component={TransferGuideScreen}
+      />
 
       <Stack.Screen name="AddProfileScreen" component={AddProfileScreen} />
-  
 
       <Stack.Screen name="BookingSuccess" component={BookingSuccessScreen} />
+      <Stack.Screen name="ServiceScreenTest" component={HomeServiceScreen} />
 
       {/* Add other screens here */}
       {/* <Stack.Screen name="AddCareRecipient" component={AddCareRecipientScreen} /> */}
@@ -102,7 +116,6 @@ const StackNavigator = (): JSX.Element => {
       {/* <Stack.Screen name="AddCareRecipient" component={AddCareRecipientScreen} /> */}
       {/* Add other screens here */}
     </Stack.Navigator>
-
   );
 };
 

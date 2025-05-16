@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../navigation/StackNavigator';
+import { RootStackParamList } from '../navigation/navigation';
 // import { useBookings } from '../context/BookingsContext';
 import { Picker } from '@react-native-picker/picker';
 

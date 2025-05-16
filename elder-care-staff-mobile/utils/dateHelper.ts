@@ -3,22 +3,22 @@ import moment from "moment-timezone";
 type FormatType = "date" | "time" | "datetime";
 
 export const formatTime = (
-  isoDate: string,
+  isoDate: string | Date,
   formatType: FormatType = "datetime",
   customFormat?: string
 ): string => {
-  const vnMoment = moment(isoDate).tz("Asia/Ho_Chi_Minh");
+  // Chuyển đổi về moment UTC
+  const utcMoment = moment.utc(isoDate);
 
-  if (customFormat) return vnMoment.format(customFormat);
+  if (customFormat) return utcMoment.format(customFormat);
 
   switch (formatType) {
     case "date":
-      return vnMoment.format("DD/MM/YYYY");
+      return utcMoment.format("DD/MM/YYYY");
     case "time":
-      return vnMoment.format("HH:mm");
+      return utcMoment.format("HH:mm");
     case "datetime":
     default:
-      return vnMoment.format("HH:mm - DD/MM/YYYY");
+      return utcMoment.format("HH:mm - DD/MM/YYYY");
   }
 };
-
