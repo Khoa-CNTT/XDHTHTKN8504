@@ -2,6 +2,7 @@ import { create } from "zustand";
 import socket from "../utils/socket";
 import useScheduleStore from "./scheduleStore";
 import { useModalStore } from "./modalStore";
+import { useWalletStore } from "./WalletStore";
 import { useNavigation } from "@react-navigation/native";
 
 
@@ -43,6 +44,7 @@ interface SocketStore {
 
 export const useSocketStore = create<SocketStore>((set, get) => {
   const { updateSchedule, fetchSchedules } = useScheduleStore.getState();
+  const {fetchWallet} = useWalletStore.getState();
   const { showModal } = useModalStore.getState();
 
   const listenToEvents = () => {
@@ -65,7 +67,7 @@ export const useSocketStore = create<SocketStore>((set, get) => {
     });
 
     socket.on("bookingAccepted", async (bookingId: string) => {
-      console.log("📦 Đã nhận bookingAccepted:", bookingId);
+      await fetchWallet();
       await fetchSchedules();
       const schedules = useScheduleStore.getState().schedules;
       schedules.forEach((schedule) => {

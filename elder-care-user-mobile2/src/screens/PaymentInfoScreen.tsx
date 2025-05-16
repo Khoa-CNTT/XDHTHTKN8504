@@ -1,23 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
+  FlatList,
 } from "react-native";
 import { MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useWalletStore } from "../stores/WalletStore";
-import { Transaction } from "../types/Wallet"; // Import kiểu dữ liệu Transaction
+import { Transaction } from "../types/Wallet";
 
 type RootStackParamList = {
   Home: undefined;
   ServiceScreen: { serviceId: string };
   Seach: undefined;
   TopUpScreen: undefined;
-  PaymentInfoScreen: { newTransaction?: any };
+  PaymentInfoScreen: { newTransaction?: Transaction };
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -32,180 +32,238 @@ const PaymentInfoScreen: React.FC = () => {
   const newTransaction = route.params?.newTransaction;
   const wallet = useWalletStore.getState().wallet;
 
-  return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <Text style={styles.header}>Thông tin thanh toán</Text>
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
 
-      {/* Balance */}
-      <View style={styles.balanceCard}>
-        <Text style={styles.balanceLabel}>Số dư ví ElderCare</Text>
-        <Text style={styles.balanceAmount}>
-          {wallet.balance.toLocaleString("vi-VN")}{" "}
-          <Text style={styles.currency}>đ</Text>
-        </Text>
-      </View>
+  const sortedTransactions = [...wallet.transactions].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
 
-      {/* Actions */}
-      <View style={styles.actionRow}>
-        <TouchableOpacity
-          style={styles.actionCard}
-          onPress={() => {
-            /* Handle payment */
-          }}
-        >
-          <MaterialIcons name="qr-code-scanner" size={36} color="#37B44E" />
-          <Text style={styles.actionText}>Thanh toán</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.actionCard}
-          onPress={() => navigation.navigate("TopUpScreen")}
-        >
-          <FontAwesome5 name="money-bill-wave" size={36} color="#37B44E" />
-          <Text style={styles.actionText}>Nạp tiền</Text>
-        </TouchableOpacity>
-      </View>
+  const visibleTransactions = showAllTransactions
+    ? sortedTransactions
+    : sortedTransactions.slice(0, 5);
 
-      {/* Card Management */}
-      <TouchableOpacity style={styles.cardManage} disabled>
-        <MaterialIcons
-          name="account-balance-wallet"
-          size={24}
-          color="#B0B0B0"
-        />
-        <Text style={styles.cardManageText}>Quản lý thẻ và tài khoản</Text>
-      </TouchableOpacity>
-
-      {/* Transaction History */}
-      <Text style={styles.sectionTitle}>Lịch sử giao dịch</Text>
-
-      {/* Display new transaction if available */}
-      {newTransaction ? (
-        <View style={styles.transactionCard}>
-          <View style={styles.transactionRow}>
-            <Text style={styles.transactionType}>{newTransaction.type}</Text>
-            <Text style={styles.transactionAmount}>
-              + {newTransaction.amount.toLocaleString()}đ
-            </Text>
-          </View>
-          <View style={styles.transactionRow}>
-            <Text style={styles.transactionDesc}>{newTransaction.desc}</Text>
-            <Text style={styles.transactionStatus}>
-              {newTransaction.status}
-            </Text>
-          </View>
-          <Text style={{ color: "#888", fontSize: 12, marginTop: 4 }}>
-            {newTransaction.time}
+  const renderTransaction = ({ item }: { item: Transaction }) => {
+    const isTopup = item.type === "TOP_UP";
+    return (
+      <View style={styles.transactionCard}>
+        <View style={styles.transactionRow}>
+          <Text style={styles.transactionType}>
+            {isTopup ? "Nạp tiền" : "Thanh toán"}
+          </Text>
+          <Text
+            style={[
+              styles.transactionAmount,
+              { color: isTopup ? "#2CB742" : "#FF6B6B" },
+            ]}
+          >
+            {isTopup ? "+" : "-"} {item.amount.toLocaleString("vi-VN")}đ
           </Text>
         </View>
-      ) : (
-        <Text style={{ color: "#888", textAlign: "center", marginBottom: 20 }}>
-          Chưa có giao dịch nào
+        <View style={styles.transactionRow}>
+          <Text
+            style={styles.transactionDesc}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {item.description}
+          </Text>
+          <Text style={styles.transactionStatus}>{item.status}</Text>
+        </View>
+        <Text style={styles.transactionTime}>
+          {new Date(item.date).toLocaleString("vi-VN")}
         </Text>
-      )}
+      </View>
+    );
+  };
 
-      {/* Display all transaction history */}
-      {wallet.transactions.length > 0 ? (
-        wallet.transactions.map((transaction: Transaction, index: number) => (
-          <View key={index} style={styles.transactionCard}>
-            <View style={styles.transactionRow}>
-              <Text style={styles.transactionType}>{transaction.type}</Text>
-              <Text style={styles.transactionAmount}>
-                {transaction.type === "topup" ? "+" : "-"}{" "}
-                {transaction.amount.toLocaleString()}đ
+  return (
+    <View style={styles.container}>
+      <FlatList
+        ListHeaderComponent={
+          <>
+            <Text style={styles.header}>Thông tin thanh toán</Text>
+
+            {/* Số dư ví */}
+            <View style={styles.balanceCard}>
+              <Text style={styles.balanceLabel}>Số dư ví ElderCare</Text>
+              <Text style={styles.balanceAmount}>
+                {wallet.balance.toLocaleString("vi-VN")}{" "}
+                <Text style={styles.currency}>đ</Text>
               </Text>
             </View>
-            <View style={styles.transactionRow}>
-              <Text style={styles.transactionDesc}>
-                {transaction.description}
-              </Text>
-              <Text style={styles.transactionStatus}>{transaction.status}</Text>
+
+            {/* Hành động */}
+            <View style={styles.actionRow}>
+              <TouchableOpacity style={styles.actionCard}>
+                <MaterialIcons
+                  name="qr-code-scanner"
+                  size={32}
+                  color="#37B44E"
+                />
+                <Text style={styles.actionText}>Thanh toán</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionCard}
+                onPress={() => navigation.navigate("TopUpScreen")}
+              >
+                <FontAwesome5
+                  name="money-bill-wave"
+                  size={28}
+                  color="#37B44E"
+                />
+                <Text style={styles.actionText}>Nạp tiền</Text>
+              </TouchableOpacity>
             </View>
-            <Text style={{ color: "#888", fontSize: 12, marginTop: 4 }}>
-              {new Date(transaction.date).toLocaleString()}
-            </Text>
-          </View>
-        ))
-      ) : (
-        <Text style={{ color: "#888", textAlign: "center", marginBottom: 20 }}>
-          Chưa có giao dịch nào
-        </Text>
-      )}
-    </ScrollView>
+
+            {/* Quản lý thẻ */}
+            <TouchableOpacity style={styles.cardManage} disabled>
+              <MaterialIcons
+                name="account-balance-wallet"
+                size={20}
+                color="#B0B0B0"
+              />
+              <Text style={styles.cardManageText}>
+                Quản lý thẻ và tài khoản
+              </Text>
+            </TouchableOpacity>
+
+            {/* Lịch sử giao dịch */}
+            <Text style={styles.sectionTitle}>Lịch sử giao dịch</Text>
+
+            {newTransaction && (
+              <View style={styles.highlightCard}>
+                <Text style={styles.highlightTitle}>Giao dịch mới</Text>
+                {renderTransaction({ item: newTransaction })}
+              </View>
+            )}
+          </>
+        }
+        data={visibleTransactions}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={renderTransaction}
+        ItemSeparatorComponent={() => <View style={styles.divider} />}
+        ListFooterComponent={
+          wallet.transactions.length > 5 ? (
+            <TouchableOpacity
+              onPress={() => setShowAllTransactions(!showAllTransactions)}
+            >
+              <Text style={styles.seeMore}>
+                {showAllTransactions ? "Ẩn bớt" : "Xem thêm"}
+              </Text>
+            </TouchableOpacity>
+          ) : null
+        }
+        ListEmptyComponent={
+          <Text style={styles.noTransactionText}>Chưa có giao dịch nào</Text>
+        }
+        contentContainerStyle={{ paddingBottom: 40 }}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff", padding: 16, paddingTop: 30 },
   header: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
-    marginVertical: 12,
+    marginVertical: 16,
   },
   balanceCard: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
+    backgroundColor: "#F3FFF6",
+    borderRadius: 12,
     padding: 20,
     alignItems: "center",
     elevation: 2,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   balanceLabel: { color: "#37B44E", fontWeight: "bold", fontSize: 16 },
   balanceAmount: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: "bold",
     color: "#222",
-    marginTop: 8,
+    marginTop: 6,
   },
   currency: { fontSize: 18, color: "#888" },
   actionRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 16,
+    marginBottom: 20,
   },
   actionCard: {
     flex: 1,
     backgroundColor: "#fff",
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: "center",
-    paddingVertical: 20,
+    paddingVertical: 18,
     marginHorizontal: 6,
     elevation: 2,
   },
-  actionText: { marginTop: 8, color: "#37B44E", fontWeight: "bold" },
+  actionText: { marginTop: 6, color: "#37B44E", fontWeight: "bold" },
   cardManage: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F6F6F6",
-    borderRadius: 10,
+    backgroundColor: "#F0F0F0",
+    borderRadius: 12,
     padding: 16,
     marginBottom: 20,
-    opacity: 0.7,
+    opacity: 0.6,
   },
   cardManageText: { marginLeft: 10, color: "#B0B0B0", fontWeight: "bold" },
-  sectionTitle: { fontWeight: "bold", fontSize: 15, marginBottom: 8 },
+  sectionTitle: {
+    fontWeight: "bold",
+    fontSize: 16,
+    marginBottom: 12,
+    color: "#333",
+  },
   transactionCard: {
     backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 16,
+    borderRadius: 12,
+    padding: 14,
     elevation: 2,
-    marginBottom: 20,
   },
   transactionRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 2,
+    alignItems: "center",
+    marginBottom: 4,
+    gap: 10,
   },
-  transactionType: { fontWeight: "bold", fontSize: 15 },
-  transactionAmount: { color: "#2CB742", fontWeight: "bold", fontSize: 15 },
-  transactionDesc: { color: "#888", fontSize: 13 },
-  transactionStatus: { color: "#37B44E", fontSize: 13 },
-  seeMore: {
-    color: "#37B44E",
+  transactionType: { fontWeight: "bold", fontSize: 15, color: "#222" },
+  transactionAmount: { fontWeight: "bold", fontSize: 15 },
+  transactionDesc: { flex: 1, color: "#666", fontSize: 13 },
+  transactionStatus: { color: "#37B44E", fontSize: 13, flexShrink: 0 },
+  transactionTime: { color: "#999", fontSize: 12, marginTop: 4 },
+  noTransactionText: {
     textAlign: "center",
-    marginTop: 10,
+    color: "#aaa",
+    marginTop: 20,
+    fontStyle: "italic",
+  },
+  highlightCard: {
+    backgroundColor: "#E8FFF0",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  highlightTitle: {
     fontWeight: "bold",
+    fontSize: 14,
+    color: "#37B44E",
+    marginBottom: 6,
+  },
+  seeMore: {
+    textAlign: "center",
+    color: "#37B44E",
+    fontWeight: "bold",
+    marginTop: 10,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#EEE",
+    marginVertical: 8,
   },
 });
 

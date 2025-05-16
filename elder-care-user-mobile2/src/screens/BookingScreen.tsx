@@ -5,52 +5,36 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Alert,
+  TextInput,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Ionicons } from "@expo/vector-icons";
 import Footer from "../components/Footer";
-import CareRecipientModal from "../components/CareRecipientModal";
-import { Profile } from "../types/profile";
-
-type RootStackParamList = {
-  AddCareRecipient: undefined;
-  ProfileList: undefined;
-  BookVisit: { role: "doctor" | "nurse"; careRecipient: Profile };
-};
+import { RootStackParamList } from "../navigation/navigation";
+import { useServicesStore } from "../stores/serviceStore";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
+const getImageByRole = (role: string) => {
+  switch (role) {
+    case "doctor":
+      return require("../asset/img/DoctorAvatar.jpg");
+    case "nurse":
+      return require("../asset/img/nurse_avatar.png");
+    default:
+      return require("../asset/img/nurse_avatar.png");
+  }
+};
+
 const BookingScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedCareRecipient, setSelectedCareRecipient] = useState<
-    Profile | undefined
-  >(undefined);
+  const services = useServicesStore.getState().services;
+  const [searchText, setSearchText] = useState("");
 
-  const handleCareRecipientClick = () => {
-    setModalVisible(true);
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
-  };
-
-  const handleApplyCareRecipient = (profile: Profile | undefined) => {
-    setSelectedCareRecipient(profile);
-  };
-
-  const handleSelectCareType = (type: "doctor" | "nurse") => {
-    if (!selectedCareRecipient) {
-      Alert.alert("Thông báo", "Vui lòng chọn người được chăm sóc trước.");
-      return;
-    }
-    navigation.navigate("BookVisit", {
-      role: type,
-      careRecipient: selectedCareRecipient,
-    });
-  };
+  const filteredServices = services.filter((service) =>
+    service.name.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   return (
     <View style={styles.container}>
@@ -68,60 +52,45 @@ const BookingScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Section title */}
+      {/* Section */}
       <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Chọn loại dịch vụ</Text>
+        {/* <Text style={styles.sectionTitle}>Chọn loại dịch vụ</Text> */}
 
-        {/* Doctor Card */}
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() => handleSelectCareType("doctor")}
-        >
-          <Image
-            source={require("../asset/img/DoctorAvatar.jpg")} // Thay bằng ảnh thực tế của bạn
-            style={styles.cardImage}
-            resizeMode="cover"
-          />
-          <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>Bác sĩ</Text>
-            <Text style={styles.cardDescription}>
-              Chăm sóc chuyên môn y tế tại nhà
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward-outline" size={22} color="#999" />
-        </TouchableOpacity>
+        {/* Ô tìm kiếm */}
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Tìm kiếm dịch vụ..."
+          value={searchText}
+          onChangeText={setSearchText}
+        />
 
-        {/* Nurse Card */}
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() => handleSelectCareType("nurse")}
-        >
-          <Image
-            source={require("../asset/img/nurse_avatar.png")} // Thay bằng ảnh thực tế của bạn
-            style={styles.cardImage}
-            resizeMode="cover"
-          />
-          <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>Điều dưỡng</Text>
-            <Text style={styles.cardDescription}>
-              Chăm sóc sinh hoạt và theo dõi sức khoẻ
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward-outline" size={22} color="#999" />
-        </TouchableOpacity>
+        {/* Danh sách dịch vụ */}
+        {filteredServices.map((service) => (
+          <TouchableOpacity
+            key={service._id}
+            style={styles.card}
+            onPress={() => {}}
+          >
+            <Image
+              source={getImageByRole(service.role)}
+              style={styles.cardImage}
+              resizeMode="cover"
+            />
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>{service.name}</Text>
+              <Text style={styles.cardDescription} numberOfLines={2}>
+                {service.description}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={22} color="#999" />
+          </TouchableOpacity>
+        ))}
       </View>
 
       {/* Footer cố định */}
       <View style={styles.footerFixed}>
         <Footer />
       </View>
-
-      {/* Modal chọn người được chăm sóc */}
-      <CareRecipientModal
-        visible={modalVisible}
-        onClose={closeModal}
-        onApply={handleApplyCareRecipient}
-      />
     </View>
   );
 };
@@ -147,39 +116,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
   },
-  careRecipient: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: "#fff",
-  },
-  careBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f2f2f2",
-    padding: 16,
-    borderRadius: 10,
-    borderColor: "#ddd",
-    borderWidth: 1,
-  },
-  avatarContainer: {
-    backgroundColor: "#c4a484",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 15,
-  },
-  avatarLetter: {
-    fontSize: 22,
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  careText: {
-    flex: 1,
-    fontSize: 17,
-    color: "#444",
-  },
   sectionContainer: {
     paddingHorizontal: 20,
     marginTop: 25,
@@ -188,14 +124,24 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "#333",
-    marginBottom: 18,
+    marginBottom: 12,
+  },
+  searchInput: {
+    backgroundColor: "#fff",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    marginBottom: 16,
+    fontSize: 16,
   },
   card: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    padding: 18,
-    borderRadius: 12,
+    padding: 14,
+    borderRadius: 14,
     marginBottom: 16,
     shadowColor: "#000",
     shadowOpacity: 0.08,
@@ -204,8 +150,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   cardImage: {
-    width: 50,
-    height: 50,
+    width: 60,
+    height: 60,
     borderRadius: 10,
     marginRight: 18,
   },

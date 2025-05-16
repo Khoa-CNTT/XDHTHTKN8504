@@ -22,6 +22,40 @@ interface Props {
   };
 }
 
+const InputPicker = ({
+  label,
+  value,
+  placeholder,
+  icon,
+  onPress,
+  error,
+}: {
+  label: string;
+  value?: string;
+  placeholder: string;
+  icon: string;
+  onPress: () => void;
+  error?: string;
+}) => (
+  <>
+    <Text style={styles.label}>{label}</Text>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+      <View style={styles.inputFake}>
+        <Feather
+          name={icon}
+          size={18}
+          color="#777"
+          style={{ marginRight: 8 }}
+        />
+        <Text style={{ color: value ? "#000" : "#aaa", fontSize: 16 }}>
+          {value || placeholder}
+        </Text>
+      </View>
+    </TouchableOpacity>
+    {error ? <Text style={styles.errorText}>{error}</Text> : null}
+  </>
+);
+
 const ServiceInfo: React.FC<Props> = ({ onNext, defaultValues = {} }) => {
   const [service, setService] = useState<Service | null>(
     defaultValues.service || null
@@ -89,10 +123,8 @@ const ServiceInfo: React.FC<Props> = ({ onNext, defaultValues = {} }) => {
         parse(startDate, "yyyy-MM-dd", new Date()),
         now
       );
-
       if (isToday) {
         const oneHourLater = addHours(now, 1);
-
         if (isBefore(selectedDateTime, oneHourLater)) {
           newErrors.time =
             "Vui lòng chọn giờ ít nhất sau 1 tiếng kể từ thời điểm hiện tại.";
@@ -114,7 +146,7 @@ const ServiceInfo: React.FC<Props> = ({ onNext, defaultValues = {} }) => {
     });
   };
 
-  // Auto-clear lỗi khi người dùng sửa
+  // Clear errors
   useEffect(() => {
     if (service) setErrors((prev) => ({ ...prev, service: "" }));
   }, [service]);
@@ -135,30 +167,20 @@ const ServiceInfo: React.FC<Props> = ({ onNext, defaultValues = {} }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Thông tin dịch vụ</Text>
 
-      {/* Dịch vụ */}
-      <Text style={styles.label}>Dịch vụ</Text>
-      <TouchableOpacity
+      <InputPicker
+        label="Dịch vụ"
+        value={service?.name}
+        placeholder="Chọn dịch vụ"
+        icon="shopping-bag"
         onPress={() => setModals((m) => ({ ...m, service: true }))}
-      >
-        <TextInput
-          placeholder="Chọn dịch vụ"
-          value={service?.name || ""}
-          editable={false}
-          style={styles.input}
-          left={
-            <TextInput.Icon
-              icon={() => <Feather name="shopping-bag" size={20} />}
-            />
-          }
-        />
-      </TouchableOpacity>
-      {errors.service ? (
-        <Text style={styles.errorText}>{errors.service}</Text>
-      ) : null}
+        error={errors.service}
+      />
 
-      {/* Gói dịch vụ */}
-      <Text style={styles.label}>Gói dịch vụ</Text>
-      <TouchableOpacity
+      <InputPicker
+        label="Gói dịch vụ"
+        value={packageService?.name}
+        placeholder="Chọn gói"
+        icon="package"
         onPress={() => {
           if (!service) {
             setErrors((prev) => ({
@@ -169,48 +191,27 @@ const ServiceInfo: React.FC<Props> = ({ onNext, defaultValues = {} }) => {
           }
           setModals((m) => ({ ...m, package: true }));
         }}
-      >
-        <TextInput
-          placeholder="Chọn gói"
-          value={packageService?.name || ""}
-          editable={false}
-          style={styles.input}
-          left={
-            <TextInput.Icon icon={() => <Feather name="package" size={20} />} />
-          }
-        />
-      </TouchableOpacity>
-      {errors.package ? (
-        <Text style={styles.errorText}>{errors.package}</Text>
-      ) : null}
+        error={errors.package}
+      />
 
-      {/* Ngày */}
-      <Text style={styles.label}>Ngày bắt đầu</Text>
-      <TextInput
-        placeholder="Chọn ngày"
+      <InputPicker
+        label="Ngày bắt đầu"
         value={startDate}
-        onFocus={() => setModals((m) => ({ ...m, datePicker: true }))}
-        style={styles.input}
-        left={
-          <TextInput.Icon icon={() => <Feather name="calendar" size={20} />} />
-        }
+        placeholder="Chọn ngày"
+        icon="calendar"
+        onPress={() => setModals((m) => ({ ...m, datePicker: true }))}
+        error={errors.date}
       />
-      {errors.date ? <Text style={styles.errorText}>{errors.date}</Text> : null}
 
-      {/* Giờ */}
-      <Text style={styles.label}>Giờ bắt đầu</Text>
-      <TextInput
-        placeholder="Chọn giờ"
+      <InputPicker
+        label="Giờ bắt đầu"
         value={startTime}
-        onFocus={() => setModals((m) => ({ ...m, timePicker: true }))}
-        style={styles.input}
-        left={
-          <TextInput.Icon icon={() => <Feather name="clock" size={20} />} />
-        }
+        placeholder="Chọn giờ"
+        icon="clock"
+        onPress={() => setModals((m) => ({ ...m, timePicker: true }))}
+        error={errors.time}
       />
-      {errors.time ? <Text style={styles.errorText}>{errors.time}</Text> : null}
 
-      {/* Nút tiếp tục */}
       <Button
         mode="contained"
         icon="arrow-right"
@@ -230,7 +231,6 @@ const ServiceInfo: React.FC<Props> = ({ onNext, defaultValues = {} }) => {
         }}
         onCancel={() => setModals((m) => ({ ...m, datePicker: false }))}
       />
-
       <DateTimePickerModal
         isVisible={modals.timePicker}
         mode="time"
@@ -241,7 +241,6 @@ const ServiceInfo: React.FC<Props> = ({ onNext, defaultValues = {} }) => {
         onCancel={() => setModals((m) => ({ ...m, timePicker: false }))}
       />
 
-      {/* Modal chọn dịch vụ */}
       <ServiceModal
         visible={modals.service}
         onClose={() => setModals((m) => ({ ...m, service: false }))}
@@ -251,8 +250,6 @@ const ServiceInfo: React.FC<Props> = ({ onNext, defaultValues = {} }) => {
           setModals((m) => ({ ...m, service: false }));
         }}
       />
-
-      {/* Modal chọn gói */}
       <PackageModal
         visible={modals.package}
         serviceId={service?._id || ""}
@@ -270,35 +267,41 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    backgroundColor: "#fff",
+    backgroundColor: "#fefefe",
   },
   title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 16,
-    color: "#222",
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#1e1e1e",
+    marginBottom: 24,
   },
   label: {
-    marginTop: 16,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "600",
-    color: "#333",
+    color: "#555",
+    marginBottom: 6,
+    marginTop: 12,
   },
-  input: {
-    backgroundColor: "#f5f5f5",
-    borderRadius: 12,
-    marginBottom: 4,
-  },
-  button: {
-    paddingVertical:7,
-    marginTop: 32,
-    borderRadius: 24,
-    backgroundColor: "#28a745",
+  inputFake: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    borderRadius: 16,
+    marginBottom: 5
   },
   errorText: {
     color: "#e53935",
     fontSize: 13,
-    marginBottom: 8,
+    marginTop: 4,
+  },
+  button: {
+    marginTop: 36,
+    paddingVertical: 7,
+    borderRadius: 28,
+    backgroundColor: "#28a745",
+    elevation: 2,
   },
 });
 

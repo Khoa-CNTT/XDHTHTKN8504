@@ -2,7 +2,7 @@
 
 export type Transaction = {
   transactionId?: string;
-  type: "topup" | "payment";
+  type: "TOP_UP" | "PAYMENT";
   amount: number;
   date: string; // ISO string
   status: "pending" | "success" | "failed";
