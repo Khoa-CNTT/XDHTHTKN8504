@@ -14,6 +14,7 @@ interface AuthState {
   logout: () => Promise<void>;
   restoreSession: () => Promise<void>;
   setSession: (user: User, token: string) => Promise<void>;
+  updateUser: (user: User) => Promise<void>; // Thêm dòng này
 }
 
 // Tách xử lý lỗi vào hàm riêng để sử dụng lại khi cần
@@ -22,7 +23,7 @@ const extractErrorMessage = (err: any, defaultMsg = "Đã xảy ra lỗi") => {
   if (err?.message) return err.message;
   return defaultMsg;
 };
-// dddd
+
 const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
@@ -98,6 +99,16 @@ const useAuthStore = create<AuthState>((set) => ({
         loading: false,
         error: extractErrorMessage(err, "Lỗi phục hồi phiên"),
       });
+    }
+  },
+
+  // Phương thức cập nhật thông tin user
+  updateUser: async (user) => {
+    try {
+      await AsyncStorage.setItem("user", JSON.stringify(user));
+      set({ user, error: null });
+    } catch (err: any) {
+      set({ error: extractErrorMessage(err, "Lỗi cập nhật thông tin người dùng") });
     }
   },
 }));

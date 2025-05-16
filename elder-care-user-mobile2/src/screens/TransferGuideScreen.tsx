@@ -95,39 +95,39 @@ const TransferGuideScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff', padding: 16,paddingTop: 30, },
-    headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-    headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#222' },
-    instruction: { color: '#222', fontSize: 14, marginBottom: 12 },
-    label: { color: '#888', fontSize: 13, marginTop: 10, marginBottom: 2 },
-    brand: { color: '#37B44E', fontWeight: 'bold' },
-    amount: { color: '#37B44E', fontWeight: 'bold', fontSize: 28, marginBottom: 8 },
-    infoBox: { backgroundColor: '#F7F7F7', borderRadius: 8, padding: 12, marginBottom: 12 },
-    infoLabel: { color: '#888', fontSize: 13, marginTop: 6 },
-    infoValue: { color: '#222', fontWeight: 'bold', fontSize: 15 },
-    row: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
-    copyText: { color: '#37B44E', fontWeight: 'bold', marginLeft: 12 },
-    transferContentBox: {
-        backgroundColor: '#F7F7F7',
-        borderRadius: 8,
-        padding: 12,
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 12,
-        justifyContent: 'space-between',
-    },
-    transferContent: { color: '#222', fontWeight: 'bold', fontSize: 16 },
-    note: { color: '#222', fontSize: 13, marginVertical: 10 },
-    link: { color: '#37B44E', fontWeight: 'bold' },
-    button: {
-        backgroundColor: '#37B44E',
-        borderRadius: 10,
-        paddingVertical: 16,
-        alignItems: 'center',
-        marginTop: 16,
-        marginBottom: 24,
-    },
-    buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-});
+  container: { flex: 1, backgroundColor: '#fff', padding: 16, paddingTop: 40 }, // paddingTop
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }, // Tăng marginBottom
+  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#222' },
+  instruction: { color: '#222', fontSize: 14, marginBottom: 18 }, // Tăng marginBottom
+  label: { color: '#888', fontSize: 13, marginTop: 12, marginBottom: 4 }, // Tăng marginTop và marginBottom
+  brand: { color: '#37B44E', fontWeight: 'bold' },
+  amount: { color: '#37B44E', fontWeight: 'bold', fontSize: 28, marginBottom: 12 }, // Tăng marginBottom
+  infoBox: { backgroundColor: '#F7F7F7', borderRadius: 8, padding: 12, marginBottom: 18 }, // Tăng marginBottom
+  infoLabel: { color: '#888', fontSize: 13, marginTop: 8 }, // Tăng marginTop
+  infoValue: { color: '#222', fontWeight: 'bold', fontSize: 15 },
+  row: { flexDirection: 'row', alignItems: 'center', marginTop: 8 }, // Tăng marginTop
+  copyText: { color: '#37B44E', fontWeight: 'bold', marginLeft: 12 },
+  transferContentBox: {
+   backgroundColor: '#F7F7F7',
+   borderRadius: 8,
+   padding: 12,
+   flexDirection: 'row',
+   alignItems: 'center',
+   marginBottom: 18, // Tăng marginBottom
+   justifyContent: 'space-between',
+  },
+  transferContent: { color: '#222', fontWeight: 'bold', fontSize: 16 },
+  note: { color: '#222', fontSize: 13, marginVertical: 12 }, // Tăng marginVertical
+  link: { color: '#37B44E', fontWeight: 'bold' },
+  button: {
+   backgroundColor: '#37B44E',
+   borderRadius: 10,
+   paddingVertical: 16,
+   alignItems: 'center',
+   marginTop: 20, // Tăng marginTop
+   marginBottom: 30, // Tăng marginBottom
+  },
+  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+ });
 
 export default TransferGuideScreen;
