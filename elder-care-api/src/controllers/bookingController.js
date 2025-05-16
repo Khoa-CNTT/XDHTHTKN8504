@@ -771,7 +771,6 @@ const bookingController = {
         try {
             const { userId } = req.user;
             const { bookingId } = req.params;
-            console.log("ddddd", bookingId);
 
             const deleteBooking = await Booking.findByIdAndDelete({ _id: bookingId })
 

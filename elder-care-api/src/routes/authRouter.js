@@ -72,4 +72,23 @@ router.get(
   authController.getStaffById
 )
 
+//Xóa khách hàng bằng _id
+router.delete(
+  '/delete-customer/:customerId',
+  authController.deleteCustomerByAdmin
+)
+
+//Đếm khách hàng today, month, year
+router.get(
+  '/count-customers',
+  authController.countCustomersTodayMonthYear
+)
+
+//lấy thông tin khách hàng
+router.get(
+  '/get-customer-info/:customerId',
+  authController.getCustomerById
+)
+
+
 export default router;

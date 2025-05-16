@@ -9,7 +9,8 @@ function PaymentsUsed({ doctor }) {
   const navigate = useNavigate();
   const { _id } = useParams();
   const dispatch = useDispatch();
-  const { data: payments, salary, loading, error } = useSelector((state) => state.payment)
+  const { data: payments, loading, error } = useSelector((state) => state.payment)
+  const { salary } = useSelector((state) => state.payment)
 
   useEffect(() => {
     if (_id) {
@@ -26,10 +27,12 @@ function PaymentsUsed({ doctor }) {
     navigate(`/payments/preview/${_id}`);
   };
 
-  console.log("salary", salary);
-  console.log("fff", payments);
-  
-  
+  // console.log("salary", salary);
+  // console.log("fff", payments);
+
+  const totalSalary = salary?.totalSalary
+    ? `${salary.totalSalary.toLocaleString("vi-vn")} VND`
+    : "0";
 
   return (
     <div className="w-full">
@@ -38,19 +41,19 @@ function PaymentsUsed({ doctor }) {
         {/* Tổng tiền lương */}
         <div className="bg-white p-4 rounded-lg shadow-md text-center">
           <p className="text-gray-500 text-sm">Tổng tiền lương</p>
-          <p className="text-xl font-semibold text-green-600">120.000.000₫</p>
+          <p className="text-xl font-semibold text-green-600">{totalSalary}</p>
         </div>
 
         {/* Tổng đơn thanh toán */}
         <div className="bg-white p-4 rounded-lg shadow-md text-center">
           <p className="text-gray-500 text-sm">Tổng đơn thanh toán</p>
-          <p className="text-xl font-semibold text-blue-600">32 đơn</p>
+          <p className="text-xl font-semibold text-blue-600">{salary?.successCount} đơn</p>
         </div>
 
         {/* Tổng đơn đang đợi */}
         <div className="bg-white p-4 rounded-lg shadow-md text-center">
           <p className="text-gray-500 text-sm">Tổng đơn đang đợi</p>
-          <p className="text-xl font-semibold text-yellow-600">5 đơn</p>
+          <p className="text-xl font-semibold text-yellow-600">{salary?.pendingCount} đơn</p>
         </div>
       </div>
 

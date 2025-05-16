@@ -12,7 +12,11 @@ import {
 import { toast } from "react-hot-toast";
 import { BsCalendarMonth } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
+import { fetchAllPayment, fetchPaymentCounts } from "../../store/paymentSlice";
 import * as XLSX from "xlsx"; // THÊM: import thư viện xuất Excel
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { format } from "date-fns";
 
 function Payments() {
   const [status, setStatus] = useState(sortsDatas.status[0]);
@@ -20,6 +24,8 @@ function Payments() {
   const [dateRange, setDateRange] = useState([new Date(), new Date()]);
   const [startDate, endDate] = dateRange;
   const navigate = useNavigate();
+  const { allPayments: payments, paymentCounts, loading, error } = useSelector((state) => state.payment)
+  const dispatch = useDispatch();
 
   const sorts = [
     {
@@ -35,38 +41,46 @@ function Payments() {
       datas: sortsDatas.method,
     },
   ];
+  
+  useEffect(() => {
+    dispatch(fetchAllPayment());
+    dispatch(fetchPaymentCounts());
+  }, [dispatch])
 
   const boxes = [
     {
       id: 1,
       title: "Today Payments",
-      value: "4,42,236",
+      value: paymentCounts?.today,
       color: ["bg-subMain", "text-subMain"],
       icon: BiTime,
     },
     {
       id: 2,
       title: "Monthly Payments",
-      value: "12,42,500",
+      value: paymentCounts?.month,
       color: ["bg-orange-500", "text-orange-500"],
       icon: BsCalendarMonth,
     },
     {
       id: 3,
       title: "Yearly Payments",
-      value: "345,70,000",
+      value: paymentCounts?.year,
       color: ["bg-green-500", "text-green-500"],
       icon: MdOutlineCalendarMonth,
     },
   ];
 
-  const editPayment = (id) => {
-    navigate(`/payments/edit/${id}`);
+  const editPayment = (_id) => {
+    navigate(`/payments/edit/${_id}`);
   };
 
-  const previewPayment = (id) => {
-    navigate(`/payments/preview/${id}`);
+  const previewPayment = (_id) => {
+    navigate(`/payments/preview/${_id}`);
   };
+
+  // console.log("pay", payments);
+  console.log("count", paymentCounts); 
 
   // 🔹 Chuyển chuỗi sang ArrayBuffer
   const s2ab = (s) => {
@@ -139,8 +153,8 @@ function Payments() {
                 {box.title === "Today Payments"
                   ? "today"
                   : box.title === "Monthly Payments"
-                  ? "this month"
-                  : "this year"}
+                    ? "this month"
+                    : "this year"}
               </p>
             </div>
             <div
@@ -179,7 +193,7 @@ function Payments() {
         {/* Table */}
         <div className="mt-8 w-full overflow-x-scroll">
           <Transactiontable
-            data={transactionData}
+            data={payments}
             functions={{ preview: previewPayment, edit: editPayment }}
           />
         </div>
