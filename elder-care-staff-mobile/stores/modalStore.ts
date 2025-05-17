@@ -9,6 +9,7 @@ interface ModalState {
   message?: string;
   autoHideDuration?: number;
   onDetailPress?: () => void;
+  onConfirm?: () => void;
   type?: "popup" | "dialog";
 
   showModal: (
@@ -18,65 +19,69 @@ interface ModalState {
       type?: "popup" | "dialog";
       autoHideDuration?: number;
       onDetailPress?: () => void;
+      onConfirm?: () => void;
+      playSound?: boolean;
+      vibrate?: boolean;
+      notify?: boolean;
     }
   ) => void;
 
   hideModal: () => void;
 }
 
-export const useModalStore = create<ModalState>((set) => ({
-  visible: false,
-  title: "",
-  message: "",
-  autoHideDuration: undefined,
-  onDetailPress: undefined,
-  type: "popup",
-
-  showModal: async (title, message, options) => {
-    const type = options?.type ?? "popup";
-
-    // 1. Rung thiết bị
-    Vibration.vibrate(300);
-
-    // 2. Phát âm thanh thông báo
-    await playNotificationSound(type);
-
-    // 3. Gửi local notification của hệ thống
-    await sendLocalNotification({title, body: message});
-
-    // 4. Hiển thị modal
-    set({
-      visible: true,
-      title,
-      message,
-      autoHideDuration: options?.autoHideDuration,
-      onDetailPress: options?.onDetailPress,
-      type,
-    });
-
-    // 5. Tự động ẩn nếu có autoHideDuration
-    if (options?.autoHideDuration) {
-      setTimeout(() => {
-        set({
-          visible: false,
-          title: "",
-          message: "",
-          autoHideDuration: undefined,
-          onDetailPress: undefined,
-          type: "popup",
-        });
-      }, options.autoHideDuration);
-    }
-  },
-
-  hideModal: () => {
+export const useModalStore = create<ModalState>((set) => {
+  const resetModal = () =>
     set({
       visible: false,
       title: "",
       message: "",
       autoHideDuration: undefined,
       onDetailPress: undefined,
+      onConfirm: undefined,
       type: "popup",
     });
-  },
-}));
+
+  return {
+    visible: false,
+    title: "",
+    message: "",
+    autoHideDuration: undefined,
+    onDetailPress: undefined,
+    onConfirm: undefined,
+    type: "popup",
+
+    showModal: async (title, message, options) => {
+      const {
+        type = "popup",
+        autoHideDuration,
+        onDetailPress,
+        onConfirm,
+        playSound = true,
+        vibrate = true,
+        notify = true,
+      } = options || {};
+
+      if (vibrate) Vibration.vibrate(300);
+      if (playSound) await playNotificationSound(type);
+      if (notify) await sendLocalNotification({ title, body: message });
+
+      set({
+        visible: true,
+        title,
+        message,
+        autoHideDuration,
+        onDetailPress,
+        onConfirm,
+        type,
+      });
+
+      if (autoHideDuration) {
+        setTimeout(() => {
+          resetModal();
+        }, autoHideDuration);
+      }
+    },
+
+    hideModal: resetModal,
+  };
+});

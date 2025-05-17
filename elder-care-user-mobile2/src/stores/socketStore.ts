@@ -3,7 +3,9 @@ import socket from "../utils/socket";
 import useScheduleStore from "./scheduleStore";
 import { useModalStore } from "./modalStore";
 import { useWalletStore } from "./WalletStore";
-import { useNavigation } from "@react-navigation/native";
+import { useChatStore } from "./chatStore";
+import "react-native-get-random-values";
+import { v4 as uuidv4 } from "uuid"; 
 
 
 const getStatusLabel = (status: string) => {
@@ -38,8 +40,8 @@ interface SocketStore {
   disconnect: () => void;
   join: (payload: Payload) => void;
   leave: (payload: Payload) => void;
-  sendMessage: (roomId: string, message: string) => void;
-  receiveMessage: (roomId: string, message: string) => void;
+  sendMessage: (roomId: string, message: string, senderId: string) => void;
+  
 }
 
 export const useSocketStore = create<SocketStore>((set, get) => {
@@ -96,13 +98,28 @@ export const useSocketStore = create<SocketStore>((set, get) => {
       });
     });
 
-    socket.on("receive-message", (roomId: string, message: string) => {
-      console.log(`📩 Tin nhắn nhận được trong phòng ${roomId}:`, message);
-      get().receiveMessage(roomId, message);
+    socket.on("receive-message", (data: {
+      id: string;
+      roomId: string;
+      senderId: string;
+      message: string;
+      timestamp: string;
+    }) => {
+      const { id, roomId, message, timestamp } = data;
+      const addMessage = useChatStore.getState().addMessage;
+
+      addMessage({
+        id,
+        text: message,
+        time: timestamp,
+        isReceived: true,
+        roomId,
+      });
     });
 
     set({ hasSetupListeners: true });
   };
+
 
   return {
     socket,
@@ -136,18 +153,18 @@ export const useSocketStore = create<SocketStore>((set, get) => {
       }
     },
 
-    sendMessage: (roomId: string, message: string) => {
-      socket.emit("sendMessage", roomId, message);
-      console.log(`✅ Gửi tin nhắn tới phòng ${roomId}:`, message);
-    },
+    sendMessage: (roomId: string, message: string, senderId: string) => {
+      const id = uuidv4();
+      socket.emit("send-message", { id, roomId, senderId, message });
 
-    receiveMessage: (roomId: string, message: string) => {
-      set((state) => ({
-        messages: {
-          ...state.messages,
-          [roomId]: [...(state.messages[roomId] || []), { message }],
-        },
-      }));
+      const addMessage = useChatStore.getState().addMessage;
+      addMessage({
+        id, // tạm id khi gửi (có thể sửa lại)
+        text: message,
+        time: new Date().toISOString(),
+        isReceived: false,
+        roomId,
+      });
     },
   };
 });

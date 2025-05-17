@@ -2,6 +2,7 @@
 import  API  from "../utils/api"; // Import axios instance đã được cấu hình
 import useAuthStore from "../stores/authStore"; // Import store để lấy token
 import { Schedule } from "../types/Schedule"; // Import kiểu dữ liệu Schedule
+import { log } from "@/utils/logger";
 
 interface ApiResponse {
   message: string;
@@ -34,7 +35,7 @@ const getNextScheduleForStaff = async (): Promise<nearestSchedule | null> => {
     return response.data as nearestSchedule;
   } catch (error: any) {
     // Xử lý lỗi tốt hơn, log ra chi tiết để debug
-    console.log("Error fetching schedule:", error);
+    log("Error fetching schedule:", error);
     return null; // Hoặc ném lỗi nếu cần thiết
 
     // Nếu lỗi từ API, kiểm tra thông báo lỗi

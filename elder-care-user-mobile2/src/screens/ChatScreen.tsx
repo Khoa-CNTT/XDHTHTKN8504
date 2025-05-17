@@ -1,3 +1,4 @@
+// src/screens/ChatScreen.tsx
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -10,13 +11,19 @@ import {
   Image,
   Linking,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
 import { Ionicons, Feather } from "@expo/vector-icons";
-import { useSocketStore } from "@/stores/socketStore";
-import { useChatStore } from "@/stores/chatStore";
-import useScheduleStore from "@/stores/scheduleStore";
-import useAuthStore from "@/stores/authStore";
+import useScheduleStore from "../stores/scheduleStore";
+import useAuthStore from "../stores/authStore";
+import { useChatStore } from "../stores/chatStore";
+import { useSocketStore } from "../stores/socketStore"; // ✅ dùng socket
+import { RootStackParamList } from "../navigation/navigation";
+import { ChatMessage } from "../stores/chatStore";
 
+
+type ChatScreenRouteProp = RouteProp<RootStackParamList, "Chat">;
+
+// --- Header component ---
 const Header = ({ onBack, onCall, avatar, name }: any) => (
   <View
     style={{
@@ -35,9 +42,7 @@ const Header = ({ onBack, onCall, avatar, name }: any) => (
     </TouchableOpacity>
     <Image
       source={
-        avatar
-          ? { uri: avatar }
-          : require("../../../assets/images/unknownAvatar.png")
+        avatar ? { uri: avatar } : require("../asset/img/unknownAvatar.png")
       }
       style={{ width: 36, height: 36, borderRadius: 18, marginRight: 10 }}
     />
@@ -53,7 +58,18 @@ const Header = ({ onBack, onCall, avatar, name }: any) => (
   </View>
 );
 
-const MessageBubble = ({ isMe, avatar, message, timestamp }: any) => (
+// --- Message bubble ---
+const MessageBubble = ({
+  isMe,
+  avatar,
+  message,
+  timestamp,
+}: {
+  isMe: boolean;
+  avatar?: string;
+  message: string;
+  timestamp: number;
+}) => (
   <View
     style={{
       flexDirection: isMe ? "row-reverse" : "row",
@@ -64,9 +80,7 @@ const MessageBubble = ({ isMe, avatar, message, timestamp }: any) => (
     {!isMe && (
       <Image
         source={
-          avatar
-            ? { uri: avatar }
-            : require("../../../assets/images/unknownAvatar.png")
+          avatar ? { uri: avatar } : require("../asset/img/unknownAvatar.png")
         }
         style={{ width: 28, height: 28, borderRadius: 14, marginRight: 8 }}
       />
@@ -102,6 +116,7 @@ const MessageBubble = ({ isMe, avatar, message, timestamp }: any) => (
   </View>
 );
 
+// --- Input bar ---
 const MessageInputBar = ({
   input,
   setInput,
@@ -119,6 +134,9 @@ const MessageInputBar = ({
       borderTopWidth: 1,
       borderTopColor: "#ddd",
       paddingTop: 8,
+      paddingBottom: 8,
+      paddingHorizontal: 12,
+      backgroundColor: "#fff",
     }}
   >
     <TextInput
@@ -148,40 +166,54 @@ const MessageInputBar = ({
   </View>
 );
 
+// --- ChatScreen ---
 const ChatScreen = () => {
-  const router = useRouter();
-  const { sendMessage } = useSocketStore();
-  const currentUser = useAuthStore((state) => state.user);
-  const profile = useScheduleStore((state) => state.nearestSchedule);
-  const getMessagesByRoom = useChatStore((state) => state.getMessagesByRoom);
+  const route = useRoute<ChatScreenRouteProp>();
+  const navigation = useNavigation();
+  const scheduleID = route.params.scheduleId;
 
-  const roomId = profile?.schedule._id;
-  const roomMessages = roomId ? getMessagesByRoom(roomId) : [];
+  const currentUser = useAuthStore((state) => state.user);
+  const profile = useScheduleStore((state) =>
+    state.getScheduleById(scheduleID)
+  );
+
+  // Lấy tin nhắn cho phòng chat, trả về undefined nếu không có
+  const messagesForRoom = useChatStore((state) => {
+    const msgs = state.messages[scheduleID];
+    return msgs ? msgs : undefined;
+  });
+
+  // Mảng an toàn (không undefined)
+  const messages = messagesForRoom ?? [];
 
   const [input, setInput] = useState("");
   const scrollViewRef = useRef<ScrollView>(null);
 
+  const { sendMessage } = useSocketStore();
+
+  // Scroll xuống cuối khi có tin nhắn mới
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
-  }, [roomMessages.length]);
+  }, [messages.length]);
 
+  // Gửi tin nhắn
   const handleSendMessage = () => {
-    if (roomId && input.trim() !== "") {
-      sendMessage(roomId, input.trim(), currentUser?._id || "");
-      setInput("");
-    }
+    if (input.trim() === "") return;
+    sendMessage(scheduleID, input.trim(), currentUser?._id || "");
+    setInput("");
   };
 
+  // Gọi điện thoại đến khách hàng
   const callCustomer = () => {
-    const phone = profile?.phoneNumber;
+    const phone = profile?.staffPhone;
     if (phone) {
       Linking.openURL(`tel:${phone}`);
     } else {
-      alert(`Không tìm thấy số điện thoại.`);
+      alert("Không tìm thấy số điện thoại.");
     }
   };
 
-  if (!roomId || !profile) {
+  if (!scheduleID || !profile) {
     return (
       <View style={{ padding: 16 }}>
         <Text>Đang tải phòng trò chuyện...</Text>
@@ -195,10 +227,10 @@ const ChatScreen = () => {
       style={{ flex: 1, backgroundColor: "#f9f9f9" }}
     >
       <Header
-        onBack={() => router.back()}
+        onBack={() => navigation.goBack()}
         onCall={callCustomer}
-        avatar={profile.avatar}
-        name={profile.schedule.patientName}
+        avatar={profile.staffAvatar}
+        name={profile.staffFullName}
       />
 
       <View style={{ flex: 1, padding: 16 }}>
@@ -207,13 +239,13 @@ const ChatScreen = () => {
           contentContainerStyle={{ paddingBottom: 20 }}
           showsVerticalScrollIndicator={false}
         >
-          {roomMessages.map((msg) => (
+          {messages.map((msg) => (
             <MessageBubble
-              key={msg.id} // 🔑 Sử dụng id duy nhất để tránh render thừa
+              key={msg.id}
               isMe={!msg.isReceived}
-              avatar={profile.avatar}
+              avatar={profile.staffAvatar}
               message={msg.text}
-              timestamp={msg.time}
+              timestamp={new Date(msg.time).getTime()}
             />
           ))}
         </ScrollView>

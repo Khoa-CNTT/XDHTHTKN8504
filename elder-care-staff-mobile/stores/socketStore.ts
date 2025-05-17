@@ -6,6 +6,10 @@ import useAuthStore from "./authStore";
 import useScheduleStore from "./scheduleStore";
 import { useModalStore } from "./modalStore";
 import useCompletedBookingStore from "../stores/completedBookingStore";
+import "react-native-get-random-values";
+import { v4 as uuidv4 } from "uuid"; 
+import { useChatStore } from "./chatStore";
+
 
 type Payload = Partial<{
   userId: string;
@@ -29,8 +33,7 @@ interface SocketStore {
   join: (payload: Payload) => void;
   leave: (payload: Payload) => void;
   setNewBooking: (booking: Booking | null) => void;
-  sendMessage: (roomId: string, message: string) => void; // Gửi tin nhắn
-  addMessage: (roomId: string, message: ChatMessage) => void; // Thêm tin nhắn
+  sendMessage: (roomId: string, message: string, senderId: string) => void;
 }
 
 export const useSocketStore = create<SocketStore>((set) => {
@@ -54,10 +57,23 @@ export const useSocketStore = create<SocketStore>((set) => {
     });
 
     // Lắng nghe tin nhắn
-    socket.on("receive-message", (msg: ChatMessage) => {
-      log("Nhận được tin nhắn mới");
-      const roomId = msg.senderId; // hoặc lấy phòng từ thông tin tin nhắn nếu cần
-      addMessage(roomId, msg); // Lưu tin nhắn vào store
+    socket.on("receive-message", (data: {
+      roomId: string;
+      senderId: string;
+      message: string;
+      timestamp: string;
+    }) => {
+      const { roomId, message, timestamp } = data;
+      console.log(`📩 Tin nhắn từ phòng ${roomId}:`, message);
+      const id = uuidv4();
+      const addMessage = useChatStore.getState().addMessage;
+      addMessage({
+        id: id,
+        text: message,
+        time: timestamp,
+        isReceived: true,
+        roomId,
+      });
     });
 
     socket.on("connect", () => {
@@ -106,26 +122,6 @@ export const useSocketStore = create<SocketStore>((set) => {
     });
   };
 
-  const sendMessage = (roomId: string, message: string) => {
-    const msg: ChatMessage = {
-      senderId: currentUser?._id || "",
-      message,
-      timestamp: new Date().toISOString(),
-    };
-
-    socket.emit("send-message", { roomId, ...msg }); // Gửi tin nhắn qua socket
-    addMessage(roomId, msg); // Lưu vào store ngay lập tức
-  };
-
-  const addMessage = (roomId: string, message: ChatMessage) => {
-    set((state) => ({
-      messages: {
-        ...state.messages,
-        [roomId]: [...(state.messages[roomId] || []), message],
-      },
-    }));
-  };
-
   return {
     socket,
     isConnected: false,
@@ -159,7 +155,18 @@ export const useSocketStore = create<SocketStore>((set) => {
     setNewBooking: (booking) => {
       set({ newBooking: booking });
     },
-    sendMessage,
-    addMessage,
+    sendMessage: (roomId: string, message: string, senderId: string) => {
+      const id = uuidv4();
+      socket.emit("send-message", { id, roomId, senderId, message });
+
+      const addMessage = useChatStore.getState().addMessage;
+      addMessage({
+        id, // tạm id khi gửi (có thể sửa lại)
+        text: message,
+        time: new Date().toISOString(),
+        isReceived: false,
+        roomId,
+      });
+    },
   };
 });

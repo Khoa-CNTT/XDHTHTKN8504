@@ -84,7 +84,7 @@ export const getBookings = async (): Promise<Booking[]> => {
     );
     return response.data.data;
   } catch (error) {
-    console.error("Error fetching schedules:", error);
+    log("Error fetching schedules:", error);
     return [];
   }
 };

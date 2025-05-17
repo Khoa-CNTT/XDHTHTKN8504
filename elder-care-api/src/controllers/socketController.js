@@ -1,5 +1,6 @@
 import { Server as SocketIO } from "socket.io";
 import { checkPermissions } from "../controllers/chatController.js";
+import { v4 as uuidv4 } from "uuid";
 
 const userSocketMap = new Map(); // userId => socketId
 let ioInstance;
@@ -29,12 +30,18 @@ const socketController = (io) => {
       }
     });
 
-    socket.on("send-message", ({ roomId, senderId, message }) => {
+    socket.on("send-message", ({ id, roomId, senderId, message }) => {
+      const timestamp = new Date().toISOString();
+
       console.log(`Message from ${senderId}: ${message}`);
+
+      // Phát tin nhắn với id, timestamp
       io.to(`schedule_${roomId}`).emit("receive-message", {
+        id,
+        roomId,
         senderId,
         message,
-        timestamp: new Date().toISOString(),
+        timestamp,
       });
     });
 
