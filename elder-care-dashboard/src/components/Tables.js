@@ -608,7 +608,7 @@ export function BookingTable({ data, functions, doctor }) {
           );
           const endDate = new Date(item?.repeatTo).toLocaleDateString("vi-VN");
           const statusText = statusMap[item.status] || "Không xác định";
-          const avatarUrl = item?.profileId?.avartar
+          const avatarUrl = item?.profileId?.avartar;
 
           return (
             <tr
@@ -751,6 +751,48 @@ export function AppointmentTable({ data, functions, doctor }) {
             </td>
           </tr>
         ))}
+      </tbody>
+    </table>
+  );
+}
+export function BookingTable1({ data, functions, doctor }) {
+  return (
+    <table className="table-auto w-full">
+      <thead className="bg-dry rounded-md overflow-hidden">
+        <tr>
+          <th className={thclass}>Ngày</th>
+          <th className={thclass}>Tên dịch vụ</th>
+          <th className={thclass}>Trạng thái</th>
+          <th className={thclass}>Thời gian</th>
+
+          <th className={thclass}>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr className="border-b border-border hover:bg-greyed transitions">
+          <td className={tdclass}>
+            <p className="text-xs">12/05/2025</p>
+          </td>
+          <td className={tdclass}>
+            <h4 className="text-xs font-medium">Vật lý trị liệu</h4>
+            <p className="text-xs mt-1 text-textGray"></p>
+          </td>
+          <td className={tdclass}>
+            <span>Đã duyệt</span>
+          </td>
+
+          <td className={tdclass}>
+            <p className="text-xs">10:00 AM - 12:00 PM</p>
+          </td>
+          <td className={tdclass}>
+            <button
+              // onClick={() => functions.preview(item)}
+              className="text-sm flex-colo bg-white text-subMain border rounded-md w-10 h-10"
+            >
+              <FiEye />
+            </button>
+          </td>
+        </tr>
       </tbody>
     </table>
   );

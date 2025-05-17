@@ -9,6 +9,7 @@ import AppointmentsUsed from "../../components/UsedComp/AppointmentsUsed";
 import { doctorTab } from "../../components/Datas";
 import PaymentsUsed from "../../components/UsedComp/PaymentUsed";
 import InvoiceUsed from "../../components/UsedComp/InvoiceUsed";
+import ChangePasswordStaffs from "../../components/UsedComp/ChangePasswordStaffs";
 import Access from "../../components/Access";
 import { useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -19,7 +20,6 @@ function DoctorProfile() {
   const location = useLocation();
   const [activeTab, setActiveTab] = React.useState(1);
   const { selectedStaff, loading, error } = useSelector((state) => state.staff);
-
 
   const { _id } = useParams();
   const dispatch = useDispatch();
@@ -45,7 +45,7 @@ function DoctorProfile() {
       // case 6:
       //   return <Access setAccess={setAccess} />;
       case 7:
-        return <ChangePassword />;
+        return <ChangePasswordStaffs />;
       default:
         return;
     }
@@ -73,7 +73,9 @@ function DoctorProfile() {
         >
           <IoArrowBackOutline />
         </Link>
-        <h1 className="text-xl font-semibold">{selectedStaff.firstName} {selectedStaff.lastName}</h1>
+        <h1 className="text-xl font-semibold">
+          {selectedStaff.firstName} {selectedStaff.lastName}
+        </h1>
       </div>
       <div className=" grid grid-cols-12 gap-6 my-8 items-start">
         <div
@@ -89,7 +91,9 @@ function DoctorProfile() {
             className="w-40 h-40 rounded-full object-cover border border-dashed border-subMain"
           />
           <div className="gap-2 flex-colo">
-            <h2 className="text-sm font-semibold">Dr. {selectedStaff.lastName}</h2>
+            <h2 className="text-sm font-semibold">
+              Dr. {selectedStaff.lastName}
+            </h2>
             <p className="text-xs text-textGray">{selectedStaff.email}</p>
             <p className="text-xs">{selectedStaff.userId.phone}</p>
           </div>
@@ -100,10 +104,11 @@ function DoctorProfile() {
                 onClick={() => setActiveTab(tab.id)}
                 key={index}
                 className={`
-                ${activeTab === tab.id
+                ${
+                  activeTab === tab.id
                     ? "bg-text text-subMain"
                     : "bg-dry text-main hover:bg-text hover:text-subMain"
-                  }
+                }
                 text-xs gap-4 flex items-center w-full p-4 rounded`}
               >
                 <tab.icon className="text-lg" /> {tab.title}
