@@ -519,7 +519,7 @@ const scheduleController = {
     }
   },
 
-  getAllSchedulesByStaffId: async (req, res) => {
+  getAllSchedulesByStaffId2: async (req, res) => {
     try {
       const { _id } = req.params;
 

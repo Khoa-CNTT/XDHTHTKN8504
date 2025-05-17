@@ -41,7 +41,7 @@ router.get("/next/user",auth, scheduleController.getNextScheduleForUser);
 
 router.get(
   '/get-schedule-staff/:_id',
-  scheduleController.getAllSchedulesByStaffId
+  scheduleController.getAllSchedulesByStaffId2
 )
 
 export default router;

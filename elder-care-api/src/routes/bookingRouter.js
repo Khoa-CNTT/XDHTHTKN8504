@@ -152,7 +152,7 @@ router.post(
 
 router.get(
     '/get-booking-customer/:userId',
-    bookingController.getBookingForCustomer
+    bookingController.getBookingForCustomer2
 )
 
 export default router
