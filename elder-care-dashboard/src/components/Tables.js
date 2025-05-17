@@ -803,7 +803,15 @@ export function AppointmentTable({ data, functions, doctor }) {
     </table >
   );
 }
-export function BookingTable1({ data, functions, doctor }) {
+export function BookingTable1({ data = [], functions, doctor }) {
+  const statusMap = {
+    pending: "Chưa nhận",
+    paid: "Đã thanh toán",
+    accepted: "Đã được nhận",
+    completed: "Hoàn thành",
+    cancelled: "Đã hủy",
+  };
+
   return (
     <table className="table-auto w-full">
       <thead className="bg-dry rounded-md overflow-hidden">
@@ -817,30 +825,75 @@ export function BookingTable1({ data, functions, doctor }) {
         </tr>
       </thead>
       <tbody>
-        <tr className="border-b border-border hover:bg-greyed transitions">
-          <td className={tdclass}>
-            <p className="text-xs">12/05/2025</p>
-          </td>
-          <td className={tdclass}>
-            <h4 className="text-xs font-medium">Vật lý trị liệu</h4>
-            <p className="text-xs mt-1 text-textGray"></p>
-          </td>
-          <td className={tdclass}>
-            <span>Đã duyệt</span>
-          </td>
+        {data.map((item) => {
+          const formattedDate = item.createdAt
+            ? format(new Date(item.createdAt), "MMM dd, yyyy")
+            : "Null";
 
-          <td className={tdclass}>
-            <p className="text-xs">10:00 AM - 12:00 PM</p>
-          </td>
-          <td className={tdclass}>
-            <button
-              // onClick={() => functions.preview(item)}
-              className="text-sm flex-colo bg-white text-subMain border rounded-md w-10 h-10"
-            >
-              <FiEye />
-            </button>
-          </td>
-        </tr>
+          const serviceName = item?.serviceId?.name;
+          const statusText = statusMap[item.status] || "Không xác định";
+          const formatTimeRange = (start, end) => {
+            const to12Hour = (timeStr) => {
+              const [hours, minutes] = timeStr.split(":").map(Number);
+              const date = new Date();
+              date.setHours(hours);
+              date.setMinutes(minutes);
+
+              const hour12 = date.getHours() % 12 || 12;
+              const ampm = date.getHours() >= 12 ? "PM" : "AM";
+              const pad = (n) => n.toString().padStart(2, "0");
+
+              return `${pad(hour12)}:${pad(date.getMinutes())} ${ampm}`;
+            };
+
+            return `${to12Hour(start)} - ${to12Hour(end)}`;
+          };
+
+          const timeRange =
+            item.timeSlot && item.timeSlot.start && item.timeSlot.end
+              ? formatTimeRange(item.timeSlot.start, item.timeSlot.end)
+              : "Không xác định";
+
+          return (
+            <tr className="border-b border-border hover:bg-greyed transitions">
+              <td className={tdclass}>
+                <p className="text-xs">{formattedDate}</p>
+              </td>
+              <td className={tdclass}>
+                <h4 className="text-xs font-medium truncate max-w-[120px]">{serviceName}</h4>
+                <p className="text-xs mt-1 text-textGray"></p>
+              </td>
+              <td className={tdclass}>
+                <span className={`py-1 px-4 ${item.status === "completed"
+                  ? "bg-green-500 text-green-500"
+                  : item.status === "accepted"
+                    ? "bg-orange-500 text-orange-500"
+                    : item.status === "pending"
+                      ? "bg-red-600 text-red-600"
+                      : item.status === "paid"
+                        ? "bg-green-500 text-green-500"
+                        : item.status === "cancelled" &&
+                        "bg-gray-500 text-gray-500"
+                  } bg-opacity-10 text-xs rounded-xl`}
+                >
+                  {statusText}
+                </span>
+              </td>
+
+              <td className={tdclass}>
+                <p className="text-xs">{timeRange}</p>
+              </td>
+              <td className={tdclass}>
+                <button
+                  // onClick={() => functions.preview(item)}
+                  className="text-sm flex-colo bg-white text-subMain border rounded-md w-10 h-10"
+                >
+                  <FiEye />
+                </button>
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );

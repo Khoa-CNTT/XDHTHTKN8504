@@ -150,4 +150,9 @@ router.post(
     bookingController.createBookingByPackage
 )
 
+router.get(
+    '/get-booking-customer/:userId',
+    bookingController.getBookingForCustomer
+)
+
 export default router

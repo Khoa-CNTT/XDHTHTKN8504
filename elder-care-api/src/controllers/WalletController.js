@@ -198,5 +198,20 @@ const walletController = {
       return res.status(500).json({ msg: "Lỗi server callback" });
     }
   },
+
+  getTransactions: async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const wallet = await Wallet.findOne({ userId });
+
+      if (!wallet) {
+        return res.status(404).json({ msg: "Không tìm thấy ví người dùng" });
+      }
+
+      return res.status(200).json({ transactions: wallet.transactions.reverse() });
+    } catch (error) {
+
+    }
+  }
 };
 export default walletController;
