@@ -1,16 +1,16 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from "react-native";
-import { ArrowLeft, Star, MessageCircle, Users, Briefcase } from "lucide-react-native";
+import { ArrowLeft, Star, MessageCircle, Users, Briefcase, ChevronDown, ChevronUp } from "lucide-react-native";
 import { useRoute } from "@react-navigation/native";
 import { useServicesStore } from "../stores/serviceStore";
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { usePackageStore } from '../stores/PackageService';
+import { Package } from "../types/PackageService";
 
 type RootStackParamList = {
     BookAService: undefined;
-
 };
-
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 // Component Quy trình làm việc
@@ -18,7 +18,7 @@ const QuyTrinhLamViec: React.FC<{ role: string }> = ({ role }) => {
     if (role === "doctor") {
         return (
             <View>
-                <Text style={styles.processStep}>Khách hàng đặt lịch qua app Eldercare.</Text>
+                <Text style={styles.processStep}>- Khách hàng đặt lịch qua app Eldercare.</Text>
                 <Text style={styles.processStep}>- Bác sĩ của Eldercare tiếp nhận lịch, liên hệ với bệnh nhân để hỏi thêm tình trạng và xác nhận lịch hẹn</Text>
                 <Text style={styles.processStep}>- Bác sĩ mang các thiết bị máy móc cần thiết đến nhà bệnh nhân</Text>
                 <Text style={styles.processStep}>- Bác sĩ thực hiện các hoạt động khám lâm sàng, siêu âm, điện tâm đồ, lấy mẫu xét nghiệm nếu cần</Text>
@@ -26,6 +26,7 @@ const QuyTrinhLamViec: React.FC<{ role: string }> = ({ role }) => {
             </View>
         );
     }
+
     if (role === "nurse") {
         return (
             <View>
@@ -36,28 +37,91 @@ const QuyTrinhLamViec: React.FC<{ role: string }> = ({ role }) => {
             </View>
         );
     }
-    return <Text style={styles.processStep}>Chưa có quy trình làm việc.</Text>;
+
+    return <Text>Chưa có quy trình làm việc.</Text>;
+};
+
+// Component Gói dịch vụ
+const ServicePackage: React.FC<{ packageData: Package; onPackagePress: (pkg: Package) => void }> = ({ packageData, onPackagePress }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const handlePress = () => {
+        setIsExpanded(!isExpanded);
+        onPackagePress(packageData); 
+    };
+
+    return (
+        <TouchableOpacity style={styles.packageCard} onPress={handlePress}>
+            <View style={styles.rowBetween}>
+                <Text style={styles.packageName}>{packageData.name}</Text>
+                {isExpanded ? (
+                    <ChevronUp size={22} color="#888" />
+                ) : (
+                    <ChevronDown size={22} color="#888" />
+                )}
+            </View>
+            {isExpanded && (
+                <View>
+                    <View style={styles.rowBetween}>
+                        <Text style={styles.packageLabel}>Giá:</Text>
+                        <Text style={styles.packagePrice}>{packageData.price?.toLocaleString("vi-VN")} VNĐ</Text>
+                    </View>
+                    {/* <View style={styles.rowBetween}>
+                        <Text style={styles.packageDescription}>{packageData.description}</Text>
+                    </View> */}
+                    {packageData.totalDays && (
+                        <View style={styles.rowBetween}>
+                            <Text style={styles.packageLabel}>Số ngày:</Text>
+                            <Text style={styles.packageInfo}>{packageData.totalDays}</Text>
+                        </View>
+                    )}
+                    {packageData.repeatInterval && (
+                        <View style={styles.rowBetween}>
+                            <Text style={styles.packageLabel}>Chu kỳ:</Text>
+                            <Text style={styles.packageInfo}>{packageData.repeatInterval} ngày</Text>
+                        </View>
+                    )}
+                    {packageData.timeWork && (
+                        <View style={styles.rowBetween}>
+                            <Text style={styles.packageLabel}>Thời gian làm việc:</Text>
+                            <Text style={styles.packageInfo}>{packageData.timeWork} giờ</Text>
+                        </View>
+                    )}
+                </View>
+            )}
+        </TouchableOpacity>
+    );
 };
 
 const ServiceScreen: React.FC = () => {
     const route = useRoute();
     const { serviceId } = route.params as { serviceId: string };
     const navigation = useNavigation<NavigationProp>();
-
-    // Lấy service từ store
     const serviceFromStore = useServicesStore((state) => state.getServiceById(serviceId));
+    const { getPackageByServiceId, fetchPackages } = usePackageStore();
+    const packagesFromStore = getPackageByServiceId(serviceId);
+    const [expandedPackageId, setExpandedPackageId] = useState<string | null>(null);
 
-    // Dữ liệu mẫu
     const service = {
         name: serviceFromStore?.name || "Tên dịch vụ",
         description: serviceFromStore?.description || "Mô tả dịch vụ",
         avatar: require("../asset/img/hinh3.jpeg"),
-        patients: "2.000.000",
+        patients: serviceFromStore?.price ? `${serviceFromStore.price.toLocaleString()}VNĐ` : " Chưa cập nhậtnhật",
         experience: "23",
         rating: 5,
         reviews: "1,872",
         workingTime: "Cả ngày",
         role: serviceFromStore?.role || "doctor", // Lấy role từ store, mặc định doctor
+    };
+
+    useEffect(() => {
+        fetchPackages();
+    }, [fetchPackages]);
+
+    const packages = packagesFromStore;
+
+    const handlePackagePress = (pkg: Package) => {
+        setExpandedPackageId(prevId => prevId === pkg._id ? null : pkg._id);
     };
 
     return (
@@ -129,6 +193,18 @@ const ServiceScreen: React.FC = () => {
                         <Text style={styles.sectionTitle}>Quy trình làm việc</Text>
                     </View>
                     <QuyTrinhLamViec role={service.role} />
+                </View>
+
+                {/* Gói dịch vụ */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Gói dịch vụ</Text>
+                    {packages.map((pkg, index) => (
+                        <ServicePackage
+                            key={index}
+                            packageData={pkg}
+                            onPackagePress={handlePackagePress}
+                        />
+                    ))}
                 </View>
             </ScrollView>
 
@@ -262,6 +338,44 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         fontSize: 16,
     },
+    packageCard: {
+        padding: 16,
+        marginBottom: 12,
+        borderBottomWidth:1,
+        borderColor: '#ddd',
+    },
+    packageName: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 8
+    },
+    rowBetween: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 4,
+    },
+    packageLabel: {
+        fontSize: 14,
+        color: '#555',
+        fontWeight: 'bold',
+    },
+    packagePrice: {
+        fontSize: 14,
+        color: '#22c55e',
+        fontWeight: 'bold',
+        marginBottom: 8
+    },
+    packageDescription: {
+        fontSize: 14,
+        color: '#555'
+    },
+    packageInfo: {
+        fontSize: 14,
+        color: '#555',
+        marginTop: 4
+    }
 });
 
 export default ServiceScreen;

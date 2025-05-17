@@ -83,8 +83,8 @@ const HomeScreen: React.FC = () => {
               showAll
                 ? { marginBottom: 20, width: "100%" }
                 : index % 2 === 0
-                ? { marginRight: 12 }
-                : { marginLeft: 12 },
+                  ? { marginRight: 12 }
+                  : { marginLeft: 12 },
             ]}
             onPress={() => {
               navigation.navigate("ServiceScreen", { serviceId: item._id });
@@ -146,9 +146,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "black",
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+    color: '#000',
     letterSpacing: -0.5,
   },
   listContent: {

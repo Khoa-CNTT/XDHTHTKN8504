@@ -47,9 +47,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     },
   headerTitle: {
-    fontSize: 25,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#28A745",
+    color: "#000",
     textAlign: "center",
     marginBottom: 15,
   },
