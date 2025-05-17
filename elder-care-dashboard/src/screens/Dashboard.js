@@ -25,6 +25,9 @@ import { getPatients } from "../api/bookings.js";
 import { io } from 'socket.io-client'
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllPayment } from "../store/paymentSlice.js";
+import { countBookingsLast12Months } from "../store/dashboardSlice.js";
+import { countStaffInLast12Months } from "../store/staffSlice.js";
+import { countTotalAmountMonth } from "../store/paymentSlice.js";
 
 const socket = io('http://localhost:5000/');
 
@@ -32,6 +35,9 @@ function Dashboard() {
   const [userCount, setUserCount] = useState([]);
   const [patients, setPatients] = useState([]);
   const { allPayments: payments, loading, error } = useSelector((state) => state.payment)
+  const { bookingsLast12Months: bookings } = useSelector((state) => state.dashboard)
+  const { staffCount } = useSelector((state) => state.staff)
+  const { totalAmountMonth } = useSelector((state) => state.payment)
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -62,17 +68,22 @@ function Dashboard() {
 
   useEffect(() => {
     dispatch(fetchAllPayment());
+    dispatch(countBookingsLast12Months());
+    dispatch(countStaffInLast12Months());
+    dispatch(countTotalAmountMonth());
   }, [dispatch])
 
-  // console.log("paymentss", payments);
-  console.log("ddddsdw", patients);
-  
 
+  // console.log("bk", bookings.counts);
+  // console.log("st", staffCount?.data);
+  // console.log("st", totalAmountMonth?.totals);
 
-  const appointmentsData = [20, 50, 75, 15, 108, 97, 70, 41, 50, 20, 90, 60]
-  const revenueData = [20, 50, 75, 15, 108, 97, 70, 41, 50, 20, 90, 60]
-  const staffsData = [92, 80, 45, 15, 49, 77, 70, 51, 110, 20, 90, 60]
+  const appointmentsData = bookings?.counts;
+  const revenueData = totalAmountMonth?.totals;
+  const staffsData = staffCount?.data;
   const dashboardCards = getDashboardCards(userCount, appointmentsData, staffsData, revenueData);
+
+  const data = [30, 40, 25, 50, 49, 21, 70, 51, 42, 60, 40, 20];
 
   return (
     <Layout>
@@ -136,7 +147,7 @@ function Dashboard() {
             </div>
             {/* Earning Reports */}
             <div className="mt-4">
-              <DashboardBigChart />
+              <DashboardBigChart data={data} />
             </div>
           </div>
           {/* transaction */}

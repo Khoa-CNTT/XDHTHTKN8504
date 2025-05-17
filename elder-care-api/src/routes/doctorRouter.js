@@ -14,4 +14,9 @@ router.get(
     docterController.getAllDoctor
 )
 
+router.put(
+    '/update/:_id',
+    docterController.updateDoctor
+)
+
 export default router

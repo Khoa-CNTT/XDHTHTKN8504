@@ -50,6 +50,18 @@ export const fetchPaymentCounts = createAsyncThunk(
     }
 );
 
+export const countTotalAmountMonth = createAsyncThunk(
+    'payments/countTotalAmountMonth',
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await axios.get('/payment/count-revenue');
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
+    }
+)
+
 const paymentSlice = createSlice({
     name: 'payments',
     initialState: {
@@ -65,6 +77,9 @@ const paymentSlice = createSlice({
         paymentCounts: null,
         paymentCountsLoading: false,
         paymentCountsError: null,
+        totalAmountMonth: null,
+        totalAmountMonthLoading: false,
+        totalAmountMonthError: null,
     },
     reducers: {
         clearPayments: (state) => {
@@ -76,6 +91,9 @@ const paymentSlice = createSlice({
             state.paymentCounts = null;
             state.paymentCountsLoading = false;
             state.paymentCountsError = null;
+            state.totalAmountMonth = null;
+            state.totalAmountMonthLoading = false;
+            state.totalAmountMonthError = null;
         },
     },
     extraReducers: (builder) => {
@@ -132,6 +150,20 @@ const paymentSlice = createSlice({
             .addCase(fetchPaymentCounts.rejected, (state, action) => {
                 state.paymentCountsLoading = false;
                 state.paymentCountsError = action.payload;
+            })
+
+            // countTotalAmountMonth
+            .addCase(countTotalAmountMonth.pending, (state) => {
+                state.totalAmountMonthLoading = true;
+                state.totalAmountMonthError = null;
+            })
+            .addCase(countTotalAmountMonth.fulfilled, (state, action) => {
+                state.totalAmountMonthLoading = false;
+                state.totalAmountMonth = action.payload;
+            })
+            .addCase(countTotalAmountMonth.rejected, (state, action) => {
+                state.totalAmountMonthLoading = false;
+                state.totalAmountMonthError = action.payload;
             });
     },
 });

@@ -4,21 +4,18 @@ import { HiOutlineCheckCircle } from "react-icons/hi";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import MedicalRecodModal from "../Modals/MedicalRecodModal";
+import { useParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { changeStaffPassword } from "../../store/staffSlice";
 
 function ChangePasswordStaffs() {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState({});
-  const [user, setUser] = useState(null); // State to store user info
-
-  // Fetch user info from localStorage when the component mounts
-  useEffect(() => {
-    const userInfo = localStorage.getItem("user");
-    if (userInfo) {
-      setUser(JSON.parse(userInfo));
-    }
-  }, []);
+  const [user, setUser] = useState(null);
+  const { _id } = useParams()
+  const dispatch = useDispatch();
 
   const validate = () => {
     const newErrors = {};
@@ -40,40 +37,16 @@ function ChangePasswordStaffs() {
       return;
     }
 
-    // Ensure the user is logged in before allowing password change
-    if (!user) {
-      toast.error("Vui lòng đăng nhập trước khi thay đổi mật khẩu");
-      return;
-    }
-
     try {
-      const response = await axios.patch(
-        "http://localhost:5000/api/v1/auth/change-password",
-        {
-          oldPassword,
-          newPassword,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Include token for auth
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        toast.success("Đổi mật khẩu thành công!");
-        setOldPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-        setErrors({});
-      } else {
-        toast.error("Không thể đổi mật khẩu. Vui lòng thử lại!");
-      }
-    } catch (error) {
-      console.error("Đổi mật khẩu lỗi:", error);
-      const message =
-        error.response?.data?.message || "Lỗi kết nối tới máy chủ";
-      toast.error(message);
+      await dispatch(changeStaffPassword({
+        userId: _id,
+        oldPassword,
+        newPassword
+      })).unwrap();
+      toast.success("Đổi mật khẩu thành công!");
+    } catch (err) {
+      // err có thể là object { message, error } → lấy message
+      toast.error(err?.message || "Đổi mật khẩu thất bại!");
     }
   };
 

@@ -14,4 +14,9 @@ router.get(
     nurseController.getAllNurse
 )
 
+router.put(
+    '/update/:_id',
+    nurseController.updateNurse
+)
+
 export default router;

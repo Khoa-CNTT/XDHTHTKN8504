@@ -10,7 +10,7 @@ function ChangePasswordCustomer() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState({});
-  const [user, setUser] = useState(null); // State to store user info
+  const [user, setUser] = useState(null);
 
   // Fetch user info from localStorage when the component mounts
   useEffect(() => {

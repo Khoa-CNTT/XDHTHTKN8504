@@ -84,6 +84,7 @@ function AddUserStaffModal({ closeModal, isOpen, doctor, datas, onSuccess }) {
       toast.error("Đăng ký thất bại!");
     }
   };
+  console.log("role", role);
 
   return (
     <Modal

@@ -75,7 +75,7 @@ function Staffs() {
   }, [staffList]);
 
   if (loading) return <Loading />;
-  if (error) return <p>Lỗi: {error}</p>;
+  if (error) return <p>Lỗi: {error.message}</p>;
 
   // const onCloseModal = () => {
   //   setIsOpen(false);
@@ -157,6 +157,7 @@ function Staffs() {
       {isOpen && (
         <AddEditStaffModal
           datas={data}
+          isDoctor={data?.type === "doctor"}
           isOpen={isOpen}
           onClose={onCloseModal}
         />
