@@ -17,11 +17,13 @@ import { deleteStaff } from "../../store/staffSlice.js";
 import { io } from "socket.io-client";
 import * as XLSX from "xlsx"; // Import xlsx library
 import Loading from "../../components/Loading.js";
-
+import AddEditStaffModal from "../../components/Modals/AddEditStaffModal";
 const socket = io("http://localhost:5000");
 
 function Staffs() {
-  const [isOpen, setIsOpen] = React.useState(true);
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const [data, setData] = React.useState({});
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [showModal1, setShowModal1] = React.useState(false);
@@ -37,7 +39,14 @@ function Staffs() {
     setShowModal1(false); // đóng modal 1
     setShowModal2(true); // mở modal 2
   };
-
+  const onCloseModal = () => {
+    setIsOpen(false);
+    setData({});
+  };
+  const onEdit = (datas) => {
+    setIsOpen(true);
+    setData(datas);
+  };
   useEffect(() => {
     dispatch(fetchStaffList());
 
@@ -68,9 +77,9 @@ function Staffs() {
   if (loading) return <Loading />;
   if (error) return <p>Lỗi: {error}</p>;
 
-  const onCloseModal = () => {
-    setIsOpen(false);
-  };
+  // const onCloseModal = () => {
+  //   setIsOpen(false);
+  // };
 
   const preview = (data) => {
     navigate(`/staffs/preview/${data.id}`);
@@ -92,8 +101,8 @@ function Staffs() {
           item.type === "doctor"
             ? "Bác sĩ"
             : item.type === "nurse"
-              ? "Điều dưỡng"
-              : "Không xác định",
+            ? "Điều dưỡng"
+            : "Không xác định",
         Email: item.email || "Không rõ",
       }))
     );
@@ -123,8 +132,8 @@ function Staffs() {
   };
 
   const previewStaff = (_id) => {
-    navigate(`/staffs/preview/${_id}`)
-  }
+    navigate(`/staffs/preview/${_id}`);
+  };
 
   return (
     <Layout>
@@ -145,6 +154,13 @@ function Staffs() {
           id={selectedId}
         />
       </div>
+      {isOpen && (
+        <AddEditStaffModal
+          datas={data}
+          isOpen={isOpen}
+          onClose={onCloseModal}
+        />
+      )}
 
       {/* Add button */}
       <button
@@ -184,6 +200,7 @@ function Staffs() {
           <DoctorsTable
             doctor={true}
             data={staffList}
+            onEdit={onEdit}
             functions={{
               preview: previewStaff,
               onDelete: (id) => {

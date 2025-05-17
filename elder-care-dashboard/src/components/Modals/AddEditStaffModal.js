@@ -60,11 +60,12 @@ function AddEditStaffModal({ onClose, isOpen, doctor, id }) {
     <Modal
       closeModal={onClose}
       isOpen={isOpen}
-      title={isDoctor ? "Thêm Bác sĩ" : "Thêm Điều dưỡng"}
+      // title={isDoctor ? "Thêm Bác sĩ" : "Thêm Điều dưỡng"}
+      title={"Cập nhật nhân viên"}
       width={"max-w-3xl"}
     >
       <div className="flex-colo gap-6">
-        <div className="flex items-center gap-4">
+        {/* <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span
               className={
@@ -91,7 +92,7 @@ function AddEditStaffModal({ onClose, isOpen, doctor, id }) {
               Điều dưỡng
             </span>
           </div>
-        </div>
+        </div> */}
         <div className="grid sm:grid-cols-2 gap-4 w-full">
           <div>
             <Input
@@ -186,7 +187,7 @@ function AddEditStaffModal({ onClose, isOpen, doctor, id }) {
           >
             Thoát
           </button>
-          <Button label="Thêm" Icon={HiOutlineCheckCircle} onClick={onSubmit} />
+          <Button label="Cập nhật" Icon={HiOutlineCheckCircle} onClick={onSubmit} />
         </div>
       </div>
     </Modal>
