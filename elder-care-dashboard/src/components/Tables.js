@@ -542,7 +542,7 @@ export function DoctorsTable({ data, functions, doctor }) {
               <td className={tdclass}>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => functions.preview(item)}
+                    onClick={() => functions.preview(item._id)}
                     className="text-green-600 hover:text-green-800 flex items-center gap-1"
                   >
                     <FiEye /> Xem
@@ -593,7 +593,7 @@ export function BookingTable({ data, functions, doctor }) {
           <th className={thclass}>Ngày kết thúc</th>
           <th className={thclass}>Dịch vụ</th>
           <th className={thclass}>Trạng thái</th>
-          <th className={thclass}>Hành Động</th>
+          {/* <th className={thclass}>Hành Động</th> */}
         </tr>
       </thead>
       <tbody>
@@ -608,6 +608,7 @@ export function BookingTable({ data, functions, doctor }) {
           );
           const endDate = new Date(item?.repeatTo).toLocaleDateString("vi-VN");
           const statusText = statusMap[item.status] || "Không xác định";
+          const avatarUrl = item?.profileId?.avartar
 
           return (
             <tr
@@ -618,6 +619,13 @@ export function BookingTable({ data, functions, doctor }) {
 
               <td className={tdclass}>
                 <div className="flex gap-4 items-center">
+                  <span className="w-12">
+                    <img
+                      src={avatarUrl}
+                      alt={avatarUrl}
+                      className="w-full h-12 rounded-full object-cover border border-border"
+                    />
+                  </span>
                   <h4 className="text-sm font-medium">{userFullName}</h4>
                 </div>
               </td>
@@ -647,8 +655,15 @@ export function BookingTable({ data, functions, doctor }) {
                 </span>
               </td>
 
-              <td className={tdclass}>
-                <div className="flex gap-2">
+              {/* <td className={tdclass}>
+                  <button
+                    onClick={() => {
+                      toast("ddd")
+                    }}
+                    className="px-3 py-1 bg-red-100 text-red-600 rounded-md text-sm hover:bg-red-200 transition"
+                  >
+                    Xem
+                  </button>
                   <button
                     onClick={() => {
                       if (
@@ -663,8 +678,9 @@ export function BookingTable({ data, functions, doctor }) {
                   >
                     Xoá
                   </button>
+                <div className="flex gap-2">
                 </div>
-              </td>
+              </td> */}
             </tr>
           );
         })}

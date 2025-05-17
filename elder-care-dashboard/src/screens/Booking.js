@@ -15,6 +15,7 @@ import { deleteBooking } from "../store/bookingSlice.js";
 import { getUserIdFromToken } from "../utils/jwtHelper.js";
 import { io } from "socket.io-client";
 import * as XLSX from "xlsx"; // Import xlsx library
+import Loading from "../components/Loading.js";
 const socket = io("http://localhost:5000");
 
 function Booking() {
@@ -45,6 +46,9 @@ function Booking() {
       socket.off("newBookingCreated");
     };
   }, [dispatch]);
+
+  if (loading) return <Loading />;
+  if (error) return <p>Lỗi: {error}</p>;
 
   // console.log("bookings", bookings);
 

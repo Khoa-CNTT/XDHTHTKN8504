@@ -30,7 +30,7 @@ function MedicalRecord() {
       <div className="flex flex-col gap-6">
         <div className="flex-btn gap-4">
           <h1 className="text-sm font-medium sm:block hidden">
-            Medical Record
+            Transaction History
           </h1>
           {/* <div className="sm:w-1/4 w-full">
             <Button
