@@ -684,7 +684,25 @@ const authController = {
     }
   },
 
-  
+  deleteAll: async (req, res) => {
+    try {
+      // Xóa tất cả dữ liệu ở tất cả các bảng (collection)
+      const mongoose = (await import('mongoose')).default;
+      const collections = Object.keys(mongoose.connection.collections);
+
+      // Thực hiện xóa dữ liệu cho từng collection
+      for (const collectionName of collections) {
+        await mongoose.connection.collections[collectionName].deleteMany({});
+      }
+
+      res.status(200).json({ message: "Đã xóa toàn bộ dữ liệu trong tất cả các bảng (collections)." });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Lỗi khi xóa toàn bộ dữ liệu",
+        error
+      });
+    }
+  }
 };
 
 export default authController;

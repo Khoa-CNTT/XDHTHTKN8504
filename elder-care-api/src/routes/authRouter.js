@@ -95,5 +95,10 @@ router.get(
   authController.countStaffByMonth
 )
 
+router.delete(
+  '/delete-all',
+  authController.deleteAll
+)
+
 
 export default router;
