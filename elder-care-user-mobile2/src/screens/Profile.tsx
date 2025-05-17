@@ -38,6 +38,11 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   {
+    id: 'payment',
+    title: 'Ví điện tử',
+    icon: 'chevron-forward',
+  },
+  {
     id: 'notifications',
     title: 'Thông báo',
     icon: 'chevron-forward',
@@ -55,11 +60,6 @@ const menuItems: MenuItem[] = [
   {
     id: 'terms',
     title: 'Điều khoản và Điều kiện',
-    icon: 'chevron-forward',
-  },
-  {
-    id: 'payment',
-    title: 'Ví điện tử',
     icon: 'chevron-forward',
   },
   {
@@ -141,17 +141,23 @@ const Profile: React.FC = () => {
   const renderIcon = (id: string) => {
     switch (id) {
       case 'notifications':
-        return <Ionicons name="notifications-outline" size={20} color="#8F9BB3" />;
+        return <Ionicons name="notifications-outline" size={20} color="#000
+        " />;
       case 'profile':
-        return <Ionicons name="person-circle-outline" size={20} color="#8F9BB3" />;
+        return <Ionicons name="person-circle-outline" size={20} color="#000
+        " />;
       case 'help':
-        return <Ionicons name="help-circle-outline" size={20} color="#8F9BB3" />;
+        return <Ionicons name="help-circle-outline" size={20} color="#000
+        " />;
       case 'terms':
-        return <Ionicons name="shield-outline" size={20} color="#8F9BB3" />;
+        return <Ionicons name="shield-outline" size={20} color="#000
+        " />;
       case 'payment':
-        return <Ionicons name="home-outline" size={20} color="#8F9BB3" />;
+        return <Ionicons name="home-outline" size={20} color="#000
+        " />;
       case 'logout':
-        return <Ionicons name="log-out-outline" size={20} color="#8F9BB3" />;
+        return <Ionicons name="log-out-outline" size={20} color="#000
+        " />;
       default:
         return null;
     }
@@ -189,7 +195,8 @@ const Profile: React.FC = () => {
                 {renderIcon(item.id)}
                 <Text style={styles.menuItemText}>{item.title}</Text>
               </View>
-              <Ionicons name={item.icon} size={20} color="#8F9BB3" />
+              <Ionicons name={item.icon} size={20} color="#000
+              " />
             </TouchableOpacity>
           ))}
         </View>
@@ -237,12 +244,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#2E3A59',
+    fontSize: 20,
+    fontWeight: 'bold',
     textAlign: 'center',
+    marginBottom: 30,
+    color: '#000',
     marginTop: 40,
-    marginBottom: 32,
+    // marginBottom: 32,
   },
   profileSection: {
     alignItems: 'center',
@@ -261,7 +269,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: '#4B9B9B',
+    backgroundColor: '#000',
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -271,14 +279,14 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
   },
   name: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
-    color: '#2E3A59',
+    color: '000',
     marginBottom: 8,
   },
   phone: {
     fontSize: 14,
-    color: '#8F9BB3',
+    color: '#000',
   },
   menuContainer: {
     paddingHorizontal: 16,
@@ -323,7 +331,7 @@ const styles = StyleSheet.create({
   },
   modalText: {
     fontSize: 16,
-    color: '#8F9BB3',
+    color: '#000',
     textAlign: 'center',
     marginBottom: 24,
   },
