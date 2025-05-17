@@ -41,7 +41,7 @@ const AddEditServiceModal = ({ closeModal, isOpen, datas }) => {
     if (percentage === "" || isNaN(percentage)) {
       newErrors.percentage = "Tỉ lệ phần trăm phải là số";
     } else if (parseFloat(percentage) < 0 || parseFloat(percentage) > 100) {
-      newErrors.percentage = "Tỉ lệ phần trăm phải từ 0 đến 100";
+      newErrors.percentage = "Tỉ lệ phần trăm phải từ 0.1 đến 1";
     }
 
     setErrors(newErrors);
@@ -54,8 +54,10 @@ const AddEditServiceModal = ({ closeModal, isOpen, datas }) => {
       percentage: Number(percentage),
       role,
       imgUrl: image,
-      status: isActive, // nếu bạn dùng field "status"
+      status: isActive,
     };
+
+    console.log("payload", payload); console.log("Description:", description);
 
     try {
       if (datas?._id) {

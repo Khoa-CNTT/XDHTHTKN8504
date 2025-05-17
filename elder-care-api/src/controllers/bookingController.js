@@ -852,7 +852,7 @@ const bookingController = {
         }
     },
 
-    getBookingForCustomer: async (req, res) => {
+    getBookingForCustomer2: async (req, res) => {
         try {
             const { userId } = req.params;
 
