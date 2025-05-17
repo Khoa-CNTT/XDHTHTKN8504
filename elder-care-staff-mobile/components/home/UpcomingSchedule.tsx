@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { View, Text, Image, StyleSheet, ActivityIndicator } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import useScheduleStore from "../../stores/scheduleStore";
+import { formatTime } from "@/utils/dateHelper";
 
 const UpcomingSchedule = () => {
   const { nearestSchedule, getNearestSchedule, loading, error } =
@@ -30,9 +31,11 @@ const UpcomingSchedule = () => {
 
   const { avatar, serviceName, customerAddress, phoneNumber, schedule } =
     nearestSchedule;
-  const formattedDate = new Date(schedule.date).toLocaleDateString("vi-VN");
+  const formattedDate = formatTime(schedule.date, 'date');
   const timeSlotText = schedule.timeSlots?.[0]
-    ? `${schedule.timeSlots[0].start} - ${schedule.timeSlots[0].end}`
+    ? `${formatTime(schedule.timeSlots[0].start, 'time')} - ${
+        formatTime(schedule.timeSlots[0].end, 'time')
+      }`
     : "Chưa rõ thời gian";
     if (!nearestSchedule) {
       return (
@@ -52,7 +55,6 @@ const UpcomingSchedule = () => {
 
   return (
     <View style={styles.upcomingRideContainer}>
-      <Text style={styles.upcomingRideTitle}>Lịch sắp tới</Text>
       <View style={styles.rideDetailsCard}>
         <View style={styles.riderInfo}>
           <Image
@@ -65,9 +67,10 @@ const UpcomingSchedule = () => {
           </View>
         </View>
 
-        <Text style={styles.rideTime}>
-          {formattedDate} lúc {timeSlotText}
-        </Text>
+        <View style={styles.addressContainer}>
+          <MaterialIcons name="timer" size={16} color="#777" />
+          <Text style={styles.addressText}>{timeSlotText}</Text>
+        </View>
 
         <View style={styles.addressContainer}>
           <MaterialIcons name="medical-services" size={16} color="#777" />

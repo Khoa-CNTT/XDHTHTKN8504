@@ -107,7 +107,7 @@ const handleToggleAvailability = async (newValue: boolean) => {
           color="#5cb85c"
         />
       </View>
-      <Text style={styles.sectionTitle}>Ca làm việc hôm nay</Text>
+      <Text style={styles.sectionTitle}>Lịch làm việc hôm nay</Text>
       <UpcomingSchedule />
     </View>
   );

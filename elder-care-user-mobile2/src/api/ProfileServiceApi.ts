@@ -1,6 +1,7 @@
 import API from "../utils/api";
 import useAuthStore from "../stores/authStore";
 import { Profile } from "../types/profile";
+import { log } from "../utils/logger";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -25,7 +26,7 @@ export const getProfiles = async (): Promise<Profile[]> => {
     );
     return response.data.profile;
   } catch (error) {
-    console.error("Error fetching schedules:", error);
+    log("Error fetching schedules:", error);
     return [];
   }
 };

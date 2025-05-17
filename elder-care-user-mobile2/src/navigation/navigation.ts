@@ -1,5 +1,5 @@
 export type RootStackParamList = {
-  Splash: undefined,
+  Splash: undefined;
   Onboarding: undefined;
   Login: undefined;
   Register: undefined;
@@ -26,7 +26,7 @@ export type RootStackParamList = {
   ServiceScreen: undefined;
   Seach: undefined;
 
-  Chat: undefined;
+  Chat: { scheduleId: string };
   ReviewScreen: undefined;
   PaymentInfoScreen: undefined;
   TopUpScreen: undefined;

@@ -29,9 +29,9 @@ const getSchedules = async (): Promise<ScheduleUser[]> => {
     );
 
     // Trả về mảng ScheduleUser[] từ response.data
-    return response.data || []; // Nếu response.data có mảng, trả về nó, nếu không thì trả về mảng rỗng
+    return response.data || []; 
   } catch (error) {
-    log("Error fetching schedules:", error);
+    log("Lỗi kéo API", error);
     return [];
   }
 };

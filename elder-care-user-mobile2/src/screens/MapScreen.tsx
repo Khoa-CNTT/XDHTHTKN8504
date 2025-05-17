@@ -18,10 +18,9 @@ import updateScheduleStatus from "../api/ScheduleStatusApi";
 import Footer from "../components/Footer";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "../navigation/navigation";
 
-type RootStackParamList = {
-  Home: undefined;
-};
+
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 const MapScreen: React.FC = () => {
@@ -141,7 +140,7 @@ const MapScreen: React.FC = () => {
           <View style={styles.arrivalInfo}>
             <View style={styles.userInfo}>
               <Image
-                source={{ uri: "https://via.placeholder.com/40" } }
+                source={{ uri: "https://via.placeholder.com/40" }}
                 style={styles.avatar}
               />
               <View>
@@ -175,7 +174,13 @@ const MapScreen: React.FC = () => {
               mode="outlined"
               icon={() => <MessageCircle size={20} />}
               style={styles.button}
-              onPress={() => {}}
+              onPress={() => {
+                if (nearestSchedule?._id) {
+                  navigation.navigate("Chat", {
+                    scheduleId: nearestSchedule._id,
+                  });
+                }
+              }}
             >
               Chat
             </Button>

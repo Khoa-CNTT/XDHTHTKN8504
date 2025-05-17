@@ -31,7 +31,7 @@ import WorkScreen from '../screens/work-screen';
 import ServiceScreen from '../screens/ServiceScreen'; 
 import Seach from '../screens/Seach';
 
-import ChatScreen from '../screens/ChatSreen';
+import ChatScreen from '../screens/ChatScreen';
 import ReviewScreen from '../screens/ReviewScreen';
 import PaymentInfoScreen from '../screens/PaymentInfoScreen';
 import TopUpScreen from '../screens/TopUpScreen';

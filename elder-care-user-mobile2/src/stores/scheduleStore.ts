@@ -45,9 +45,7 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
     try {
       const schedules = await getSchedules();
-      if (!Array.isArray(schedules)) {
-        throw new Error("Dữ liệu không hợp lệ");
-      }
+     
 
       const filtered = schedules.filter(
         (s) => s.status !== "completed" && s.status !== "cancelled"

@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { format } from "date-fns";
+import { formatTime } from "../utils/dateHelper";
 import { Schedule } from "../types/schedule";
 
 const getStatusLabel = (status: string) => {
@@ -53,9 +53,9 @@ const ScheduleItem: React.FC<ScheduleItemProps> = ({ schedule, onPress }) => {
       .map((slot) => {
         if (!slot.start || !slot.end) return null;
         try {
-          const start = format(new Date(slot.start), "HH:mm");
-          const end = format(new Date(slot.end), "HH:mm");
-          return `${start} - ${end}`;
+          const start = formatTime(new Date(slot.start), "time");
+          const end = formatTime(new Date(slot.end), "time");
+          return `${start}  ${end}`;
         } catch (err) {
           console.warn("Lỗi chuyển đổi ngày giờ:", slot, err);
           return null;
