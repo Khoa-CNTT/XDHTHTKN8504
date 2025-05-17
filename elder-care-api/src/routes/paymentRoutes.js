@@ -10,4 +10,9 @@ router.get('/get-salary/:_id', paymentController.calculateSalary)
 router.get('/get-all', paymentController.getAllPayment)
 router.get('/count-payments', paymentController.countPayments)
 
+router.get(
+    '/count-revenue',
+    paymentController.getMonthlyRevenue
+)
+
 export default router;

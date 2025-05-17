@@ -31,28 +31,53 @@ function AddDoctorModal({ closeModal, isOpen, doctor, id }) {
 
     if (Object.keys(newErrors).length > 0) return;
 
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/api/v1/doctors/create",
-        {
-          userId: id,
-          firstName,
-          lastName,
-          email,
-          specialization,
-          licenseNumber,
-          experience,
-        }
-      );
-      toast.success("Thêm bác sĩ thành công");
-      console.log("Đăng ký thành công:", response.data);
-      closeModal();
-    } catch (error) {
-      console.error(
-        "Error:",
-        error.response ? error.response.data : error.message
-      );
-      toast.error("Đăng ký thất bại!");
+    if (isDoctor) {
+      try {
+        const response = await axios.post(
+          "http://localhost:5000/api/v1/doctors/create",
+          {
+            userId: id,
+            firstName,
+            lastName,
+            email,
+            specialization,
+            licenseNumber,
+            experience,
+          }
+        );
+        toast.success("Thêm bác sĩ thành công");
+        console.log("Đăng ký thành công:", response.data);
+        closeModal();
+      } catch (error) {
+        console.error(
+          "Error:",
+          error.response ? error.response.data : error.message
+        );
+        toast.error("Đăng ký thất bại!");
+      }
+    } else {
+      try {
+        const response = await axios.post(
+          "http://localhost:5000/api/v1/nurses/create",
+          {
+            userId: id,
+            firstName,
+            lastName,
+            email,
+            specialization,
+            licenseNumber,
+          }
+        );
+        toast.success("Thêm điều dưỡng thành công");
+        console.log("Đăng ký thành công:", response.data);
+        closeModal();
+      } catch (error) {
+        console.error(
+          "Error:",
+          error.response ? error.response.data : error.message
+        );
+        toast.error("Đăng ký thất bại!");
+      }
     }
   };
 

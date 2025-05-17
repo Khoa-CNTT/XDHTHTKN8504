@@ -45,6 +45,33 @@ export const fetchStaffById = createAsyncThunk(
     }
 )
 
+export const changeStaffPassword = createAsyncThunk(
+    'staff/changeStaffPassword',
+    async ({ userId, oldPassword, newPassword }, { rejectWithValue }) => {
+        try {
+            const res = await axios.patch(
+                `/auth/change-password-by-admin/${userId}`,
+                { oldPassword, newPassword },
+            );
+            return res.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || { message: 'Lỗi đổi mật khẩu' });
+        }
+    }
+);
+
+export const countStaffInLast12Months = createAsyncThunk(
+    'staff/countStaffInLast12Months',
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await axios.get('/auth/count-staff');
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
+    }
+)
+
 const staffSlice = createSlice({
     name: 'staff',
     initialState: {
@@ -52,8 +79,27 @@ const staffSlice = createSlice({
         selectedStaff: null,
         loading: false,
         error: null,
+        changePasswordStatus: 'idle',
+        changePasswordError: null,
+        staffCount: null,
+        staffCountLoading: false,
+        staffCountError: null,
     },
-    reducers: {},
+    reducers: {
+        clearStaffs(state) {
+            state.staffList = [];
+            state.selectedStaff = null;
+            state.error = null;
+        },
+        clearChangePasswordStatus(state) {
+            state.changePasswordStatus = 'idle';
+            state.changePasswordError = null;
+        },
+        clearStaffCount(state) {
+            state.staffCount = null;
+            state.staffCountError = null;
+        }
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchStaffList.pending, (state) => {
@@ -88,6 +134,31 @@ const staffSlice = createSlice({
             .addCase(fetchStaffById.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || 'Lỗi khi lấy thông tin nhân viên';
+            })
+            // Change staff password
+            .addCase(changeStaffPassword.pending, (state) => {
+                state.changePasswordStatus = 'loading';
+                state.changePasswordError = null;
+            })
+            .addCase(changeStaffPassword.fulfilled, (state) => {
+                state.changePasswordStatus = 'succeeded';
+            })
+            .addCase(changeStaffPassword.rejected, (state, action) => {
+                state.changePasswordStatus = 'failed';
+                state.changePasswordError = action.payload?.message || 'Lỗi đổi mật khẩu';
+            })
+            // Count staff in last 12 months
+            .addCase(countStaffInLast12Months.pending, (state) => {
+                state.staffCountLoading = true;
+                state.staffCountError = null;
+            })
+            .addCase(countStaffInLast12Months.fulfilled, (state, action) => {
+                state.staffCountLoading = false;
+                state.staffCount = action.payload;
+            })
+            .addCase(countStaffInLast12Months.rejected, (state, action) => {
+                state.staffCountLoading = false;
+                state.staffCountError = action.payload || 'Lỗi khi đếm số lượng nhân viên';
             });
     },
 });

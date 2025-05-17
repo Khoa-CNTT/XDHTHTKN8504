@@ -48,6 +48,11 @@ router.patch(
   authController.changePassword
 )
 
+router.patch(
+  '/change-password-by-admin/:userId',
+  authController.changePasswordByAdmin
+)
+
 router.delete(
   '/delete-user/:userId',
   authController.deleteOneUser
@@ -98,6 +103,11 @@ router.get(
 router.delete(
   '/delete-all',
   authController.deleteAll
+)
+
+router.get(
+  '/count-staff', 
+  authController.countStaffInLast12Months
 )
 
 

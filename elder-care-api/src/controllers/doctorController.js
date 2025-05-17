@@ -68,7 +68,40 @@ const docterController = {
                 error: error.message
             });
         }
-    }
+    },
+
+    updateDoctor: async (req, res) => {
+        try {
+            const { _id } = req.params;
+            const updateFields = req.body;
+
+            const doctor = await Doctor.findById(_id);
+            if (!doctor) {
+                return res.status(404).json({
+                    message: "Không tìm thấy bác sĩ",
+                });
+            }
+
+            // Chỉ cập nhật các trường có trong req.body
+            Object.keys(updateFields).forEach(field => {
+                if (updateFields[field] !== undefined && field in doctor) {
+                    doctor[field] = updateFields[field];
+                }
+            });
+
+            await doctor.save();
+
+            return res.status(200).json({
+                message: "Cập nhật bác sĩ thành công",
+                doctor: doctor,
+            });
+        } catch (error) {
+            return res.status(500).json({
+                message: "Lỗi server",
+                error: error.message,
+            });
+        }
+    },
 }
 
 export default docterController

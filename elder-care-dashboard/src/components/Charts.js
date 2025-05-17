@@ -97,7 +97,7 @@ export function DashboardSmallChart({ data, colors }) {
   );
 }
 
-export function DashboardBigChart() {
+export function DashboardBigChart( {data} ) {
   const options = {
     chart: {
       id: "area-datetime",
@@ -156,7 +156,7 @@ export function DashboardBigChart() {
           fontWeight: 400,
         },
         formatter: function (value) {
-          return value + "k";
+          return value + "TR";
         },
       },
     },
@@ -204,7 +204,7 @@ export function DashboardBigChart() {
   const series = [
     {
       name: "Total",
-      data: [30, 40, 25, 50, 49, 21, 70, 51, 42, 60, 40, 20],
+      data: data,
     },
   ];
 
