@@ -13,6 +13,7 @@ import { io } from "socket.io-client";
 import * as XLSX from "xlsx"; // Import xlsx library
 import axios from "axios";
 import { toast } from "react-toastify"; // Đảm bảo bạn đã cài react-toastify
+import Loading from "../components/Loading.js";
 
 const socket = io("http://localhost:5000");
 
@@ -53,6 +54,9 @@ function Services() {
       };
     }
   }, [dispatch]);
+  
+  if (loading) return <Loading />;
+  if (error) return <p>Lỗi: {error}</p>;
 
   // Hàm xuất Excel
   const handleExport = () => {

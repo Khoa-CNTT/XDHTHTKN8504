@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { fetchPaymentsByStaff, fetchSalaryByStaff } from "../../store/paymentSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect } from "react";
+import Loading from "../Loading";
 
 function PaymentsUsed({ doctor }) {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ function PaymentsUsed({ doctor }) {
     }
   }, [dispatch, _id]);
 
-  if (loading) return <p>Đang tải dữ liệu...</p>;
+  if (loading) return <Loading />;
   if (error) return <p className="text-red-500">{error.message || error}</p>;
 
   // onClick event handler

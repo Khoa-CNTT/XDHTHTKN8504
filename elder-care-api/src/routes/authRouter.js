@@ -41,7 +41,7 @@ router.get("/get-staff", authController.getAllStaff);
 router.get("/get-customer", authController.getAllUsers);
 
 // Change password
-router.patch (
+router.patch(
   "/change-password",
   auth,
   authorizeRoles("admin", "doctor", "nurse", "family-member"),
@@ -88,6 +88,11 @@ router.get(
 router.get(
   '/get-customer-info/:customerId',
   authController.getCustomerById
+)
+
+router.get(
+  '/count-staffs',
+  authController.countStaffByMonth
 )
 
 

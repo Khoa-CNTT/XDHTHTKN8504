@@ -604,6 +604,85 @@ const authController = {
       res.status(500).json({ message: "Lỗi server", error: error.message });
     }
   },
+
+  countStaffByMonth: async (req, res) => {
+    try {
+      const now = new Date();
+      // Lấy ngày đầu tiên của tháng hiện tại, sau đó lùi về 11 tháng trước
+      const startMonth = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+      const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+      // Đếm bác sĩ theo tháng
+      const doctorCounts = await Doctor.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: startMonth, $lt: endMonth }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" }
+            },
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { "_id.year": 1, "_id.month": 1 } }
+      ]);
+
+      // Đếm điều dưỡng theo tháng
+      const nurseCounts = await Nurse.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: startMonth, $lt: endMonth }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" }
+            },
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { "_id.year": 1, "_id.month": 1 } }
+      ]);
+
+      // Tạo mảng 12 tháng gần nhất (theo định dạng YYYY-MM)
+      const months = [];
+      const counts = [];
+      for (let i = 0; i < 12; i++) {
+        const date = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1; // 1-based
+        months.push(`${year}-${month.toString().padStart(2, "0")}`);
+        counts.push(0);
+      }
+
+      // Gộp kết quả bác sĩ và điều dưỡng vào mảng counts
+      const addCounts = (arr) => {
+        arr.forEach(item => {
+          const idx = months.findIndex(m =>
+            m === `${item._id.year}-${item._id.month.toString().padStart(2, "0")}`
+          );
+          if (idx !== -1) {
+            counts[idx] += item.count;
+          }
+        });
+      };
+      addCounts(doctorCounts);
+      addCounts(nurseCounts);
+
+      return res.status(200).json({ data: counts, months });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Lỗi khi đếm nhân viên theo tháng",
+        error: error.message
+      });
+    }
+  },
 };
 
 export default authController;

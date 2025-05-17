@@ -17,6 +17,7 @@ import * as XLSX from "xlsx"; // THÊM: import thư viện xuất Excel
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { format } from "date-fns";
+import Loading from "../../components/Loading";
 
 function Payments() {
   const [status, setStatus] = useState(sortsDatas.status[0]);
@@ -46,6 +47,9 @@ function Payments() {
     dispatch(fetchAllPayment());
     dispatch(fetchPaymentCounts());
   }, [dispatch])
+
+  if (loading) return <Loading />;
+  if (error) return <p>Lỗi: {error}</p>;
 
   const boxes = [
     {

@@ -13,6 +13,7 @@ import Access from "../../components/Access";
 import { useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchStaffById } from "../../store/staffSlice";
+import Loading from "../../components/Loading";
 
 function DoctorProfile() {
   const location = useLocation();
@@ -56,13 +57,12 @@ function DoctorProfile() {
     }
   }, [dispatch, _id]);
 
-  if (loading) return <p>Đang tải dữ liệu...</p>;
+  if (loading) return <Loading />;
   if (error) return <p>Lỗi: {error}</p>;
 
   if (!selectedStaff) return <p>Không tìm thấy thông tin nhân viên</p>;
 
-  console.log("dded", selectedStaff);
-
+  // console.log("dded", selectedStaff);
 
   return (
     <Layout>

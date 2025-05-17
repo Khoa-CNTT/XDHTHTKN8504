@@ -113,7 +113,7 @@ router.delete(
 )
 
 router.get(
-    '/count-bookings', bookingController.countBookingsLast12Months
+    '/count-bookings', bookingController.countBookingsPerMonthLast12Months
 )
 
 router.get(

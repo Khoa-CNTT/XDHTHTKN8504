@@ -157,7 +157,7 @@ const bookingController = {
                 } catch (error) {
                     console.error("Lỗi khi xử lý hoàn tiền tự động:", error);
                 }
-            }, 60 * 60 * 1000);
+            }, 60 * 1000);
 
             const io = getIO();
             const populatedBooking = await Booking.findById(newBooking._id).populate('serviceId').populate("profileId");
@@ -308,7 +308,7 @@ const bookingController = {
                 } catch (error) {
                     console.error("Lỗi khi xử lý hoàn tiền tự động:", error);
                 }
-            }, 60 * 60 * 1000);
+            }, 60 * 1000);
 
             const io = getIO();
 
@@ -799,6 +799,54 @@ const bookingController = {
         } catch (error) {
             console.error("Lỗi khi xóa booking:", error);
             return res.status(500).json({ message: 'Lỗi server', error: error.message });
+        }
+    },
+
+    countBookingsPerMonthLast12Months: async (req, res) => {
+        try {
+            const now = new Date();
+            const startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+            // Lấy số lượng booking mỗi tháng trong 12 tháng gần nhất
+            const result = await Booking.aggregate([
+                {
+                    $match: {
+                        createdAt: { $gte: startDate }
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            year: { $year: "$createdAt" },
+                            month: { $month: "$createdAt" }
+                        },
+                        count: { $sum: 1 }
+                    }
+                },
+                {
+                    $sort: { "_id.year": 1, "_id.month": 1 }
+                }
+            ]);
+
+            // Chuẩn hóa dữ liệu trả về đủ 12 tháng
+            const labels = [];
+            const counts = [];
+            for (let i = 0; i < 12; i++) {
+                const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+                const year = d.getFullYear();
+                const month = d.getMonth() + 1;
+                const found = result.find(r => r._id.year === year && r._id.month === month);
+                labels.push(`${month < 10 ? '0' + month : month}/${year}`);
+                counts.push(found ? found.count : 0);
+            }
+
+            return res.status(200).json({
+                labels,
+                counts
+            });
+        } catch (error) {
+            console.error("Lỗi khi đếm booking 12 tháng:", error);
+            return res.status(500).json({ message: "Server error", error: error.message });
         }
     },
 }

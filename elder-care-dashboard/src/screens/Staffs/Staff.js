@@ -16,6 +16,7 @@ import { getUserIdFromToken } from "../../utils/jwtHelper.js";
 import { deleteStaff } from "../../store/staffSlice.js";
 import { io } from "socket.io-client";
 import * as XLSX from "xlsx"; // Import xlsx library
+import Loading from "../../components/Loading.js";
 
 const socket = io("http://localhost:5000");
 
@@ -64,7 +65,7 @@ function Staffs() {
     }
   }, [staffList]);
 
-  if (loading) return <p>Đang tải...</p>;
+  if (loading) return <Loading />;
   if (error) return <p>Lỗi: {error}</p>;
 
   const onCloseModal = () => {
@@ -120,6 +121,10 @@ function Staffs() {
     link.download = "staffs.xlsx";
     link.click();
   };
+
+  const previewStaff = (_id) => {
+    navigate(`/staffs/preview/${_id}`)
+  }
 
   return (
     <Layout>
@@ -180,7 +185,7 @@ function Staffs() {
             doctor={true}
             data={staffList}
             functions={{
-              preview: preview,
+              preview: previewStaff,
               onDelete: (id) => {
                 dispatch(deleteStaff(id));
               },
