@@ -13,6 +13,8 @@ import { fetchCustomers, deleteCustomerByAdmin, fetchCustomerCounts } from "../.
 import { getUserIdFromToken } from "../../utils/jwtHelper.js";
 import { io } from "socket.io-client";
 import axios from "axios";
+import Loading from "../../components/Loading.js";
+
 const socket = io("http://localhost:5000");
 
 function Patients() {
@@ -94,7 +96,7 @@ function Patients() {
   // console.log("data", data);
   // console.log("countsCT", counts);
 
-  if (loading) return <p>Đang tải...</p>;
+  if (loading) return <Loading />;
   if (error) return <p>Lỗi: {error}</p>;
 
   return (

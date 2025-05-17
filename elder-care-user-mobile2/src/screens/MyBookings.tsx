@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: 10,
-        color: '#black',
+        color: '#000',
     },
     tabs: {
         flexDirection: 'row',

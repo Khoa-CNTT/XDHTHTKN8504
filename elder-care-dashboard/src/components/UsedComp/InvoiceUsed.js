@@ -1,7 +1,7 @@
-import React from 'react';
-import { InvoiceUsedTable } from '../Tables';
-import { useNavigate } from 'react-router-dom';
-import { invoicesData } from '../Datas';
+import React from "react";
+import { InvoiceUsedTable } from "../Tables";
+import { useNavigate } from "react-router-dom";
+import { invoicesData } from "../Datas";
 
 function InvoiceUsed() {
   const navigate = useNavigate();

@@ -15,6 +15,7 @@ import { deleteBooking } from "../store/bookingSlice.js";
 import { getUserIdFromToken } from "../utils/jwtHelper.js";
 import { io } from "socket.io-client";
 import * as XLSX from "xlsx"; // Import xlsx library
+import Loading from "../components/Loading.js";
 const socket = io("http://localhost:5000");
 
 function Booking() {
@@ -46,6 +47,9 @@ function Booking() {
     };
   }, [dispatch]);
 
+  if (loading) return <Loading />;
+  if (error) return <p>Lỗi: {error}</p>;
+
   // console.log("bookings", bookings);
 
   const onCloseModal = () => {
@@ -61,8 +65,9 @@ function Booking() {
     const ws = XLSX.utils.json_to_sheet(
       bookings.map((booking, index) => ({
         "#": index + 1,
-        "Khách hàng": `${booking?.profileId?.firstName || "Ẩn"} ${booking?.profileId?.lastName || ""
-          }`,
+        "Khách hàng": `${booking?.profileId?.firstName || "Ẩn"} ${
+          booking?.profileId?.lastName || ""
+        }`,
         "Người thực hiện": booking?.participants?.[0]?.fullName || "Chưa có",
         "Ngày bắt đầu": new Date(booking?.repeatFrom).toLocaleDateString(
           "vi-VN"
@@ -115,12 +120,12 @@ function Booking() {
         )
       }
       {/* add button */}
-      <button
+      {/* <button
         onClick={() => setIsOpen(true)}
         className="w-16 animate-bounce h-16 border border-border z-50 bg-subMain text-white rounded-full flex-colo fixed bottom-8 right-12 button-fb"
       >
         <BiPlus className="text-2xl" />
-      </button>
+      </button> */}
       {/* payroll */}
 
       {/*  */}
@@ -152,12 +157,16 @@ function Booking() {
           />
         </div>
         <div className="mt-8 w-full overflow-x-scroll">
-          <BookingTable doctor={true} data={bookings} functions={{
-            preview, 
-            onDelete: (id) => {
-              dispatch(deleteBooking(id));
-            },
-          }} />
+          <BookingTable
+            doctor={true}
+            data={bookings}
+            functions={{
+              preview,
+              onDelete: (id) => {
+                dispatch(deleteBooking(id));
+              },
+            }}
+          />
         </div>
       </div>
     </Layout>

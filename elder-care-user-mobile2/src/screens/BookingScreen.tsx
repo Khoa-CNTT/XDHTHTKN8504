@@ -49,14 +49,14 @@ const BookingScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity activeOpacity={0.7}>
-          <Ionicons name="menu-outline" size={33} color="#333" />
+          <Ionicons name="menu-outline" size={33} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Dịch Vụ</Text>
+        <Text style={styles.headerTitle}>Dịch vụ</Text>
         <TouchableOpacity
           onPress={() => navigation.navigate("ProfileList")}
           activeOpacity={0.7}
         >
-          <Ionicons name="person-circle-outline" size={33} color="#333" />
+          <Ionicons name="person-circle-outline" size={33} color="#000" />
         </TouchableOpacity>
       </View>
 
@@ -73,28 +73,28 @@ const BookingScreen: React.FC = () => {
         />
 
         {/* Danh sách dịch vụ */}
-       {filteredServices.map((service) => (
-  <TouchableOpacity
-    key={service._id}
-    style={styles.card}
-    onPress={() => {
-      navigation.navigate("ServiceScreen", { serviceId: service._id });
-    }}
-  >
-    <Image
-      source={getImageByRole(service.role)}
-      style={styles.cardImage}
-      resizeMode="cover"
-    />
-    <View style={styles.cardContent}>
-      <Text style={styles.cardTitle}>{service.name}</Text>
-      <Text style={styles.cardDescription} numberOfLines={2}>
-        {service.description}
-      </Text>
-    </View>
-    <Ionicons name="chevron-forward-outline" size={22} color="#999" />
-  </TouchableOpacity>
-))}
+        {filteredServices.map((service) => (
+          <TouchableOpacity
+            key={service._id}
+            style={styles.card}
+            onPress={() => {
+              navigation.navigate("ServiceScreen", { serviceId: service._id });
+            }}
+          >
+            <Image
+              source={getImageByRole(service.role)}
+              style={styles.cardImage}
+              resizeMode="cover"
+            />
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>{service.name}</Text>
+              <Text style={styles.cardDescription} numberOfLines={2}>
+                {service.description}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={22} color="#999" />
+          </TouchableOpacity>
+        ))}
       </View>
 
       {/* Footer cố định */}
@@ -122,9 +122,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+    color: '#000',
   },
   sectionContainer: {
     paddingHorizontal: 20,
@@ -133,7 +135,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#333",
+    color: "#000",
     marginBottom: 12,
   },
   searchInput: {
@@ -169,14 +171,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: "bold",
-    color: "#333",
+    color: "#000",
     marginBottom: 8,
   },
   cardDescription: {
-    fontSize: 15,
-    color: "#666",
+    fontSize: 13,
+    color: "#000",
   },
   footerFixed: {
     position: "absolute",

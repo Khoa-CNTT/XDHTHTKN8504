@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 
-
 const thclass = "text-start text-sm font-medium py-3 px-2 whitespace-nowrap";
 const tdclass = "text-start text-sm py-4 px-2 whitespace-nowrap";
 
@@ -53,18 +52,20 @@ export function Transactiontable({ data, action, functions }) {
       </thead>
       <tbody>
         {data.map((item, index) => {
-          const avatarUrl = item?.bookingId?.profileId?.avartar || "https://scontent.fdad8-2.fna.fbcdn.net/v/t39.30808-1/453072859_908668704639042_7014970388308944883_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=1&ccb=1-7&_nc_sid=2d3e12&_nc_eui2=AeEg-UXOgqW74CRH95x_vpPfMDEPn7GasIkwMQ-fsZqwiaTDML4C_AjQ9G4mJk502SC6mNYg1kbsI6j2IjDb_RqB&_nc_ohc=os7jBcSY43wQ7kNvwFjnh4Z&_nc_oc=AdmzOOO8hZeJeXo0q0qz7Va4_lzOA7GZ8JwgNLDqq9AjAPkTV2N3ZPRpOGeR_CKP8Iw&_nc_zt=24&_nc_ht=scontent.fdad8-2.fna&_nc_gid=jxjl2Qe12i52CPcsacSiZA&oh=00_AfLDvAifihod_-c9AU2sgSGv7R_zcmF30poydHRK92I_4w&oe=682D29C9";
-          const fullName = (`${item?.bookingId?.profileId?.firstName} ${item?.bookingId?.profileId?.lastName}`) || "N/A";
+          const avatarUrl =
+            item?.bookingId?.profileId?.avartar ||
+            "https://scontent.fdad8-2.fna.fbcdn.net/v/t39.30808-1/453072859_908668704639042_7014970388308944883_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=1&ccb=1-7&_nc_sid=2d3e12&_nc_eui2=AeEg-UXOgqW74CRH95x_vpPfMDEPn7GasIkwMQ-fsZqwiaTDML4C_AjQ9G4mJk502SC6mNYg1kbsI6j2IjDb_RqB&_nc_ohc=os7jBcSY43wQ7kNvwFjnh4Z&_nc_oc=AdmzOOO8hZeJeXo0q0qz7Va4_lzOA7GZ8JwgNLDqq9AjAPkTV2N3ZPRpOGeR_CKP8Iw&_nc_zt=24&_nc_ht=scontent.fdad8-2.fna&_nc_gid=jxjl2Qe12i52CPcsacSiZA&oh=00_AfLDvAifihod_-c9AU2sgSGv7R_zcmF30poydHRK92I_4w&oe=682D29C9";
+          const fullName =
+            `${item?.bookingId?.profileId?.firstName} ${item?.bookingId?.profileId?.lastName}` ||
+            "N/A";
           const phone = item.bookingId?.profileId?.phone || "N/A";
           const formattedDate = item.createdAt
-            ? format(new Date(item.createdAt), 'MMM dd, yyyy')
-            : 'Null';
-          const status = item.status
+            ? format(new Date(item.createdAt), "MMM dd, yyyy")
+            : "Null";
+          const status = item.status;
           const totalAmount = item.amount
             ? `${item.amount.toLocaleString("vi")} VND`
             : "Null";
-
-
 
           return (
             <tr
@@ -84,9 +85,7 @@ export function Transactiontable({ data, action, functions }) {
 
                   <div>
                     <h4 className="text-sm font-medium">{fullName}</h4>
-                    <p className="text-xs mt-1 text-textGray">
-                      {phone}
-                    </p>
+                    <p className="text-xs mt-1 text-textGray">{phone}</p>
                   </div>
                 </div>
               </td>
@@ -108,7 +107,9 @@ export function Transactiontable({ data, action, functions }) {
                 </span>
               </td>
               <td className={`${tdclass} font-semibold`}>{totalAmount}</td>
-              <td className={tdclass}>{item.method === "Wallet" ? "Ví điện tử" : item.method}</td>
+              <td className={tdclass}>
+                {item.method === "Wallet" ? "Ví điện tử" : item.method}
+              </td>
               {action && (
                 <td className={tdclass}>
                   <MenuSelect datas={DropDown1} item={item}>
@@ -119,7 +120,7 @@ export function Transactiontable({ data, action, functions }) {
                 </td>
               )}
             </tr>
-          )
+          );
         })}
       </tbody>
     </table>
@@ -450,7 +451,9 @@ export function PatientTable({ data, functions, used }) {
                     className="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm"
                     onClick={() => {
                       if (
-                        window.confirm("Bạn có chắc chắn muốn xóa khách hàng này không này không?")
+                        window.confirm(
+                          "Bạn có chắc chắn muốn xóa khách hàng này không này không?"
+                        )
                       ) {
                         functions.onDelete(item._id);
                       }
@@ -536,15 +539,20 @@ export function DoctorsTable({ data, functions, doctor }) {
               <td className={tdclass}>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => functions.preview(item)}
+                    onClick={() => functions.preview(item._id)}
                     className="text-green-600 hover:text-green-800 flex items-center gap-1"
                   >
                     <FiEye /> Xem
                   </button>
+                  <button className="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                    <FiEdit /> Sửa
+                  </button>
                   <button
                     onClick={() => {
                       if (
-                        window.confirm("Bạn có chắc chắn muốn xóa nhân viên này không?")
+                        window.confirm(
+                          "Bạn có chắc chắn muốn xóa nhân viên này không?"
+                        )
                       ) {
                         functions.onDelete(item._id);
                       }
@@ -582,7 +590,7 @@ export function BookingTable({ data, functions, doctor }) {
           <th className={thclass}>Ngày kết thúc</th>
           <th className={thclass}>Dịch vụ</th>
           <th className={thclass}>Trạng thái</th>
-          <th className={thclass}>Hành Động</th>
+          {/* <th className={thclass}>Hành Động</th> */}
         </tr>
       </thead>
       <tbody>
@@ -596,6 +604,7 @@ export function BookingTable({ data, functions, doctor }) {
           );
           const endDate = new Date(item?.repeatTo).toLocaleDateString("vi-VN");
           const statusText = statusMap[item.status] || "Không xác định";
+          const avatarUrl = item?.profileId?.avartar;
 
           return (
             <tr
@@ -606,6 +615,13 @@ export function BookingTable({ data, functions, doctor }) {
 
               <td className={tdclass}>
                 <div className="flex gap-4 items-center">
+                  <span className="w-12">
+                    <img
+                      src={avatarUrl}
+                      alt={avatarUrl}
+                      className="w-full h-12 rounded-full object-cover border border-border"
+                    />
+                  </span>
                   <h4 className="text-sm font-medium">{userFullName}</h4>
                 </div>
               </td>
@@ -634,12 +650,21 @@ export function BookingTable({ data, functions, doctor }) {
                 </span>
               </td>
 
-              <td className={tdclass}>
-                <div className="flex gap-2">
+              {/* <td className={tdclass}>
+                  <button
+                    onClick={() => {
+                      toast("ddd")
+                    }}
+                    className="px-3 py-1 bg-red-100 text-red-600 rounded-md text-sm hover:bg-red-200 transition"
+                  >
+                    Xem
+                  </button>
                   <button
                     onClick={() => {
                       if (
-                        window.confirm("Bạn có chắc chắn muốn xóa booking này không?")
+                        window.confirm(
+                          "Bạn có chắc chắn muốn xóa booking này không?"
+                        )
                       ) {
                         functions.onDelete(item._id);
                       }
@@ -648,8 +673,9 @@ export function BookingTable({ data, functions, doctor }) {
                   >
                     Xoá
                   </button>
+                <div className="flex gap-2">
                 </div>
-              </td>
+              </td> */}
             </tr>
           );
         })}
@@ -665,7 +691,125 @@ export function AppointmentTable({ data, functions, doctor }) {
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
           <th className={thclass}>Ngày</th>
-          <th className={thclass}>{doctor ? "khách hàng" : "Điều dưỡng"}</th>
+          <th className={thclass}>Khách hàng</th>
+          <th className={thclass}>Trạng thái</th>
+          <th className={thclass}>Thời gian</th>
+          <th className={thclass}>Dịch vụ</th>
+          <th className={thclass}>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((item) => {
+          const scheduleDate = item?.date
+            ? format(new Date(item.date), "MMM dd, yyyy")
+            : "Null";
+          const patientName = item?.patientName || "Không xác định";
+          const formatTimeRange = (start, end) => {
+            const to12Hour = (dateStr) => {
+              const date = new Date(dateStr);
+              date.setHours(date.getHours() - 7);
+              let hours = date.getHours();
+              const minutes = date.getMinutes();
+              const ampm = hours >= 12 ? "PM" : "AM";
+              hours = hours % 12 || 12;
+              const pad = (n) => n.toString().padStart(2, "0");
+              return `${pad(hours)}:${pad(minutes)} ${ampm}`;
+            };
+            return `${to12Hour(start)} - ${to12Hour(end)}`;
+          };
+
+          const timeRange =
+            item.timeSlots && item.timeSlots.length > 0
+              ? formatTimeRange(item.timeSlots[0].start, item.timeSlots[0].end)
+              : "Không xác định";
+          const serviceName = item?.serviceName;
+
+          return (
+            <tr
+              key={item.id}
+              className="border-b border-border hover:bg-greyed transitions"
+            >
+              <td className={tdclass}>
+                <p className="text-xs">{scheduleDate}</p>
+              </td>
+              <td className={tdclass}>
+                <h4 className="text-xs font-medium">
+                  {patientName}
+                </h4>
+                {/* <p className="text-xs mt-1 text-textGray">
+                  {doctor ? item.user.phone : item.doctor.phone}
+                </p> */}
+              </td>
+              <td className={tdclass}>
+                <span
+                  className={`py-1 px-4 ${item.status === "scheduled"
+                    ? "bg-subMain text-subMain"
+                    : item.status === "waiting_for_nurse"
+                      ? "bg-orange-500 text-orange-500"
+                      : item.status === "waiting_for_client"
+                        ? "bg-subMain text-subMain"
+                        : item.status === "on_the_way"
+                          ? "bg-subMain text-subMain"
+                          : item.status === "check_in"
+                            ? "bg-subMain text-subMain"
+                            : item.status === "in_progress"
+                              ? "bg-subMain text-subMain"
+                              : item.status === "check_out"
+                                ? "bg-subMain text-subMain"
+                                : item.status === "completed"
+                                  ? "bg-subMain text-subMain"
+                                  : item.status === "canceled" && "bg-red-600 text-red-600"
+                    } bg-opacity-10 text-xs rounded-xl`}
+                >
+                  {item.status === "scheduled"
+                    ? "Đã chấp nhận"
+                    : item.status === "waiting_for_nurse"
+                      ? "Đang chờ nhân viên"
+                      : item.status === "waiting_for_client"
+                        ? "Chờ khách hàng"
+                        : item.status === "on_the_way"
+                          ? "Trên đường tới"
+                          : item.status === "check_in"
+                            ? "Đã đến"
+                            : item.status === "in_progress"
+                              ? "Đang thực hiện"
+                              : item.status === "check_out"
+                                ? "Chờ xác nhận"
+                                : item.status === "completed"
+                                  ? "Hoàn thành"
+                                  : "Đã hủy"
+                  }
+                </span>
+              </td>
+
+              <td className={tdclass}>
+                <p className="text-xs">{timeRange}</p>
+              </td>
+              <td className={tdclass}>
+                <p className="text-xs truncate max-w-[120px]" title={serviceName}>{serviceName}</p>
+              </td>
+              <td className={tdclass}>
+                <button
+                  onClick={() => functions.preview(item)}
+                  className="text-sm flex-colo bg-white text-subMain border rounded-md w-10 h-10"
+                >
+                  <FiEye />
+                </button>
+              </td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table >
+  );
+}
+export function BookingTable1({ data, functions, doctor }) {
+  return (
+    <table className="table-auto w-full">
+      <thead className="bg-dry rounded-md overflow-hidden">
+        <tr>
+          <th className={thclass}>Ngày</th>
+          <th className={thclass}>Tên dịch vụ</th>
           <th className={thclass}>Trạng thái</th>
           <th className={thclass}>Thời gian</th>
 
@@ -673,52 +817,30 @@ export function AppointmentTable({ data, functions, doctor }) {
         </tr>
       </thead>
       <tbody>
-        {data.map((item) => (
-          <tr
-            key={item.id}
-            className="border-b border-border hover:bg-greyed transitions"
-          >
-            <td className={tdclass}>
-              <p className="text-xs">{item.date}</p>
-            </td>
-            <td className={tdclass}>
-              <h4 className="text-xs font-medium">
-                {doctor ? item.user.title : item.doctor.title}
-              </h4>
-              <p className="text-xs mt-1 text-textGray">
-                {doctor ? item.user.phone : item.doctor.phone}
-              </p>
-            </td>
-            <td className={tdclass}>
-              <span
-                className={`py-1 px-4 ${item.status === "Approved"
-                  ? "bg-subMain text-subMain"
-                  : item.status === "Pending"
-                    ? "bg-orange-500 text-orange-500"
-                    : item.status === "Cancel" && "bg-red-600 text-red-600"
-                  } bg-opacity-10 text-xs rounded-xl`}
-              >
-                {item.status === "Approved"
-                  ? "Đã chấp thuận"
-                  : item.status === "Pending"
-                    ? "Đang chờ xử lý"
-                    : "Đã hủy"}
-              </span>
-            </td>
+        <tr className="border-b border-border hover:bg-greyed transitions">
+          <td className={tdclass}>
+            <p className="text-xs">12/05/2025</p>
+          </td>
+          <td className={tdclass}>
+            <h4 className="text-xs font-medium">Vật lý trị liệu</h4>
+            <p className="text-xs mt-1 text-textGray"></p>
+          </td>
+          <td className={tdclass}>
+            <span>Đã duyệt</span>
+          </td>
 
-            <td className={tdclass}>
-              <p className="text-xs">{`${item.from} - ${item.to}`}</p>
-            </td>
-            <td className={tdclass}>
-              <button
-                onClick={() => functions.preview(item)}
-                className="text-sm flex-colo bg-white text-subMain border rounded-md w-10 h-10"
-              >
-                <FiEye />
-              </button>
-            </td>
-          </tr>
-        ))}
+          <td className={tdclass}>
+            <p className="text-xs">10:00 AM - 12:00 PM</p>
+          </td>
+          <td className={tdclass}>
+            <button
+              // onClick={() => functions.preview(item)}
+              className="text-sm flex-colo bg-white text-subMain border rounded-md w-10 h-10"
+            >
+              <FiEye />
+            </button>
+          </td>
+        </tr>
       </tbody>
     </table>
   );
@@ -741,17 +863,18 @@ export function PaymentTable({ data, functions, doctor }) {
       <tbody>
         {data.map((item) => {
           const formattedDate = item.createdAt
-            ? format(new Date(item.createdAt), 'MMM dd, yyyy')
-            : 'Null';
+            ? format(new Date(item.createdAt), "MMM dd, yyyy")
+            : "Null";
 
-          const customerName = `${item?.bookingId?.profileId?.firstName} ${item?.bookingId?.profileId?.lastName}` || "N/A";
+          const customerName =
+            `${item?.bookingId?.profileId?.firstName} ${item?.bookingId?.profileId?.lastName}` ||
+            "N/A";
 
-          const status = item.status
+          const status = item.status;
           const phone = item.bookingId?.profileId?.phone || "N/A";
           const totalAmount = item.amount
             ? `${item.amount.toLocaleString("en-US")} VND`
             : "Null";
-
 
           return (
             <tr
@@ -762,12 +885,8 @@ export function PaymentTable({ data, functions, doctor }) {
                 <p className="text-xs">{formattedDate}</p>
               </td>
               <td className={tdclass}>
-                <h4 className="text-xs font-medium">
-                  {customerName}
-                </h4>
-                <p className="text-xs mt-1 text-textGray">
-                  {phone}
-                </p>
+                <h4 className="text-xs font-medium">{customerName}</h4>
+                <p className="text-xs mt-1 text-textGray">{phone}</p>
               </td>
               <td className={tdclass}>
                 <span
@@ -802,7 +921,7 @@ export function PaymentTable({ data, functions, doctor }) {
                 </button>
               </td>
             </tr>
-          )
+          );
         })}
       </tbody>
     </table>

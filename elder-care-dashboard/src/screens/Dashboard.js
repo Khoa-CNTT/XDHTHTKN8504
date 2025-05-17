@@ -65,6 +65,8 @@ function Dashboard() {
   }, [dispatch])
 
   // console.log("paymentss", payments);
+  console.log("ddddsdw", patients);
+  
 
 
   const appointmentsData = [20, 50, 75, 15, 108, 97, 70, 41, 50, 20, 90, 60]
