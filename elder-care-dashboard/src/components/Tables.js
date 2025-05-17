@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 
-
 const thclass = "text-start text-sm font-medium py-3 px-2 whitespace-nowrap";
 const tdclass = "text-start text-sm py-4 px-2 whitespace-nowrap";
 
@@ -53,18 +52,20 @@ export function Transactiontable({ data, action, functions }) {
       </thead>
       <tbody>
         {data.map((item, index) => {
-          const avatarUrl = item?.bookingId?.profileId?.avartar || "https://scontent.fdad8-2.fna.fbcdn.net/v/t39.30808-1/453072859_908668704639042_7014970388308944883_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=1&ccb=1-7&_nc_sid=2d3e12&_nc_eui2=AeEg-UXOgqW74CRH95x_vpPfMDEPn7GasIkwMQ-fsZqwiaTDML4C_AjQ9G4mJk502SC6mNYg1kbsI6j2IjDb_RqB&_nc_ohc=os7jBcSY43wQ7kNvwFjnh4Z&_nc_oc=AdmzOOO8hZeJeXo0q0qz7Va4_lzOA7GZ8JwgNLDqq9AjAPkTV2N3ZPRpOGeR_CKP8Iw&_nc_zt=24&_nc_ht=scontent.fdad8-2.fna&_nc_gid=jxjl2Qe12i52CPcsacSiZA&oh=00_AfLDvAifihod_-c9AU2sgSGv7R_zcmF30poydHRK92I_4w&oe=682D29C9";
-          const fullName = (`${item?.bookingId?.profileId?.firstName} ${item?.bookingId?.profileId?.lastName}`) || "N/A";
+          const avatarUrl =
+            item?.bookingId?.profileId?.avartar ||
+            "https://scontent.fdad8-2.fna.fbcdn.net/v/t39.30808-1/453072859_908668704639042_7014970388308944883_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=1&ccb=1-7&_nc_sid=2d3e12&_nc_eui2=AeEg-UXOgqW74CRH95x_vpPfMDEPn7GasIkwMQ-fsZqwiaTDML4C_AjQ9G4mJk502SC6mNYg1kbsI6j2IjDb_RqB&_nc_ohc=os7jBcSY43wQ7kNvwFjnh4Z&_nc_oc=AdmzOOO8hZeJeXo0q0qz7Va4_lzOA7GZ8JwgNLDqq9AjAPkTV2N3ZPRpOGeR_CKP8Iw&_nc_zt=24&_nc_ht=scontent.fdad8-2.fna&_nc_gid=jxjl2Qe12i52CPcsacSiZA&oh=00_AfLDvAifihod_-c9AU2sgSGv7R_zcmF30poydHRK92I_4w&oe=682D29C9";
+          const fullName =
+            `${item?.bookingId?.profileId?.firstName} ${item?.bookingId?.profileId?.lastName}` ||
+            "N/A";
           const phone = item.bookingId?.profileId?.phone || "N/A";
           const formattedDate = item.createdAt
-            ? format(new Date(item.createdAt), 'MMM dd, yyyy')
-            : 'Null';
-          const status = item.status
+            ? format(new Date(item.createdAt), "MMM dd, yyyy")
+            : "Null";
+          const status = item.status;
           const totalAmount = item.amount
             ? `${item.amount.toLocaleString("vi")} VND`
             : "Null";
-
-
 
           return (
             <tr
@@ -84,31 +85,32 @@ export function Transactiontable({ data, action, functions }) {
 
                   <div>
                     <h4 className="text-sm font-medium">{fullName}</h4>
-                    <p className="text-xs mt-1 text-textGray">
-                      {phone}
-                    </p>
+                    <p className="text-xs mt-1 text-textGray">{phone}</p>
                   </div>
                 </div>
               </td>
               <td className={tdclass}>{formattedDate}</td>
               <td className={tdclass}>
                 <span
-                  className={`py-1 px-4 ${status === "success"
-                    ? "bg-subMain text-subMain"
-                    : status === "pending"
+                  className={`py-1 px-4 ${
+                    status === "success"
+                      ? "bg-subMain text-subMain"
+                      : status === "pending"
                       ? "bg-orange-500 text-orange-500"
                       : status === "fail" && "bg-red-600 text-red-600"
-                    } bg-opacity-10 text-xs rounded-xl`}
+                  } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {status === "success"
                     ? "Đã thanh toán"
                     : status === "pending"
-                      ? "Đang chờ xử lý"
-                      : status === "fail" && "Đã hủy"}
+                    ? "Đang chờ xử lý"
+                    : status === "fail" && "Đã hủy"}
                 </span>
               </td>
               <td className={`${tdclass} font-semibold`}>{totalAmount}</td>
-              <td className={tdclass}>{item.method === "Wallet" ? "Ví điện tử" : item.method}</td>
+              <td className={tdclass}>
+                {item.method === "Wallet" ? "Ví điện tử" : item.method}
+              </td>
               {action && (
                 <td className={tdclass}>
                   <MenuSelect datas={DropDown1} item={item}>
@@ -119,7 +121,7 @@ export function Transactiontable({ data, action, functions }) {
                 </td>
               )}
             </tr>
-          )
+          );
         })}
       </tbody>
     </table>
@@ -252,10 +254,11 @@ export function MedicineTable({ data, onEdit }) {
             <td className={`${tdclass} font-semibold`}>{item?.price}</td>
             <td className={tdclass}>
               <span
-                className={`text-xs font-medium ${item?.status === "Out of stock"
-                  ? "text-red-600"
-                  : "text-green-600"
-                  }`}
+                className={`text-xs font-medium ${
+                  item?.status === "Out of stock"
+                    ? "text-red-600"
+                    : "text-green-600"
+                }`}
               >
                 {item?.status === "Out of stock" ? "Hết hàng" : "Còn hàng"}
               </span>
@@ -422,10 +425,11 @@ export function PatientTable({ data, functions, used }) {
 
               <td className={tdclasse}>
                 <span
-                  className={`py-1 px-4 ${gender === "Male"
-                    ? "bg-subMain text-subMain"
-                    : "bg-orange-500 text-orange-500"
-                    } bg-opacity-10 text-xs rounded-xl`}
+                  className={`py-1 px-4 ${
+                    gender === "Male"
+                      ? "bg-subMain text-subMain"
+                      : "bg-orange-500 text-orange-500"
+                  } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {gender === "Male" ? "Nam" : "Nữ"}
                 </span>
@@ -450,7 +454,9 @@ export function PatientTable({ data, functions, used }) {
                     className="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm"
                     onClick={() => {
                       if (
-                        window.confirm("Bạn có chắc chắn muốn xóa khách hàng này không này không?")
+                        window.confirm(
+                          "Bạn có chắc chắn muốn xóa khách hàng này không này không?"
+                        )
                       ) {
                         functions.onDelete(item._id);
                       }
@@ -541,10 +547,15 @@ export function DoctorsTable({ data, functions, doctor }) {
                   >
                     <FiEye /> Xem
                   </button>
+                  <button className="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                    <FiEdit /> Sửa
+                  </button>
                   <button
                     onClick={() => {
                       if (
-                        window.confirm("Bạn có chắc chắn muốn xóa nhân viên này không?")
+                        window.confirm(
+                          "Bạn có chắc chắn muốn xóa nhân viên này không?"
+                        )
                       ) {
                         functions.onDelete(item._id);
                       }
@@ -587,8 +598,9 @@ export function BookingTable({ data, functions, doctor }) {
       </thead>
       <tbody>
         {data.map((item, index) => {
-          const userFullName = `${item?.profileId?.firstName || "Ẩn"} ${item?.profileId?.lastName || ""
-            }`;
+          const userFullName = `${item?.profileId?.firstName || "Ẩn"} ${
+            item?.profileId?.lastName || ""
+          }`;
           const staffFullName = item?.participants?.[0]?.fullName || "Chưa có";
           const serviceName = item?.serviceId?.name || "Không rõ";
           const startDate = new Date(item?.repeatFrom).toLocaleDateString(
@@ -618,17 +630,18 @@ export function BookingTable({ data, functions, doctor }) {
 
               <td className={tdclass}>
                 <span
-                  className={`py-1 px-4 ${item.status === "completed"
-                    ? "bg-green-500 text-green-500"
-                    : item.status === "accepted"
+                  className={`py-1 px-4 ${
+                    item.status === "completed"
+                      ? "bg-green-500 text-green-500"
+                      : item.status === "accepted"
                       ? "bg-orange-500 text-orange-500"
                       : item.status === "pending"
-                        ? "bg-red-600 text-red-600"
-                        : item.status === "paid"
-                          ? "bg-green-500 text-green-500"
-                          : item.status === "cancelled" &&
-                          "bg-gray-500 text-gray-500"
-                    } bg-opacity-10 text-xs rounded-xl`}
+                      ? "bg-red-600 text-red-600"
+                      : item.status === "paid"
+                      ? "bg-green-500 text-green-500"
+                      : item.status === "cancelled" &&
+                        "bg-gray-500 text-gray-500"
+                  } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {statusText}
                 </span>
@@ -639,7 +652,9 @@ export function BookingTable({ data, functions, doctor }) {
                   <button
                     onClick={() => {
                       if (
-                        window.confirm("Bạn có chắc chắn muốn xóa booking này không?")
+                        window.confirm(
+                          "Bạn có chắc chắn muốn xóa booking này không?"
+                        )
                       ) {
                         functions.onDelete(item._id);
                       }
@@ -691,18 +706,19 @@ export function AppointmentTable({ data, functions, doctor }) {
             </td>
             <td className={tdclass}>
               <span
-                className={`py-1 px-4 ${item.status === "Approved"
-                  ? "bg-subMain text-subMain"
-                  : item.status === "Pending"
+                className={`py-1 px-4 ${
+                  item.status === "Approved"
+                    ? "bg-subMain text-subMain"
+                    : item.status === "Pending"
                     ? "bg-orange-500 text-orange-500"
                     : item.status === "Cancel" && "bg-red-600 text-red-600"
-                  } bg-opacity-10 text-xs rounded-xl`}
+                } bg-opacity-10 text-xs rounded-xl`}
               >
                 {item.status === "Approved"
                   ? "Đã chấp thuận"
                   : item.status === "Pending"
-                    ? "Đang chờ xử lý"
-                    : "Đã hủy"}
+                  ? "Đang chờ xử lý"
+                  : "Đã hủy"}
               </span>
             </td>
 
@@ -741,17 +757,18 @@ export function PaymentTable({ data, functions, doctor }) {
       <tbody>
         {data.map((item) => {
           const formattedDate = item.createdAt
-            ? format(new Date(item.createdAt), 'MMM dd, yyyy')
-            : 'Null';
+            ? format(new Date(item.createdAt), "MMM dd, yyyy")
+            : "Null";
 
-          const customerName = `${item?.bookingId?.profileId?.firstName} ${item?.bookingId?.profileId?.lastName}` || "N/A";
+          const customerName =
+            `${item?.bookingId?.profileId?.firstName} ${item?.bookingId?.profileId?.lastName}` ||
+            "N/A";
 
-          const status = item.status
+          const status = item.status;
           const phone = item.bookingId?.profileId?.phone || "N/A";
           const totalAmount = item.amount
             ? `${item.amount.toLocaleString("en-US")} VND`
             : "Null";
-
 
           return (
             <tr
@@ -762,27 +779,24 @@ export function PaymentTable({ data, functions, doctor }) {
                 <p className="text-xs">{formattedDate}</p>
               </td>
               <td className={tdclass}>
-                <h4 className="text-xs font-medium">
-                  {customerName}
-                </h4>
-                <p className="text-xs mt-1 text-textGray">
-                  {phone}
-                </p>
+                <h4 className="text-xs font-medium">{customerName}</h4>
+                <p className="text-xs mt-1 text-textGray">{phone}</p>
               </td>
               <td className={tdclass}>
                 <span
-                  className={`py-1 px-4 ${status === "success"
-                    ? "bg-subMain text-subMain"
-                    : status === "Pending"
+                  className={`py-1 px-4 ${
+                    status === "success"
+                      ? "bg-subMain text-subMain"
+                      : status === "Pending"
                       ? "bg-orange-500 text-orange-500"
                       : status === "Cancel" && "bg-red-600 text-red-600"
-                    } bg-opacity-10 text-xs rounded-xl`}
+                  } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {status === "success"
                     ? "Đã thanh toán"
                     : status === "Pending"
-                      ? "Đang chờ xử lý"
-                      : "Đã hủy"}
+                    ? "Đang chờ xử lý"
+                    : "Đã hủy"}
                 </span>
               </td>
               <td className={tdclass}>
@@ -802,7 +816,7 @@ export function PaymentTable({ data, functions, doctor }) {
                 </button>
               </td>
             </tr>
-          )
+          );
         })}
       </tbody>
     </table>
