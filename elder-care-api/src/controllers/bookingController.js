@@ -14,6 +14,7 @@ import Wallet from "../models/Wallet.js";
 const bookingController = {
     // create new booking
     createBooking: async (req, res) => {
+        const io = getIO();
         try {
             const {
                 profileId,
@@ -118,6 +119,8 @@ const bookingController = {
 
             await newPayment.save();
 
+            io.to(userId).emit('newPaymentCreated')
+
             const transactionId = "PAY_" + new Date().getTime();
 
             // Trừ tiền và tạo transaction trong ví
@@ -159,7 +162,6 @@ const bookingController = {
                 }
             }, 60 * 1000);
 
-            const io = getIO();
             const populatedBooking = await Booking.findById(newBooking._id).populate('serviceId').populate("profileId");
             const targetRole = populatedBooking?.serviceId?.role;
             if (targetRole === "nurse" || targetRole === "doctor") {
