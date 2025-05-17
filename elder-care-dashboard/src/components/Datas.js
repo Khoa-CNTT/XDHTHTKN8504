@@ -1037,19 +1037,19 @@ export const medicineData = [
 export const patientTab = [
   {
     id: 1,
-    title: "Medical Records",
+    title: "Wallet",
     icon: TbChartHistogram,
   },
-  // {
-  //   id: 2,
-  //   title: "Appointments",
-  //   icon: BiCalendar,
-  // },
-  // {
-  //   id: 3,
-  //   title: "Invoices",
-  //   icon: RiFileList3Line,
-  // },
+  {
+    id: 2,
+    title: "Booking",
+    icon: BiCalendar,
+  },
+  {
+    id: 3,
+    title: "Thay đổi mật khẩu",
+    icon: RiFileList3Line,
+  },
   // {
   //   id: 4,
   //   title: "Payments",
