@@ -39,4 +39,9 @@ router.delete('/delete', scheduleController.deleteAllSchedules)
 router.get("/next/staff",auth, scheduleController.getNextScheduleForStaff);
 router.get("/next/user",auth, scheduleController.getNextScheduleForUser);
 
+router.get(
+  '/get-schedule-staff/:_id',
+  scheduleController.getAllSchedulesByStaffId
+)
+
 export default router;
