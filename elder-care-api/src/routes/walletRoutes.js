@@ -20,4 +20,9 @@ router.get("/", auth, walletController.getWallet);
 router.get("/transactions", auth, walletController.getTransactions);
 router.post("/pay", auth, walletController.makePayment);
 
+router.get(
+    '/get-transactions/:userId',
+    walletController.getTransactions
+)
+
 export default router

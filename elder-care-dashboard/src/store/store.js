@@ -5,6 +5,7 @@ import staffReducer from '../store/staffSlice.js';
 import customerReducer from '../store/customerSlice.js'
 import paymentReducer from '../store/paymentSlice.js'
 import scheduleReducer from '../store/scheduleSlice.js'
+import walletReducer from '../store/walletSlice.js'
 
 export const store = configureStore({
     reducer: {
@@ -13,6 +14,7 @@ export const store = configureStore({
         staff: staffReducer,
         customers: customerReducer,
         payment: paymentReducer,
-        schedule: scheduleReducer
+        schedule: scheduleReducer,
+        wallet: walletReducer
     }
 })
