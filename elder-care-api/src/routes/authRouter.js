@@ -110,5 +110,10 @@ router.get(
   authController.countStaffInLast12Months
 )
 
+router.get(
+  '/search-customer',
+  authController.searchCustomer
+)
+
 
 export default router;

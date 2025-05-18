@@ -62,6 +62,18 @@ export const countTotalAmountMonth = createAsyncThunk(
     }
 )
 
+export const countTotalMonthRevenue = createAsyncThunk(
+    'payments/countTotalMonthRevenue',
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await axios.get('/payment/get-total-month-revenue');
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
+    }
+)
+
 const paymentSlice = createSlice({
     name: 'payments',
     initialState: {
@@ -80,6 +92,9 @@ const paymentSlice = createSlice({
         totalAmountMonth: null,
         totalAmountMonthLoading: false,
         totalAmountMonthError: null,
+        totalMonthRevenue: null,
+        totalMonthRevenueLoading: false,
+        totalMonthRevenueError: null,
     },
     reducers: {
         clearPayments: (state) => {
@@ -94,6 +109,9 @@ const paymentSlice = createSlice({
             state.totalAmountMonth = null;
             state.totalAmountMonthLoading = false;
             state.totalAmountMonthError = null;
+            state.totalMonthRevenue = null;
+            state.totalMonthRevenueLoading = false;
+            state.totalMonthRevenueError = null;
         },
     },
     extraReducers: (builder) => {
@@ -164,6 +182,20 @@ const paymentSlice = createSlice({
             .addCase(countTotalAmountMonth.rejected, (state, action) => {
                 state.totalAmountMonthLoading = false;
                 state.totalAmountMonthError = action.payload;
+            })
+
+            // countTotalMonthRevenue
+            .addCase(countTotalMonthRevenue.pending, (state) => {
+                state.totalMonthRevenueLoading = true;
+                state.totalMonthRevenueError = null;
+            })
+            .addCase(countTotalMonthRevenue.fulfilled, (state, action) => {
+                state.totalMonthRevenueLoading = false;
+                state.totalMonthRevenue = action.payload;
+            })
+            .addCase(countTotalMonthRevenue.rejected, (state, action) => {
+                state.totalMonthRevenueLoading = false;
+                state.totalMonthRevenueError = action.payload;
             });
     },
 });
