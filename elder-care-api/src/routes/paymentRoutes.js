@@ -15,4 +15,9 @@ router.get(
     paymentController.getMonthlyRevenue
 )
 
+router.get(
+    '/get-total-month-revenue',
+    paymentController.getTotalMonthlyRevenue
+)
+
 export default router;

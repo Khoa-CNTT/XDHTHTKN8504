@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import cloudinary from "../config/cloudinary.js";
 import fs from "fs";
 import { getIO } from "../config/socketConfig.js";
+import moment from 'moment';
 
 dotenv.config();
 
@@ -186,26 +187,50 @@ const authController = {
 
   countMembersPerMonth: async (req, res) => {
     try {
-      // const {_id: userId } = req.user;
+      const now = new Date();
+      const twelveMonthsAgo = new Date(
+        now.getFullYear(),
+        now.getMonth() - 11, // lùi lại 11 tháng (tính cả tháng hiện tại là 12)
+        1
+      );
+
       const result = await User.aggregate([
         {
-          $match: { role: "family_member" },
+          $match: {
+            role: "family_member",
+            createdAt: { $gte: twelveMonthsAgo },
+          },
         },
         {
           $group: {
-            _id: { $month: "$createdAt" },
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" },
+            },
             count: { $sum: 1 },
           },
         },
         {
-          $sort: { _id: 1 },
+          $sort: {
+            "_id.year": 1,
+            "_id.month": 1,
+          },
         },
       ]);
 
-      // Tạo mảng 12 tháng, nếu tháng nào không có thì gán 0
-      const counts = Array(12).fill(0);
-      result.forEach((item) => {
-        counts[item._id - 1] = item.count;
+      // Tạo danh sách 12 tháng gần nhất theo dạng {year, month}
+      const months = [];
+      for (let i = 11; i >= 0; i--) {
+        const date = moment().subtract(i, "months");
+        months.push({ year: date.year(), month: date.month() + 1 }); // month trong moment bắt đầu từ 0
+      }
+
+      // Ánh xạ count tương ứng
+      const counts = months.map(({ year, month }) => {
+        const found = result.find(
+          (item) => item._id.year === year && item._id.month === month
+        );
+        return found ? found.count : 0;
       });
 
       res.json({ data: counts });
@@ -805,6 +830,83 @@ const authController = {
         message: "Lỗi khi đếm nhân viên trong 12 tháng gần nhất",
         error: error.message
       });
+    }
+  },
+
+  // Search Customer
+  searchCustomer: async (req, res) => {
+    try {
+      const { search, gender, dateFrom, dateTo, sort = "newest" } = req.query;
+
+      // Lọc theo createdAt của User
+      const userFilter = {};
+      if (dateFrom || dateTo) {
+        userFilter.createdAt = {};
+        if (dateFrom) userFilter.createdAt.$gte = new Date(dateFrom);
+        if (dateTo) userFilter.createdAt.$lte = new Date(dateTo);
+      }
+
+      // Sort option
+      let sortOption = {};
+      switch (sort) {
+        case "newest": sortOption = { createdAt: -1 }; break;
+        case "oldest": sortOption = { createdAt: 1 }; break;
+        case "name_asc": sortOption = { phone: 1 }; break;
+        case "name_desc": sortOption = { phone: -1 }; break;
+        default: sortOption = { createdAt: -1 };
+      }
+
+      const pipeline = [
+        { $match: userFilter },
+        {
+          $lookup: {
+            from: "profiles",
+            localField: "profiles",
+            foreignField: "_id",
+            as: "profileDocs"
+          }
+        },
+        {
+          $addFields: {
+            firstProfile: { $arrayElemAt: ["$profileDocs", 0] }
+          }
+        }
+      ];
+
+      // Lọc theo giới tính (sex trong firstProfile)
+      if (gender) {
+        pipeline.push({
+          $match: {
+            "firstProfile.sex": gender
+          }
+        });
+      }
+
+      // Lọc theo tên và số điện thoại
+      if (search) {
+        const regex = new RegExp(search, "i");
+        pipeline.push({
+          $match: {
+            $or: [
+              { phone: { $regex: regex } },
+              { "firstProfile.firstName": { $regex: regex } },
+              { "firstProfile.lastName": { $regex: regex } }
+            ]
+          }
+        });
+      }
+
+      pipeline.push({ $sort: sortOption });
+
+      const customers = await User.aggregate(pipeline);
+
+      res.json({
+        data: customers,
+        total: customers.length
+      });
+
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
   },
 
