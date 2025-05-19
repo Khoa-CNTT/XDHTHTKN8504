@@ -362,30 +362,191 @@ const paymentController = {
 
             // Đếm payment trong ngày
             const countToday = await Payments.countDocuments({
-            createdAt: { $gte: today, $lt: tomorrow }
+                createdAt: { $gte: today, $lt: tomorrow }
             });
 
             // Đếm payment trong tháng
             const countMonth = await Payments.countDocuments({
-            createdAt: { $gte: monthStart, $lt: nextMonth }
+                createdAt: { $gte: monthStart, $lt: nextMonth }
             });
 
             // Đếm payment trong năm
             const countYear = await Payments.countDocuments({
-            createdAt: { $gte: yearStart, $lt: nextYear }
+                createdAt: { $gte: yearStart, $lt: nextYear }
             });
 
             return res.status(200).json({
-            today: countToday,
-            month: countMonth,
-            year: countYear
+                today: countToday,
+                month: countMonth,
+                year: countYear
             });
         } catch (error) {
             console.error("Lỗi khi lấy Payment:", error);
             return res.status(500).json({
-            message: "Lỗi khi lấy Payment",
-            error: error.message,
+                message: "Lỗi khi lấy Payment",
+                error: error.message,
             });
+        }
+    },
+
+    // getMonthlyRevenue: async (req, res) => {
+    //     try {
+    //         const now = new Date();
+    //         const months = [];
+
+    //         // Lấy 12 tháng gần nhất
+    //         for (let i = 11; i >= 0; i--) {
+    //             const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    //             months.push({
+    //                 year: date.getFullYear(),
+    //                 month: date.getMonth() + 1 // tháng bắt đầu từ 0
+    //             });
+    //         }
+
+    //         // Aggregate tổng tiền theo tháng
+    //         const revenue = await Payments.aggregate([
+    //             {
+    //                 $match: {
+    //                     createdAt: {
+    //                         $gte: new Date(now.getFullYear(), now.getMonth() - 11, 1)
+    //                     },
+    //                     status: { $in: ["success", "confirmed"] }
+    //                 }
+    //             },
+    //             {
+    //                 $group: {
+    //                     _id: {
+    //                         year: { $year: "$createdAt" },
+    //                         month: { $month: "$createdAt" }
+    //                     },
+    //                     total: { $sum: "$amount" }
+    //                 }
+    //             }
+    //         ]);
+
+    //         // Map kết quả ra 12 tháng, nếu tháng nào không có thì total = 0
+    //         const result = months.map(m => {
+    //             const found = revenue.find(r => r._id.year === m.year && r._id.month === m.month);
+    //             return {
+    //                 year: m.year,
+    //                 month: m.month,
+    //                 total: found ? found.total : 0
+    //             };
+    //         });
+
+    //         return res.status(200).json(result);
+    //     } catch (error) {
+    //         return res.status(500).json({
+    //             message: "Lỗi khi tính tổng tiền theo tháng",
+    //             error: error.message
+    //         });
+    //     }
+    // },
+    getMonthlyRevenue: async (req, res) => {
+        try {
+            const now = new Date();
+            const months = [];
+
+            // Tạo danh sách 12 tháng gần nhất
+            for (let i = 11; i >= 0; i--) {
+                const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                months.push({
+                    label: `Tháng ${date.getMonth() + 1}`,
+                    year: date.getFullYear(),
+                    month: date.getMonth() + 1
+                });
+            }
+
+            // Truy vấn dữ liệu thanh toán trong 12 tháng gần nhất
+            const revenue = await Payments.aggregate([
+                {
+                    $match: {
+                        createdAt: {
+                            $gte: new Date(now.getFullYear(), now.getMonth() - 11, 1)
+                        },
+                        status: { $in: ["success", "confirmed"] }
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            year: { $year: "$createdAt" },
+                            month: { $month: "$createdAt" }
+                        },
+                        total: { $sum: "$amount" }
+                    }
+                }
+            ]);
+
+            // Gắn kết doanh thu theo từng tháng
+            const labels = [];
+            const totals = [];
+
+            months.forEach((m) => {
+                const found = revenue.find(
+                    (r) => r._id.year === m.year && r._id.month === m.month
+                );
+                labels.push(m.label);
+                totals.push(found ? found.total : 0);
+            });
+
+            return res.status(200).json({ labels, totals });
+        } catch (error) {
+            return res.status(500).json({
+                message: "Lỗi khi tính doanh thu theo tháng",
+                error: error.message
+            });
+        }
+    },
+
+    getTotalMonthlyRevenue: async (req, res) => {
+        try {
+            const now = new Date();
+            const months = [];
+
+            // Tạo danh sách 12 tháng gần nhất
+            for (let i = 11; i >= 0; i--) {
+                const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                months.push({
+                    year: date.getFullYear(),
+                    month: date.getMonth() + 1
+                });
+            }
+
+            // Truy vấn tổng doanh thu từng tháng trong 12 tháng gần nhất
+            const revenue = await Payments.aggregate([
+                {
+                    $match: {
+                        createdAt: {
+                            $gte: new Date(now.getFullYear(), now.getMonth() - 11, 1)
+                        },
+                        status: { $in: ["success", "confirmed"] }
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            year: { $year: "$createdAt" },
+                            month: { $month: "$createdAt" }
+                        },
+                        total: { $sum: "$amount" }
+                    }
+                }
+            ]);
+
+            // Map kết quả ra 12 tháng, nếu tháng nào không có thì total = 0
+            const totals = months.map(m => {
+                const found = revenue.find(r => r._id.year === m.year && r._id.month === m.month);
+                const total = found ? found.total : 0;
+                return Math.round(total / 1000000);
+            });
+
+            return res.status(200).json({ revenue: totals });
+        } catch (error) {
+            return res.status(500).json({
+                message: "Error",
+                error
+            })
         }
     }
 }

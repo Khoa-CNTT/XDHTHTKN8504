@@ -4,43 +4,53 @@ import { patientTab } from "../../components/Datas";
 import { Link, useParams } from "react-router-dom";
 import { IoArrowBackOutline } from "react-icons/io5";
 import MedicalRecord from "./MedicalRecord";
-import AppointmentsUsed from "../../components/UsedComp/AppointmentsUsed";
+// import AppointmentsUsed from "../../components/UsedComp/AppointmentsUsed";
 import InvoiceUsed from "../../components/UsedComp/InvoiceUsed";
+import BookingUsed from "../../components/UsedComp/BookingUsed";
 import PaymentsUsed from "../../components/UsedComp/PaymentUsed";
 import PersonalInfo from "../../components/UsedComp/PersonalInfo";
+import ChangePasswordCustomer from "../../components/UsedComp/ChangePasswordCustomer";
 import PatientImages from "./PatientImages";
 import HealthInfomation from "./HealthInfomation";
 import DentalChart from "./DentalChart";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { fetchCustomerById } from '../../store/customerSlice.js'
+import { fetchCustomerById } from "../../store/customerSlice.js";
 
 function PatientProfile() {
   const [activeTab, setActiveTab] = React.useState(1);
   const { _id } = useParams();
-  const { selectedCustomer, loading, error } = useSelector((state) => state.customers)
+  const { selectedCustomer, loading, error } = useSelector(
+    (state) => state.customers
+  );
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(fetchCustomerById(_id));
-  }, [dispatch, _id])
+  }, [dispatch, _id]);
 
   console.log("dd", selectedCustomer);
-  
-  const avatarUrl = selectedCustomer?.avatar || "https://res.cloudinary.com/dqlut408r/image/upload/v1747430190/elder-care/avatar/vrke4e0bni6xtnplicxf.jpg";
+
+  const avatarUrl =
+    selectedCustomer?.avatar ||
+    "https://res.cloudinary.com/dqlut408r/image/upload/v1747430190/elder-care/avatar/vrke4e0bni6xtnplicxf.jpg";
 
   const tabPanel = () => {
     switch (activeTab) {
       case 1:
         return <MedicalRecord />;
       case 2:
-        return <AppointmentsUsed doctor={false} />;
+        return <BookingUsed />;
+      // case 2:
+      // return <AppointmentsUsed doctor={false} />;
+      case 3:
+        return <ChangePasswordCustomer />;
       // case 3:
       //   return <InvoiceUsed />;
-      // case 4:
-      //   return <PaymentsUsed doctor={false} />;
-      // case 5:
-      //   return <PatientImages />;
+      case 4:
+        return <PaymentsUsed doctor={false} />;
+      case 5:
+        return <PatientImages />;
       // case 6:
       //   return <DentalChart />;
       case 6:

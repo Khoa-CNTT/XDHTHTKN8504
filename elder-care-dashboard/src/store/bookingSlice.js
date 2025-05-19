@@ -33,21 +33,42 @@ export const deleteBooking = createAsyncThunk(
     }
 )
 
+export const fetchBookingForCustomer = createAsyncThunk(
+    'booking/fetchBookingForCustomer',
+    async (userId, { rejectWithValue }) => {
+        try {
+            const res = await axios.get(`http://localhost:5000/api/v1/bookings/get-booking-customer/${userId}`);
+            console.log("fff", res.data.data);
+            
+            return res.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data || "Error fetch booking!")
+        }
+    }
+)
+
 const bookingSlice = createSlice({
     name: 'booking',
     initialState: {
         bookings: [],
         loading: false,
         error: null,
+        customerBookings: [],
+        customerBookingsLoading: false,
+        customerBookingsError: null,
     },
     reducers: {
         clearBookings(state) {
             state.bookings = [];
         },
+        clearCustomerBookings(state) {
+            state.customerBookings = [];
+            state.customerBookingsError = null;
+        },
     },
     extraReducers: (builder) => {
         builder
-            //fetch Bookings  
+            // fetch Bookings  
             .addCase(fetchBookings.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -60,13 +81,26 @@ const bookingSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload || 'Failed to load bookings';
             })
-            //delete Booking
+            // delete Booking
             .addCase(deleteBooking.fulfilled, (state, action) => {
                 state.bookings = state.bookings.filter(b => b._id !== action.payload);
             })
             .addCase(deleteBooking.rejected, (state, action) => {
                 state.error = action.payload || 'Failed to delete booking';
             })
+            // fetch Booking For Customer
+            .addCase(fetchBookingForCustomer.pending, (state) => {
+                state.customerBookingsLoading = true;
+                state.customerBookingsError = null;
+            })
+            .addCase(fetchBookingForCustomer.fulfilled, (state, action) => {
+                state.customerBookingsLoading = false;
+                state.customerBookings = action.payload;
+            })
+            .addCase(fetchBookingForCustomer.rejected, (state, action) => {
+                state.customerBookingsLoading = false;
+                state.customerBookingsError = action.payload || 'Failed to load customer bookings';
+            });
     },
 });
 

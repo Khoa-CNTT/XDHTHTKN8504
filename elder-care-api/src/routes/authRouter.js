@@ -41,11 +41,16 @@ router.get("/get-staff", authController.getAllStaff);
 router.get("/get-customer", authController.getAllUsers);
 
 // Change password
-router.patch (
+router.patch(
   "/change-password",
   auth,
   authorizeRoles("admin", "doctor", "nurse", "family-member"),
   authController.changePassword
+)
+
+router.patch(
+  '/change-password-by-admin/:userId',
+  authController.changePasswordByAdmin
 )
 
 router.delete(
@@ -88,6 +93,26 @@ router.get(
 router.get(
   '/get-customer-info/:customerId',
   authController.getCustomerById
+)
+
+router.get(
+  '/count-staffs',
+  authController.countStaffByMonth
+)
+
+router.delete(
+  '/delete-all',
+  authController.deleteAll
+)
+
+router.get(
+  '/count-staff', 
+  authController.countStaffInLast12Months
+)
+
+router.get(
+  '/search-customer',
+  authController.searchCustomer
 )
 
 

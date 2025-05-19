@@ -7,6 +7,7 @@ import moment2 from "moment-timezone";
 import Service from "../models/Service.js";
 import Doctor from "../models/Doctor.js";
 import Nurse from "../models/Nurse.js";
+import User from "../models/User.js";
 import { getIO } from "../config/socketConfig.js";
 import dayjs from "dayjs";
 
@@ -244,11 +245,11 @@ const scheduleController = {
 
         const timeSlots = Array.isArray(item.timeSlots)
           ? item.timeSlots
-              .filter((slot) => slot.start && slot.end)
-              .map((slot) => ({
-                start: moment2(slot.start).tz("Asia/Ho_Chi_Minh").toISOString(),
-                end: moment2(slot.end).tz("Asia/Ho_Chi_Minh").toISOString(),
-              }))
+            .filter((slot) => slot.start && slot.end)
+            .map((slot) => ({
+              start: moment2(slot.start).tz("Asia/Ho_Chi_Minh").toISOString(),
+              end: moment2(slot.end).tz("Asia/Ho_Chi_Minh").toISOString(),
+            }))
           : [];
 
         const status = item.status || "Chưa có trạng thái";
@@ -515,6 +516,40 @@ const scheduleController = {
       return res
         .status(500)
         .json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  getAllSchedulesByStaffId2: async (req, res) => {
+    try {
+      const { _id } = req.params;
+
+      // Tìm staff trong Doctor
+      let staff = await Doctor.findById(_id);
+      if (!staff) {
+        // Nếu không phải Doctor, thử tìm trong Nurse
+        staff = await Nurse.findById(_id);
+        if (!staff) {
+          return res.status(404).json({ message: "Không tìm thấy staff" });
+        }
+      }
+
+      const userId = staff.userId;
+      if (!userId) {
+        return res.status(400).json({ message: "Staff không có userId" });
+      }
+
+      // Tìm lịch làm việc dựa vào userId
+      const schedule = await Schedule.find({ staffId: userId });
+
+      console.log(userId);      
+
+      return res.status(200).json({
+        message: "Lấy lịch làm việc thành công",
+        schedule,
+      });
+    } catch (error) {
+      console.error("Lỗi khi lấy lịch làm việc:", error);
+      return res.status(500).json({ message: "Lỗi server", error: error.message });
     }
   },
 };

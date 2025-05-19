@@ -113,7 +113,7 @@ router.delete(
 )
 
 router.get(
-    '/count-bookings', bookingController.countBookingsLast12Months
+    '/count-bookings', bookingController.countBookingsPerMonthLast12Months
 )
 
 router.get(
@@ -148,6 +148,11 @@ router.post(
     auth,
     authorizeRoles('admin', 'family_member'),
     bookingController.createBookingByPackage
+)
+
+router.get(
+    '/get-booking-customer/:userId',
+    bookingController.getBookingForCustomer2
 )
 
 export default router

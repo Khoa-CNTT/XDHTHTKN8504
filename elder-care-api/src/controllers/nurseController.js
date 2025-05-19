@@ -63,7 +63,40 @@ const nurseController = {
                 error: error.message
             })
         }
-    }
+    },
+
+    updateNurse: async (req, res) => {
+        try {
+            const { _id } = req.params;
+            const updateFields = req.body;
+
+            const nurse = await Nurse.findById(_id);
+            if (!nurse) {
+                return res.status(404).json({
+                    message: "Không tìm thấy điều dưỡng",
+                });
+            }
+
+            // Cập nhật những field hợp lệ
+            Object.keys(updateFields).forEach(field => {
+                if (updateFields[field] !== undefined && nurse.schema.path(field)) {
+                    nurse[field] = updateFields[field];
+                }
+            });
+
+            await nurse.save();
+
+            return res.status(200).json({
+                message: "Cập nhật điều dưỡng thành công",
+                nurse,
+            });
+        } catch (error) {
+            return res.status(500).json({
+                message: "Lỗi server",
+                error: error.message,
+            });
+        }
+    },
 }
 
 export default nurseController;

@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import cloudinary from "../config/cloudinary.js";
 import fs from "fs";
 import { getIO } from "../config/socketConfig.js";
+import moment from 'moment';
 
 dotenv.config();
 
@@ -186,26 +187,50 @@ const authController = {
 
   countMembersPerMonth: async (req, res) => {
     try {
-      // const {_id: userId } = req.user;
+      const now = new Date();
+      const twelveMonthsAgo = new Date(
+        now.getFullYear(),
+        now.getMonth() - 11, // lùi lại 11 tháng (tính cả tháng hiện tại là 12)
+        1
+      );
+
       const result = await User.aggregate([
         {
-          $match: { role: "family_member" },
+          $match: {
+            role: "family_member",
+            createdAt: { $gte: twelveMonthsAgo },
+          },
         },
         {
           $group: {
-            _id: { $month: "$createdAt" },
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" },
+            },
             count: { $sum: 1 },
           },
         },
         {
-          $sort: { _id: 1 },
+          $sort: {
+            "_id.year": 1,
+            "_id.month": 1,
+          },
         },
       ]);
 
-      // Tạo mảng 12 tháng, nếu tháng nào không có thì gán 0
-      const counts = Array(12).fill(0);
-      result.forEach((item) => {
-        counts[item._id - 1] = item.count;
+      // Tạo danh sách 12 tháng gần nhất theo dạng {year, month}
+      const months = [];
+      for (let i = 11; i >= 0; i--) {
+        const date = moment().subtract(i, "months");
+        months.push({ year: date.year(), month: date.month() + 1 }); // month trong moment bắt đầu từ 0
+      }
+
+      // Ánh xạ count tương ứng
+      const counts = months.map(({ year, month }) => {
+        const found = result.find(
+          (item) => item._id.year === year && item._id.month === month
+        );
+        return found ? found.count : 0;
       });
 
       res.json({ data: counts });
@@ -342,6 +367,60 @@ const authController = {
       const hashedNewPassword = await bcryptjs.hash(newPassword, 10);
       user.password = hashedNewPassword;
       await user.save();
+
+      return res.status(200).json({ message: "Cập nhật mật khẩu thành công" });
+    } catch (error) {
+      console.error("Lỗi khi thay đổi mật khẩu:", error);
+      return res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  changePasswordByAdmin: async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { oldPassword, newPassword } = req.body;
+
+      //Kiểm tra có đúng mật khẩu cũ không
+      const staff = await Doctor.findById(userId);
+      if (!staff) {
+        staff = await Nurse.findById(userId);
+      }
+
+      if (!staff) {
+        return res.status(404).json({ message: "Nhân viên không tồn tại" });
+      }
+
+      const users = staff.userId;
+
+      const infoUser = await User.findById({ _id: users })
+
+      if (!infoUser) {
+        return res.status(404).json({ message: "Người dùng không tồn tại" });
+      }
+
+      if (!oldPassword || !newPassword) {
+        return res
+          .status(400)
+          .json({ message: "Vui lòng nhập đầy đủ mật khẩu cũ và mới" });
+      }
+
+      if (oldPassword === newPassword) {
+        return res
+          .status(400)
+          .json({ message: "Mật khẩu mới không được giống mật khẩu cũ" });
+      }
+
+      if (oldPassword) {
+        const isMatch = await bcryptjs.compare(oldPassword, infoUser.password);
+        if (!isMatch) {
+          return res.status(400).json({ message: "Mật khẩu cũ không đúng" });
+        }
+      }
+
+      // Cập nhật mật khẩu mới
+      const hashedNewPassword = await bcryptjs.hash(newPassword, 10);
+      infoUser.password = hashedNewPassword;
+      await infoUser.save();
 
       return res.status(200).json({ message: "Cập nhật mật khẩu thành công" });
     } catch (error) {
@@ -604,6 +683,252 @@ const authController = {
       res.status(500).json({ message: "Lỗi server", error: error.message });
     }
   },
+
+  countStaffByMonth: async (req, res) => {
+    try {
+      const now = new Date();
+      // Lấy ngày đầu tiên của tháng hiện tại, sau đó lùi về 11 tháng trước
+      const startMonth = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+      const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+      // Đếm bác sĩ theo tháng
+      const doctorCounts = await Doctor.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: startMonth, $lt: endMonth }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" }
+            },
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { "_id.year": 1, "_id.month": 1 } }
+      ]);
+
+      // Đếm điều dưỡng theo tháng
+      const nurseCounts = await Nurse.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: startMonth, $lt: endMonth }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" }
+            },
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { "_id.year": 1, "_id.month": 1 } }
+      ]);
+
+      // Tạo mảng 12 tháng gần nhất (theo định dạng YYYY-MM)
+      const months = [];
+      const counts = [];
+      for (let i = 0; i < 12; i++) {
+        const date = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1; // 1-based
+        months.push(`${year}-${month.toString().padStart(2, "0")}`);
+        counts.push(0);
+      }
+
+      // Gộp kết quả bác sĩ và điều dưỡng vào mảng counts
+      const addCounts = (arr) => {
+        arr.forEach(item => {
+          const idx = months.findIndex(m =>
+            m === `${item._id.year}-${item._id.month.toString().padStart(2, "0")}`
+          );
+          if (idx !== -1) {
+            counts[idx] += item.count;
+          }
+        });
+      };
+      addCounts(doctorCounts);
+      addCounts(nurseCounts);
+
+      return res.status(200).json({ data: counts, months });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Lỗi khi đếm nhân viên theo tháng",
+        error: error.message
+      });
+    }
+  },
+
+  countStaffInLast12Months: async (req, res) => {
+    try {
+      const now = new Date();
+      const startMonth = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+      const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+      // Đếm bác sĩ theo tháng
+      const doctorCounts = await Doctor.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: startMonth, $lt: endMonth }
+          }
+        },
+        {
+          $group: {
+            _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+            count: { $sum: 1 }
+          }
+        }
+      ]);
+
+      // Đếm điều dưỡng theo tháng
+      const nurseCounts = await Nurse.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: startMonth, $lt: endMonth }
+          }
+        },
+        {
+          $group: {
+            _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+            count: { $sum: 1 }
+          }
+        }
+      ]);
+
+      // Tạo mảng 12 tháng gần nhất (YYYY-MM)
+      const months = [];
+      const counts = [];
+      for (let i = 0; i < 12; i++) {
+        const date = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        months.push(`${year}-${month.toString().padStart(2, "0")}`);
+        counts.push(0);
+      }
+
+      // Gộp kết quả bác sĩ và điều dưỡng vào mảng counts
+      const addCounts = (arr) => {
+        arr.forEach(item => {
+          const idx = months.findIndex(m =>
+            m === `${item._id.year}-${item._id.month.toString().padStart(2, "0")}`
+          );
+          if (idx !== -1) {
+            counts[idx] += item.count;
+          }
+        });
+      };
+      addCounts(doctorCounts);
+      addCounts(nurseCounts);
+
+      return res.status(200).json({ data: counts, months });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Lỗi khi đếm nhân viên trong 12 tháng gần nhất",
+        error: error.message
+      });
+    }
+  },
+
+  // Search Customer
+  searchCustomer: async (req, res) => {
+    try {
+      const { search, gender, dateFrom, dateTo, sort = "newest" } = req.query;
+
+      // Lọc theo createdAt của User
+      const userFilter = {};
+      if (dateFrom || dateTo) {
+        userFilter.createdAt = {};
+        if (dateFrom) userFilter.createdAt.$gte = new Date(dateFrom);
+        if (dateTo) userFilter.createdAt.$lte = new Date(dateTo);
+      }
+
+      // Sort option
+      let sortOption = {};
+      switch (sort) {
+        case "newest": sortOption = { createdAt: -1 }; break;
+        case "oldest": sortOption = { createdAt: 1 }; break;
+        case "name_asc": sortOption = { phone: 1 }; break;
+        case "name_desc": sortOption = { phone: -1 }; break;
+        default: sortOption = { createdAt: -1 };
+      }
+
+      const pipeline = [
+        { $match: userFilter },
+        {
+          $lookup: {
+            from: "profiles",
+            localField: "profiles",
+            foreignField: "_id",
+            as: "profileDocs"
+          }
+        },
+        {
+          $addFields: {
+            firstProfile: { $arrayElemAt: ["$profileDocs", 0] }
+          }
+        }
+      ];
+
+      // Lọc theo giới tính (sex trong firstProfile)
+      if (gender) {
+        pipeline.push({
+          $match: {
+            "firstProfile.sex": gender
+          }
+        });
+      }
+
+      // Lọc theo tên và số điện thoại
+      if (search) {
+        const regex = new RegExp(search, "i");
+        pipeline.push({
+          $match: {
+            $or: [
+              { phone: { $regex: regex } },
+              { "firstProfile.firstName": { $regex: regex } },
+              { "firstProfile.lastName": { $regex: regex } }
+            ]
+          }
+        });
+      }
+
+      pipeline.push({ $sort: sortOption });
+
+      const customers = await User.aggregate(pipeline);
+
+      res.json({
+        data: customers,
+        total: customers.length
+      });
+
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  },
+
+  deleteAll: async (req, res) => {
+    try {
+      // Xóa tất cả dữ liệu ở tất cả các bảng (collection)
+      const mongoose = (await import('mongoose')).default;
+      const collections = Object.keys(mongoose.connection.collections);
+
+      // Thực hiện xóa dữ liệu cho từng collection
+      for (const collectionName of collections) {
+        await mongoose.connection.collections[collectionName].deleteMany({});
+      }
+
+      res.status(200).json({ message: "Đã xóa toàn bộ dữ liệu trong tất cả các bảng (collections)." });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Lỗi khi xóa toàn bộ dữ liệu",
+        error
+      });
+    }
+  }
 };
 
 export default authController;

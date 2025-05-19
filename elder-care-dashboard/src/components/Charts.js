@@ -1,75 +1,50 @@
 import React from "react";
 import Chart from "react-apexcharts";
 
-export function DashboardSmallChart({ data, colors }) {
+export function DashboardSmallChart({ data = [], colors }) {
+  const now = new Date();
+  const currentMonth = now.getMonth(); // 0 = Jan
+  const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const last12Months = Array.from({ length: 12 }, (_, i) => {
+    const monthIndex = (currentMonth + i + 1) % 12;
+    return monthLabels[monthIndex];
+  });
+
   const options = {
     chart: {
       id: "basic-bar",
-      sparkline: {
-        enabled: true,
-      },
-      toolbar: {
-        show: false,
-      },
+      sparkline: { enabled: true },
+      toolbar: { show: false },
       animations: {
         enabled: true,
         easing: "easeinout",
         speed: 400,
-        animateGradually: {
-          enabled: true,
-          delay: 150,
-        },
-        dynamicAnimation: {
-          enabled: true,
-          speed: 150,
-        },
+        animateGradually: { enabled: true, delay: 150 },
+        dynamicAnimation: { enabled: true, speed: 150 },
       },
     },
     xaxis: {
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
-      labels: {
-        show: false,
-      },
-      axisTicks: {
-        show: false,
-      },
+      categories: last12Months,
+      labels: { show: false },
+      axisTicks: { show: false },
     },
-
-    yaxis: {
-      show: false,
-    },
-    dataLabels: {
-      enabled: false,
-    },
+    yaxis: { show: false },
+    dataLabels: { enabled: false },
     tooltip: {
-      custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+      custom: function ({ series, seriesIndex, dataPointIndex }) {
         return (
-          '<div className="bg-white py-2 px-2 text-xs border-[.5px] border-border">' +
-          "Tổng:" +
-          " " +
-          '<span className="font-semibold">' +
+          '<div class="bg-white py-2 px-2 text-xs border-[.5px] border-border">' +
+          "Tổng: " +
+          '<span class="font-semibold">' +
           series[seriesIndex][dataPointIndex] +
           "</span>" +
           "</div>"
         );
       },
     },
-    grid: {
-      show: false,
-    },
+    grid: { show: false },
     plotOptions: {
       bar: {
         columnWidth: "75%",
@@ -79,10 +54,11 @@ export function DashboardSmallChart({ data, colors }) {
     },
     colors: [colors],
   };
+
   const series = [
     {
       name: "series-1",
-      data: data,
+      data: Array.isArray(data) ? data : [],
     },
   ];
 
@@ -97,42 +73,32 @@ export function DashboardSmallChart({ data, colors }) {
   );
 }
 
-export function DashboardBigChart() {
+
+export function DashboardBigChart({ data = [] }) {
+  const now = new Date();
+  const currentMonth = now.getMonth(); // 0-11 (0 = Jan)
+  const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const last12Months = Array.from({ length: 12 }, (_, i) => {
+    const monthIndex = (currentMonth + i + 1) % 12;
+    return monthLabels[monthIndex];
+  });
+
   const options = {
     chart: {
       id: "area-datetime",
-      toolbar: {
-        show: false,
-      },
+      toolbar: { show: false },
       animations: {
         enabled: true,
         easing: "easeinout",
         speed: 1000,
-        animateGradually: {
-          enabled: true,
-          delay: 150,
-        },
-        dynamicAnimation: {
-          enabled: true,
-          speed: 800,
-        },
+        animateGradually: { enabled: true, delay: 150 },
+        dynamicAnimation: { enabled: true, speed: 800 },
       },
     },
     xaxis: {
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
+      categories: last12Months,
       labels: {
         show: true,
         style: {
@@ -141,11 +107,8 @@ export function DashboardBigChart() {
           fontWeight: 400,
         },
       },
-      axisTicks: {
-        show: false,
-      },
+      axisTicks: { show: false },
     },
-
     yaxis: {
       show: true,
       labels: {
@@ -155,21 +118,16 @@ export function DashboardBigChart() {
           fontSize: "10px",
           fontWeight: 400,
         },
-        formatter: function (value) {
-          return value + "k";
-        },
+        formatter: (value) => value + "TR",
       },
     },
-    dataLabels: {
-      enabled: false,
-    },
+    dataLabels: { enabled: false },
     tooltip: {
-      custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+      custom: function ({ series, seriesIndex, dataPointIndex }) {
         return (
-          '<div className="bg-white py-2 px-2 text-xs border-[.5px] border-border">' +
-          "Tổng:" +
-          " " +
-          '<span className="font-semibold">' +
+          '<div class="bg-white py-2 px-2 text-xs border-[.5px] border-border">' +
+          "Tổng: " +
+          '<span class="font-semibold">' +
           series[seriesIndex][dataPointIndex] +
           "</span>" +
           "</div>"
@@ -182,11 +140,7 @@ export function DashboardBigChart() {
       strokeDashArray: 4,
       position: "back",
     },
-    stroke: {
-      curve: "smooth",
-      width: 1,
-    },
-
+    stroke: { curve: "smooth", width: 1 },
     fill: {
       type: "gradient",
       gradient: {
@@ -201,10 +155,11 @@ export function DashboardBigChart() {
     },
     colors: ["#66B5A3"],
   };
+
   const series = [
     {
       name: "Total",
-      data: [30, 40, 25, 50, 49, 21, 70, 51, 42, 60, 40, 20],
+      data: Array.isArray(data) ? data : [],
     },
   ];
 

@@ -50,6 +50,30 @@ export const fetchPaymentCounts = createAsyncThunk(
     }
 );
 
+export const countTotalAmountMonth = createAsyncThunk(
+    'payments/countTotalAmountMonth',
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await axios.get('/payment/count-revenue');
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
+    }
+)
+
+export const countTotalMonthRevenue = createAsyncThunk(
+    'payments/countTotalMonthRevenue',
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await axios.get('/payment/get-total-month-revenue');
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
+    }
+)
+
 const paymentSlice = createSlice({
     name: 'payments',
     initialState: {
@@ -65,6 +89,12 @@ const paymentSlice = createSlice({
         paymentCounts: null,
         paymentCountsLoading: false,
         paymentCountsError: null,
+        totalAmountMonth: null,
+        totalAmountMonthLoading: false,
+        totalAmountMonthError: null,
+        totalMonthRevenue: null,
+        totalMonthRevenueLoading: false,
+        totalMonthRevenueError: null,
     },
     reducers: {
         clearPayments: (state) => {
@@ -76,6 +106,12 @@ const paymentSlice = createSlice({
             state.paymentCounts = null;
             state.paymentCountsLoading = false;
             state.paymentCountsError = null;
+            state.totalAmountMonth = null;
+            state.totalAmountMonthLoading = false;
+            state.totalAmountMonthError = null;
+            state.totalMonthRevenue = null;
+            state.totalMonthRevenueLoading = false;
+            state.totalMonthRevenueError = null;
         },
     },
     extraReducers: (builder) => {
@@ -132,6 +168,34 @@ const paymentSlice = createSlice({
             .addCase(fetchPaymentCounts.rejected, (state, action) => {
                 state.paymentCountsLoading = false;
                 state.paymentCountsError = action.payload;
+            })
+
+            // countTotalAmountMonth
+            .addCase(countTotalAmountMonth.pending, (state) => {
+                state.totalAmountMonthLoading = true;
+                state.totalAmountMonthError = null;
+            })
+            .addCase(countTotalAmountMonth.fulfilled, (state, action) => {
+                state.totalAmountMonthLoading = false;
+                state.totalAmountMonth = action.payload;
+            })
+            .addCase(countTotalAmountMonth.rejected, (state, action) => {
+                state.totalAmountMonthLoading = false;
+                state.totalAmountMonthError = action.payload;
+            })
+
+            // countTotalMonthRevenue
+            .addCase(countTotalMonthRevenue.pending, (state) => {
+                state.totalMonthRevenueLoading = true;
+                state.totalMonthRevenueError = null;
+            })
+            .addCase(countTotalMonthRevenue.fulfilled, (state, action) => {
+                state.totalMonthRevenueLoading = false;
+                state.totalMonthRevenue = action.payload;
+            })
+            .addCase(countTotalMonthRevenue.rejected, (state, action) => {
+                state.totalMonthRevenueLoading = false;
+                state.totalMonthRevenueError = action.payload;
             });
     },
 });

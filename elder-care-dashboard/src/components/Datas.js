@@ -30,6 +30,27 @@ import {
 import { AiOutlineSetting } from "react-icons/ai";
 import { BiCalendar, BiUserPlus } from "react-icons/bi";
 
+// Hàm rút gọn số (K, M, B)
+const formatCurrencyCompact = (value) => {
+  if (value >= 1_000_000_000) {
+    return (value / 1_000_000_000).toFixed(1).replace(/\.0$/, "") + "B";
+  } else if (value >= 1_000_000) {
+    return (value / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+  } else if (value >= 1_000) {
+    return (value / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
+  }
+  return value.toString();
+};
+
+// Hàm định dạng VND đầy đủ
+const formatVNDCurrency = (value) => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
 export const MenuDatas = [
   {
     title: "Dashboard",
@@ -865,6 +886,7 @@ export const getDashboardCards = (
   nursesData = [],
   revenueData = []
 ) => {
+  const totalRevenue = revenueData.reduce((a, b) => a + b, 0);
   return [
     {
       id: 1,
@@ -897,7 +919,11 @@ export const getDashboardCards = (
       id: 4,
       title: "Tổng thu nhập",
       icon: MdOutlineAttachMoney,
-      value: revenueData.reduce((a, b) => a + b, 0),
+      value: (
+        <span title={formatVNDCurrency(totalRevenue)}>
+          {formatCurrencyCompact(totalRevenue)}
+        </span>
+      ),
       percent: 45.06,
       color: ["bg-red-500", "text-red-500", "#FF3B30"],
       datas: revenueData,
@@ -1037,19 +1063,19 @@ export const medicineData = [
 export const patientTab = [
   {
     id: 1,
-    title: "Medical Records",
+    title: "Wallet",
     icon: TbChartHistogram,
   },
-  // {
-  //   id: 2,
-  //   title: "Appointments",
-  //   icon: BiCalendar,
-  // },
-  // {
-  //   id: 3,
-  //   title: "Invoices",
-  //   icon: RiFileList3Line,
-  // },
+  {
+    id: 2,
+    title: "Booking",
+    icon: BiCalendar,
+  },
+  {
+    id: 3,
+    title: "Thay đổi mật khẩu",
+    icon: RiFileList3Line,
+  },
   // {
   //   id: 4,
   //   title: "Payments",
