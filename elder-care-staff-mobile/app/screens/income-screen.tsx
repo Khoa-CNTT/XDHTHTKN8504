@@ -47,7 +47,7 @@ const IncomeScreen: React.FC = () => {
       <BalanceCard
         salary={totalSalary}
         completed={totalCompleted}
-        distance="200 Km"
+        distance="5"
       />
 
       <Text style={styles.sectionTitle}>Đã hoàn thành</Text>

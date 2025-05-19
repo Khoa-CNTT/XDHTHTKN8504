@@ -6,12 +6,12 @@ import {
   StyleSheet,
   Image,
   TextInput,
+  ScrollView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Ionicons } from "@expo/vector-icons";
 import Footer from "../components/Footer";
-// import { RootStackParamList } from "../navigation/navigation";
 import { useServicesStore } from "../stores/serviceStore";
 
 type RootStackParamList = {
@@ -19,8 +19,6 @@ type RootStackParamList = {
   ServiceScreen: { serviceId: string };
   ProfileList: undefined;
 };
-
-
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -62,8 +60,6 @@ const BookingScreen: React.FC = () => {
 
       {/* Section */}
       <View style={styles.sectionContainer}>
-        {/* <Text style={styles.sectionTitle}>Chọn loại dịch vụ</Text> */}
-
         {/* Ô tìm kiếm */}
         <TextInput
           style={styles.searchInput}
@@ -72,29 +68,35 @@ const BookingScreen: React.FC = () => {
           onChangeText={setSearchText}
         />
 
-        {/* Danh sách dịch vụ */}
-        {filteredServices.map((service) => (
-          <TouchableOpacity
-            key={service._id}
-            style={styles.card}
-            onPress={() => {
-              navigation.navigate("ServiceScreen", { serviceId: service._id });
-            }}
-          >
-            <Image
-              source={getImageByRole(service.role)}
-              style={styles.cardImage}
-              resizeMode="cover"
-            />
-            <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>{service.name}</Text>
-              <Text style={styles.cardDescription} numberOfLines={2}>
-                {service.description}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward-outline" size={22} color="#999" />
-          </TouchableOpacity>
-        ))}
+        {/* Danh sách dịch vụ cuộn được */}
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 120 }}>
+          {filteredServices.map((service) => (
+            <TouchableOpacity
+              key={service._id}
+              style={styles.card}
+              onPress={() => {
+                navigation.navigate("ServiceScreen", { serviceId: service._id });
+              }}
+            >
+              <Image
+                source={
+                  service.imgUrl
+                    ? { uri: service.imgUrl }
+                    : getImageByRole(service.role)
+                }
+                style={styles.cardImage}
+                resizeMode="cover"
+              />
+              <View style={styles.cardContent}>
+                <Text style={styles.cardTitle}>{service.name}</Text>
+                <Text style={styles.cardDescription} numberOfLines={2}>
+                  {service.description}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward-outline" size={22} color="#999" />
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       {/* Footer cố định */}
@@ -131,6 +133,7 @@ const styles = StyleSheet.create({
   sectionContainer: {
     paddingHorizontal: 20,
     marginTop: 25,
+    flex: 1,
   },
   sectionTitle: {
     fontSize: 20,

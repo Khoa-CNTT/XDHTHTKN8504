@@ -106,6 +106,10 @@ function Booking() {
     return buf;
   };
 
+  const previewBooking = (_id) => {
+    navigate(`/bookings/preview/${_id}`);
+  };
+
   return (
     <Layout>
       {
@@ -161,7 +165,7 @@ function Booking() {
             doctor={true}
             data={bookings}
             functions={{
-              preview,
+              preview: previewBooking,
               onDelete: (id) => {
                 dispatch(deleteBooking(id));
               },

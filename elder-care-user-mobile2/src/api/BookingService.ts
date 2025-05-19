@@ -89,5 +89,22 @@ export const getBookings = async (): Promise<Booking[]> => {
   }
 };
 
+export const cancelBooking = async (bookingId: string) => {
+  try {
+    const response = await API.post(
+      `/bookings/cancel-booking-for-user/${bookingId}`,
+      {},
+    );
+    return response.data;
+  } catch (error: any) {
+    log(
+      "Lỗi khi hủy booking:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+
 
 
