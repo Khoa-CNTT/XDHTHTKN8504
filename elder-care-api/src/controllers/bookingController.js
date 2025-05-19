@@ -881,7 +881,35 @@ const bookingController = {
                 error: error.message,
             });
         }
-    }
+    },
+
+    getBookingDetail: async (req, res) => {
+        try {
+            const { bookingId } = req.params;
+
+            if (!bookingId) {
+                return res.status(400).json({ message: "Thiếu bookingId trong params" });
+            }
+
+            const booking = await Booking.findById(bookingId)
+                .populate('profileId')
+                .populate('serviceId')
+                .populate('participants.userId', 'firstName lastName role');
+
+            if (!booking) {
+                return res.status(404).json({ message: "Không tìm thấy booking" });
+            }
+
+            return res.status(200).json({
+                message: "Lấy chi tiết booking thành công",
+                booking
+            });
+        } catch (error) {
+            return res.status(500).json({
+                error
+            })
+        }
+    },
 }
 
 export default bookingController;

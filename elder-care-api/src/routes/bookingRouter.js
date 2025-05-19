@@ -155,4 +155,9 @@ router.get(
     bookingController.getBookingForCustomer2
 )
 
+router.get(
+    '/get-booking-detail/:bookingId',
+    bookingController.getBookingDetail
+)
+
 export default router
