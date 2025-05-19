@@ -31,7 +31,6 @@ const UpcomingSchedule = () => {
 
   const { avatar, serviceName, customerAddress, phoneNumber, schedule } =
     nearestSchedule;
-  const formattedDate = formatTime(schedule.date, 'date');
   const timeSlotText = schedule.timeSlots?.[0]
     ? `${formatTime(schedule.timeSlots[0].start, 'time')} - ${
         formatTime(schedule.timeSlots[0].end, 'time')
@@ -58,7 +57,11 @@ const UpcomingSchedule = () => {
       <View style={styles.rideDetailsCard}>
         <View style={styles.riderInfo}>
           <Image
-            source={{ uri: avatar || "https://via.placeholder.com/50" }}
+            source={
+              avatar
+                ? { uri: avatar }
+                : require("../../assets/images/avatar.jpg")
+            }
             style={styles.riderAvatar}
           />
           <Text style={styles.riderName}>{schedule.patientName}</Text>

@@ -9,11 +9,6 @@ const canStartSchedule = (start: Date): boolean => {
   const now = toUtcPlus7(nowUtc);
 
   const allowedStartTime = subMinutes(start, 5);
-
-  console.log("⏰ Now (UTC+7):", now.toISOString());
-  console.log("🕒 Start (UTC+7):", start.toISOString());
-  console.log("🟡 Allowed Start (UTC+7):", allowedStartTime.toISOString());
-
   return now >= allowedStartTime;
 };
 
