@@ -23,7 +23,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({
         </View>
         <View style={styles.infoBox}>
           <Text style={styles.infoValue}>{distance}</Text>
-          <Text style={styles.infoLabel}>Distance</Text>
+          <Text style={styles.infoLabel}>Đang thực hiện</Text>
         </View>
       </View>
     </View>

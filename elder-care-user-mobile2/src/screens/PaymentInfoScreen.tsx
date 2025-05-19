@@ -42,39 +42,58 @@ const PaymentInfoScreen: React.FC = () => {
     ? sortedTransactions
     : sortedTransactions.slice(0, 5);
 
-  const renderTransaction = ({ item }: { item: Transaction }) => {
-    const isTopup = item.type === "TOP_UP";
-    return (
-      <View style={styles.transactionCard}>
-        <View style={styles.transactionRow}>
-          <Text style={styles.transactionType}>
-            {isTopup ? "Nạp tiền" : "Thanh toán"}
-          </Text>
-          <Text
-            style={[
-              styles.transactionAmount,
-              { color: isTopup ? "#2CB742" : "#FF6B6B" },
-            ]}
-          >
-            {isTopup ? "+" : "-"} {item.amount.toLocaleString("vi-VN")}đ
+    const renderTransaction = ({ item }: { item: Transaction }) => {
+      let label = "";
+      let color = "";
+      let sign = "";
+
+      switch (item.type) {
+        case "PAYMENT":
+          label = "Thanh toán";
+          color = "#FF6B6B"; // đỏ
+          sign = "-";
+          break;
+        case "TOP_UP":
+          label = "Nạp tiền";
+          color = "#2CB742"; // xanh
+          sign = "+";
+          break;
+        case "REFUND":
+          label = "Hoàn tiền";
+          color = "#2CB742"; // xanh
+          sign = "+";
+          break;
+        default:
+          label = item.type;
+          color = "#000";
+          sign = "";
+          break;
+      }
+
+      return (
+        <View style={styles.transactionCard}>
+          <View style={styles.transactionRow}>
+            <Text style={styles.transactionType}>{label}</Text>
+            <Text style={[styles.transactionAmount, { color }]}>
+              {sign} {item.amount.toLocaleString("vi-VN")}đ
+            </Text>
+          </View>
+          <View style={styles.transactionRow}>
+            <Text
+              style={styles.transactionDesc}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {item.description}
+            </Text>
+            <Text style={styles.transactionStatus}>{item.status}</Text>
+          </View>
+          <Text style={styles.transactionTime}>
+            {new Date(item.date).toLocaleString("vi-VN")}
           </Text>
         </View>
-        <View style={styles.transactionRow}>
-          <Text
-            style={styles.transactionDesc}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {item.description}
-          </Text>
-          <Text style={styles.transactionStatus}>{item.status}</Text>
-        </View>
-        <Text style={styles.transactionTime}>
-          {new Date(item.date).toLocaleString("vi-VN")}
-        </Text>
-      </View>
-    );
-  };
+      );
+    };
 
   return (
     <View style={styles.container}>

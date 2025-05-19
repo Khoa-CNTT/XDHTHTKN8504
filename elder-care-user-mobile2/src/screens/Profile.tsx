@@ -1,4 +1,3 @@
-// Profile.tsx
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -17,7 +16,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import useAuthStore from '../stores/authStore';
 import type User from '../types/auth';
 import * as ImagePicker from 'expo-image-picker';
-import { uploadAvatar } from '../api/uploadService'; // Đảm bảo đường dẫn này đúng
+import { uploadAvatar } from '../api/uploadService';
 
 type RootStackParamList = {
   Login: undefined;
@@ -72,7 +71,7 @@ const menuItems: MenuItem[] = [
 const Profile: React.FC = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigation = useNavigation<NavigationProp>();
-  const { logout, user, updateUser } = useAuthStore(); // Lấy hàm updateUser từ store
+  const { logout, user, updateUser } = useAuthStore();
   const [avatarSource, setAvatarSource] = useState<string | ReturnType<typeof require> | null>(
     user?.avatarUrl || require('../asset/img/hinh1.png')
   );
@@ -114,6 +113,7 @@ const Profile: React.FC = () => {
     }
   };
 
+  // Sửa lại hàm đăng xuất: xóa token, user khỏi store và chuyển về Login
   const handleLogout = async () => {
     setShowLogoutModal(false);
     await logout();
@@ -141,23 +141,17 @@ const Profile: React.FC = () => {
   const renderIcon = (id: string) => {
     switch (id) {
       case 'notifications':
-        return <Ionicons name="notifications-outline" size={20} color="#000
-        " />;
+        return <Ionicons name="notifications-outline" size={20} color="#000" />;
       case 'profile':
-        return <Ionicons name="person-circle-outline" size={20} color="#000
-        " />;
+        return <Ionicons name="person-circle-outline" size={20} color="#000" />;
       case 'help':
-        return <Ionicons name="help-circle-outline" size={20} color="#000
-        " />;
+        return <Ionicons name="help-circle-outline" size={20} color="#000" />;
       case 'terms':
-        return <Ionicons name="shield-outline" size={20} color="#000
-        " />;
+        return <Ionicons name="shield-outline" size={20} color="#000" />;
       case 'payment':
-        return <Ionicons name="home-outline" size={20} color="#000
-        " />;
+        return <Ionicons name="home-outline" size={20} color="#000" />;
       case 'logout':
-        return <Ionicons name="log-out-outline" size={20} color="#000
-        " />;
+        return <Ionicons name="log-out-outline" size={20} color="#000" />;
       default:
         return null;
     }
@@ -195,8 +189,7 @@ const Profile: React.FC = () => {
                 {renderIcon(item.id)}
                 <Text style={styles.menuItemText}>{item.title}</Text>
               </View>
-              <Ionicons name={item.icon} size={20} color="#000
-              " />
+              <Ionicons name={item.icon} size={20} color="#000" />
             </TouchableOpacity>
           ))}
         </View>
@@ -250,7 +243,6 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     color: '#000',
     marginTop: 40,
-    // marginBottom: 32,
   },
   profileSection: {
     alignItems: 'center',
