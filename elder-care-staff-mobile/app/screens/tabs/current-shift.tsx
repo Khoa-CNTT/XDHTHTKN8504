@@ -155,7 +155,7 @@ const ShiftWorkScreen = () => {
         <View style={styles.arrivalInfo}>
           <View style={styles.userInfo}>
             <Image
-              source={{ uri: "https://via.placeholder.com/40" }}
+              source={ require("../../../assets/images/avatar.jpg")}
               style={styles.avatar}
             />
             <View>

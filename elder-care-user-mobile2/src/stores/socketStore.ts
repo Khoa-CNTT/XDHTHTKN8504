@@ -5,7 +5,9 @@ import { useModalStore } from "./modalStore";
 import { useWalletStore } from "./WalletStore";
 import { useChatStore } from "./chatStore";
 import "react-native-get-random-values";
-import { v4 as uuidv4 } from "uuid"; 
+import { v4 as uuidv4 } from "uuid";
+import * as Notifications from "expo-notifications";
+import { log } from "../utils/logger";
 
 
 const getStatusLabel = (status: string) => {
@@ -97,6 +99,31 @@ export const useSocketStore = create<SocketStore>((set, get) => {
         autoHideDuration: 2000,
       });
     });
+    socket.on("refundWallet", async (data) => {
+      log("Nhận thông báo hủy tuên")
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "💰 Ví đã được hoàn tiền",
+          body: data.message,
+          data: data, // có thể truyền thêm dữ liệu
+        },
+        trigger: null, // Phát ngay lập tức
+      });
+      fetchWallet();
+    });
+    socket.on("BookingSuccessed", async(data) =>{
+      log("Nhận thông báo đặt lịch thành công")
+      const {title, message} = data;
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: title,
+          body: message,
+          data: data,
+        },
+        trigger: null,
+      });
+      fetchWallet();
+    })
 
     socket.on("receive-message", (data: {
       id: string;
