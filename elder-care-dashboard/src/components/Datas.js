@@ -98,6 +98,11 @@ export const MenuDatas = [
     path: "/services",
     icon: MdOutlineInventory2,
   },
+  {
+    title: "Review",
+    path: "/review",
+    icon: MdOutlineInventory2,
+  },
   // {
   //   title: "Medicine",
   //   path: "/medicine",
@@ -1339,3 +1344,67 @@ export const receptionsData = [
     title: "Nuser.",
   },
 ];
+
+export const reviewsData = {
+  totalReviews: 300,
+  growthPercentage: 21,
+  averageRating: 4.8,
+  dateRange: "March 2021 - February 2022",
+  ratingDistribution: [
+    { stars: 5, count: 260 },
+    { stars: 4, count: 32 },
+    { stars: 3, count: 5 },
+    { stars: 2, count: 3 },
+    { stars: 1, count: 0 }
+  ],
+  reviews: [
+    {
+      id: 1,
+      name: "Towhidur Rahman",
+      avatarUrl: "/api/placeholder/50/50",
+      totalSpent: 200,
+      totalReviews: 14,
+      rating: 5,
+      date: "24-10-2022",
+      comment: "My first and only mala ordered on Etsy, and I'm beyond delighted! I requested a custom mala based on two stones I was called to invite together in this kind of creation. The fun and genuine joy I invite together in this kind of creation.",
+      postscript: "The fun and genuine joy.",
+      liked: true
+    },
+    {
+      id: 2,
+      name: "Towhidur Rahman",
+      avatarUrl: "/api/placeholder/50/50",
+      totalSpent: 200,
+      totalReviews: 14,
+      rating: 3,
+      date: "24-10-2022",
+      comment: "My first and only mala ordered on Etsy, and I'm beyond delighted! I requested a custom mala based on two stones I was called to invite together in this kind of creation. The fun and genuine joy I invite together in this kind of creation.",
+      postscript: "The fun and genuine joy.",
+      liked: false
+    },
+    {
+      id: 3,
+      name: "Sarah Johnson",
+      avatarUrl: "/api/placeholder/50/50",
+      totalSpent: 350,
+      totalReviews: 8,
+      rating: 4,
+      date: "15-10-2022",
+      comment: "I love my new mala! The craftsmanship is exceptional and the stones are exactly what I was looking for. Shipping was fast and the packaging was beautiful.",
+      postscript: "Will definitely order again!",
+      liked: false
+    },
+    {
+      id: 4,
+      name: "Michael Chen",
+      avatarUrl: "/api/placeholder/50/50",
+      totalSpent: 175,
+      totalReviews: 3,
+      rating: 5,
+      date: "09-10-2022",
+      comment: "This is my second mala from this shop and I'm just as impressed as the first time. The energy of these stones is amazing and the quality is outstanding.",
+      postscript: "Highly recommended for meditation practitioners.",
+      liked: true
+    }
+  ]
+};
