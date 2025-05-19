@@ -18,7 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 type RootStackParamList = {
     ProfileDetails: { profileId: string };
     AddCareRecipient: undefined;
-    EditCareRecipient: { profileId: string }; // Thêm màn hình EditCareRecipient
+    EditCareRecipient: { profileId: string };
     AddProfileScreen: undefined;
 };
 
@@ -31,7 +31,7 @@ const ProfileListScreen: React.FC = () => {
         isLoading,
         error,
         removeProfile,
-        getProfileById, // Import getProfileById
+        getProfileById,
     } = useProfileStore();
     const navigation = useNavigation<NavigationProp>();
 
@@ -119,7 +119,7 @@ const ProfileListScreen: React.FC = () => {
                 >
                     <Ionicons name="arrow-back" size={24} color="#333" />
                 </TouchableOpacity>
-                <Text style={styles.title}>Danh sách Profiles</Text>
+                <Text style={styles.title}>Danh sách hồ sơ</Text>
             </View>
 
             <FlatList
@@ -127,7 +127,10 @@ const ProfileListScreen: React.FC = () => {
                 renderItem={renderItem}
                 keyExtractor={(item) => item._id}
                 ListEmptyComponent={
-                    <Text style={styles.centered}>Không có profile nào.</Text>
+                    <View style={styles.emptyContainer}>
+                        <Feather name="user-x" size={48} color="#bdbdbd" style={{ marginBottom: 12 }} />
+                        <Text style={styles.emptyText}>Không có hồ sơ nào.</Text>
+                    </View>
                 }
                 ItemSeparatorComponent={() => <View style={styles.separator} />}
             />
@@ -137,7 +140,7 @@ const ProfileListScreen: React.FC = () => {
                     style={styles.addRecipientButton}
                     onPress={() => navigation.navigate("AddProfileScreen")}
                 >
-                    <Text style={styles.addRecipientText}>Thêm Care Recipient</Text>
+                    <Text style={styles.addRecipientText}>Thêm hồ sơ mới</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -157,11 +160,13 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     title: {
+        flex: 1,
         fontSize: 20,
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: 10,
-        color: '#black',
+        color: '#000',
+    
     },
     listItem: {
         flexDirection: "row",
@@ -221,6 +226,23 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 16,
         fontWeight: "bold",
+    },
+    emptyContainer: {
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#f6f8fa",
+        borderRadius: 16,
+        margin: 32,
+        paddingVertical: 40,
+        paddingHorizontal: 16,
+        borderWidth: 1,
+        borderColor: "#e0e0e0",
+    },
+    emptyText: {
+        color: "#888",
+        fontSize: 18,
+        fontWeight: "500",
+        textAlign: "center",
     },
 });
 
