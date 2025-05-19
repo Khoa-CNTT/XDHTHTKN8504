@@ -13,6 +13,11 @@ const invoiceSchema = new Schema({
         ref: "Booking",
         required: true,
     },
+    staffId: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
     totalAmount: {
         type: Number,
         required: true,

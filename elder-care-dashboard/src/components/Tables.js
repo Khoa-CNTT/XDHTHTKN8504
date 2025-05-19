@@ -93,10 +93,10 @@ export function Transactiontable({ data, action, functions }) {
               <td className={tdclass}>
                 <span
                   className={`py-1 px-4 ${status === "success"
-                      ? "bg-subMain text-subMain"
-                      : status === "pending"
-                        ? "bg-orange-500 text-orange-500"
-                        : status === "fail" && "bg-red-600 text-red-600"
+                    ? "bg-subMain text-subMain"
+                    : status === "pending"
+                      ? "bg-orange-500 text-orange-500"
+                      : status === "fail" && "bg-red-600 text-red-600"
                     } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {status === "success"
@@ -254,8 +254,8 @@ export function MedicineTable({ data, onEdit }) {
             <td className={tdclass}>
               <span
                 className={`text-xs font-medium ${item?.status === "Out of stock"
-                    ? "text-red-600"
-                    : "text-green-600"
+                  ? "text-red-600"
+                  : "text-green-600"
                   }`}
               >
                 {item?.status === "Out of stock" ? "Hết hàng" : "Còn hàng"}
@@ -298,12 +298,14 @@ export function ServiceTable({ data, onEdit, onDelete }) {
           const serviceDate = item?.createdAt
             ? new Date(item.createdAt).toLocaleDateString("vi-VN")
             : "Không rõ";
-          const servicePrice = item?.price || "Không rõ";
+          const servicePrice = item.price
+            ? `${item.price.toLocaleString("vi")} VND`
+            : "Null";
           const isActive = item?.isActive;
           const serviceStatus = isActive === true ? "Đã duyệt" : "Chưa duyệt";
           const statusColor =
             isActive === true ? "text-green-600" : "text-red-600";
-          const imageUrl = item?.imgUrl || "https://via.placeholder.com/150";
+          const imageUrl = item?.imgUrl || "https://placehold.co/400";
 
           return (
             <tr
@@ -442,8 +444,8 @@ export function PatientTable({ data, functions, used }) {
               <td className={tdclasse}>
                 <span
                   className={`py-1 px-4 ${gender === "Male"
-                      ? "bg-subMain text-subMain"
-                      : "bg-orange-500 text-orange-500"
+                    ? "bg-subMain text-subMain"
+                    : "bg-orange-500 text-orange-500"
                     } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {gender === "Male" ? "Nam" : "Nữ"}
@@ -611,7 +613,7 @@ export function BookingTable({ data, functions, doctor }) {
           <th className={thclass}>Ngày kết thúc</th>
           <th className={thclass}>Dịch vụ</th>
           <th className={thclass}>Trạng thái</th>
-          {/* <th className={thclass}>Hành Động</th> */}
+          <th className={thclass}>Hành Động</th>
         </tr>
       </thead>
       <tbody>
@@ -656,23 +658,29 @@ export function BookingTable({ data, functions, doctor }) {
               <td className={tdclass}>
                 <span
                   className={`py-1 px-4 ${item.status === "completed"
-                      ? "bg-green-500 text-green-500"
-                      : item.status === "accepted"
-                        ? "bg-orange-500 text-orange-500"
-                        : item.status === "pending"
-                          ? "bg-red-600 text-red-600"
-                          : item.status === "paid"
-                            ? "bg-green-500 text-green-500"
-                            : item.status === "cancelled" &&
-                            "bg-gray-500 text-gray-500"
+                    ? "bg-green-500 text-green-500"
+                    : item.status === "accepted"
+                      ? "bg-orange-500 text-orange-500"
+                      : item.status === "pending"
+                        ? "bg-red-600 text-red-600"
+                        : item.status === "paid"
+                          ? "bg-green-500 text-green-500"
+                          : item.status === "cancelled" &&
+                          "bg-gray-500 text-gray-500"
                     } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {statusText}
                 </span>
               </td>
 
-              {/* <td className={tdclass}>
-                  <button
+              <td className={tdclass}>
+                <button
+                  onClick={() => functions.preview(item._id)}
+                  className="text-green-600 hover:text-green-800 flex items-center gap-1"
+                >
+                  <FiEye /> Xem
+                </button>
+                {/* <button
                     onClick={() => {
                       toast("ddd")
                     }}
@@ -695,8 +703,8 @@ export function BookingTable({ data, functions, doctor }) {
                     Xoá
                   </button>
                 <div className="flex gap-2">
-                </div>
-              </td> */}
+                </div> */}
+              </td>
             </tr>
           );
         })}
@@ -762,22 +770,22 @@ export function AppointmentTable({ data, functions, doctor }) {
               <td className={tdclass}>
                 <span
                   className={`py-1 px-4 ${item.status === "scheduled"
-                      ? "bg-subMain text-subMain"
-                      : item.status === "waiting_for_nurse"
-                        ? "bg-orange-500 text-orange-500"
-                        : item.status === "waiting_for_client"
+                    ? "bg-subMain text-subMain"
+                    : item.status === "waiting_for_nurse"
+                      ? "bg-orange-500 text-orange-500"
+                      : item.status === "waiting_for_client"
+                        ? "bg-subMain text-subMain"
+                        : item.status === "on_the_way"
                           ? "bg-subMain text-subMain"
-                          : item.status === "on_the_way"
+                          : item.status === "check_in"
                             ? "bg-subMain text-subMain"
-                            : item.status === "check_in"
+                            : item.status === "in_progress"
                               ? "bg-subMain text-subMain"
-                              : item.status === "in_progress"
+                              : item.status === "check_out"
                                 ? "bg-subMain text-subMain"
-                                : item.status === "check_out"
+                                : item.status === "completed"
                                   ? "bg-subMain text-subMain"
-                                  : item.status === "completed"
-                                    ? "bg-subMain text-subMain"
-                                    : item.status === "canceled" && "bg-red-600 text-red-600"
+                                  : item.status === "canceled" && "bg-red-600 text-red-600"
                     } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {item.status === "scheduled"
@@ -891,15 +899,15 @@ export function BookingTable1({ data = [], functions, doctor }) {
               <td className={tdclass}>
                 <span
                   className={`py-1 px-4 ${item.status === "completed"
-                      ? "bg-green-500 text-green-500"
-                      : item.status === "accepted"
-                        ? "bg-orange-500 text-orange-500"
-                        : item.status === "pending"
-                          ? "bg-red-600 text-red-600"
-                          : item.status === "paid"
-                            ? "bg-green-500 text-green-500"
-                            : item.status === "cancelled" &&
-                            "bg-gray-500 text-gray-500"
+                    ? "bg-green-500 text-green-500"
+                    : item.status === "accepted"
+                      ? "bg-orange-500 text-orange-500"
+                      : item.status === "pending"
+                        ? "bg-red-600 text-red-600"
+                        : item.status === "paid"
+                          ? "bg-green-500 text-green-500"
+                          : item.status === "cancelled" &&
+                          "bg-gray-500 text-gray-500"
                     } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {statusText}
@@ -970,10 +978,10 @@ export function PaymentTable({ data, functions, doctor }) {
               <td className={tdclass}>
                 <span
                   className={`py-1 px-4 ${status === "success"
-                      ? "bg-subMain text-subMain"
-                      : status === "Pending"
-                        ? "bg-orange-500 text-orange-500"
-                        : status === "Cancel" && "bg-red-600 text-red-600"
+                    ? "bg-subMain text-subMain"
+                    : status === "Pending"
+                      ? "bg-orange-500 text-orange-500"
+                      : status === "Cancel" && "bg-red-600 text-red-600"
                     } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {status === "success"

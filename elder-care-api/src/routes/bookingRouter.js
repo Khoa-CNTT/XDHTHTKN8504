@@ -159,4 +159,9 @@ router.post(
   bookingController.cancelBookingForUser
 );
 
+router.get(
+    '/get-booking-detail/:bookingId',
+    bookingController.getBookingDetail
+)
+
 export default router
