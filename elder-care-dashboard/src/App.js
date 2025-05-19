@@ -37,6 +37,7 @@ import Chat from "./screens/Chats/Chat";
 import Booking from "./screens/Booking";
 import previewBooking from "./screens/previewBooking";
 import RequireAuth from "./components/RequireAuth";
+import Review from "./screens/Review";
 function App() {
   Aos.init();
 
@@ -94,6 +95,7 @@ function App() {
                     path="/bookings/preview/:_id"
                     element={<previewBooking />} 
                   />
+                  <Route path="/review" element={<Review />} />
                   <Route path="/chat" element={<Chat />} />
                   <Route path="/services" element={<Services />} />
                   <Route path="/settings" element={<Settings />} />
