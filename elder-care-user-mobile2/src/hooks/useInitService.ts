@@ -4,6 +4,7 @@ import { useSocketStore } from "../stores/socketStore";
 import initData from "../utils/initData";
 import useScheduleStore from "../stores/scheduleStore";
 import { loadAllSounds } from "../utils/soundService";
+import { registerForPushNotificationsAsync } from "../utils/notificationService"
 
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
@@ -17,6 +18,10 @@ const useInitService = () => {
   // Load âm thanh thông báo
   useEffect(() => {
     loadAllSounds();
+  }, []);
+
+  useEffect(() => {
+    registerForPushNotificationsAsync();
   }, []);
 
   // Phục hồi session từ AsyncStorage

@@ -91,10 +91,9 @@ export default function BookAService() {
       timeSlot: { start: bookingPreview.timeSlot.start },
       notes: bookingPreview.note,
     };
-    log("request gửi booking", body)
     try {
       const result = await createBookingByPackage(body);
-      navigation.goBack();
+      navigation.navigate('MyBookings');
     } catch (error) {
       log("Lỗi khi tạo booking", error);
     }

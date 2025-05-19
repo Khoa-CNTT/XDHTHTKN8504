@@ -17,48 +17,51 @@ interface BookingState {
 }
 
 export const useBookingStore = create<BookingState>((set, get) => ({
+  bookings: [],
+  filteredBookings: [],
+  selectedBooking: null,
+  loading: false,
+  error: null,
+  selectedStatus: "accepted", // Khởi tạo trạng thái lọc là 'accepted'
 
-    bookings: [],
-    filteredBookings: [],
-    selectedBooking: null,
-    loading: false,
-    error: null,
-    selectedStatus: 'accepted', // Khởi tạo trạng thái lọc là 'accepted'
+  fetchBookings: async () => {
+    set({ loading: true, error: null });
 
-    fetchBookings: async () => {
-        set({ loading: true, error: null });
+    try {
+      const bookings = await getBookings();
+      set({ bookings, loading: false });
+      get().filterByStatus(get().selectedStatus); // Lọc ngay sau khi fetch
+    } catch (err: any) {
+      set({
+        error: err?.message || "Lỗi khi tải danh sách lịch đặt.",
+        loading: false,
+      });
+    }
+  },
 
-        try {
-            const bookings = await getBookings();
-            set({ bookings, loading: false });
-            get().filterByStatus(get().selectedStatus); // Lọc ngay sau khi fetch
-        } catch (err: any) {
-            set({
-                error: err?.message || "Lỗi khi tải danh sách lịch đặt.",
-                loading: false,
-            });
-        }
-    },
+  filterByStatus: (status: BookingStatus) => {
+    const allBookings = get().bookings;
+    if (status === "accepted") {
+      set({
+        filteredBookings: allBookings.filter(
+          (b) => b.status === "accepted" || b.status === "pending"
+        ),
+      });
+    } else {
+      set({
+        filteredBookings: allBookings.filter((b) => b.status === status),
+      });
+    }
+  },
 
-    filterByStatus: (status: BookingStatus | null) => {
-        set({ selectedStatus: status }); // Cập nhật trạng thái lọc khi lọc
-        const allBookings = get().bookings;
-        if (!status) {
-            set({ filteredBookings: allBookings });
-        } else {
-            const filtered = allBookings.filter((b) => b.status === status);
-            set({ filteredBookings: filtered });
-        }
-    },
+  getBookingById: (id: string) => {
+    return get().bookings.find((b) => b._id === id);
+  },
 
-    getBookingById: (id: string) => {
-        return get().bookings.find((b) => b._id === id);
-    },
-
-    setSelectedStatus: (status: BookingStatus | null) => {
-        set({ selectedStatus: status });
-        get().filterByStatus(status); // Lọc lại khi trạng thái lọc thay đổi
-    },
+  setSelectedStatus: (status: BookingStatus | null) => {
+    set({ selectedStatus: status });
+    get().filterByStatus(status); // Lọc lại khi trạng thái lọc thay đổi
+  },
 }));
 
 //  bookings: [],
