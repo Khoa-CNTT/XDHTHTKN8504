@@ -47,7 +47,7 @@ const ServicePackage: React.FC<{ packageData: Package; onPackagePress: (pkg: Pac
 
     const handlePress = () => {
         setIsExpanded(!isExpanded);
-        onPackagePress(packageData); 
+        onPackagePress(packageData);
     };
 
     return (
@@ -102,10 +102,15 @@ const ServiceScreen: React.FC = () => {
     const packagesFromStore = getPackageByServiceId(serviceId);
     const [expandedPackageId, setExpandedPackageId] = useState<string | null>(null);
 
+    // Sửa avatar lấy từ imgUrl nếu có, nếu không lấy theo role
     const service = {
         name: serviceFromStore?.name || "Tên dịch vụ",
         description: serviceFromStore?.description || "Mô tả dịch vụ",
-        avatar: require("../asset/img/hinh3.jpeg"),
+        avatar: serviceFromStore?.imgUrl
+            ? { uri: serviceFromStore.imgUrl }
+            : serviceFromStore?.role === "doctor"
+                ? require("../asset/img/DoctorAvatar.jpg")
+                : require("../asset/img/nurse_avatar.png"),
         patients: serviceFromStore?.price ? `${serviceFromStore.price.toLocaleString()}VNĐ` : " Chưa cập nhậtnhật",
         experience: "23",
         rating: 5,
@@ -157,7 +162,9 @@ const ServiceScreen: React.FC = () => {
                             <Briefcase color="#fff" size={18} />
                         </View>
                         <Text style={styles.statNumber}>{service.experience}</Text>
-                        <Text style={styles.statLabel}>Điều dưỡng</Text>
+                        <Text style={styles.statLabel}>
+                            {service.role === "doctor" ? "Bác sĩ" : "Điều dưỡng"}
+                        </Text>
                     </View>
                     {/* <View style={styles.statItem}>
                         <View style={styles.statIcon}>
@@ -341,7 +348,7 @@ const styles = StyleSheet.create({
     packageCard: {
         padding: 16,
         marginBottom: 12,
-        borderBottomWidth:1,
+        borderBottomWidth: 1,
         borderColor: '#ddd',
     },
     packageName: {
