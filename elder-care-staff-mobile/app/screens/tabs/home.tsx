@@ -89,19 +89,19 @@ const handleToggleAvailability = async (newValue: boolean) => {
           color="#5cb85c"
         />
         <IncomeCard
-          value={totalSalary}
+          value={5}
           label="Đơn đặt lịch"
           icon={<MaterialIcons name="attach-money" size={24} color="#5cb85c" />}
           color="#5cb85c"
         />
         <IncomeCard
-          value={totalSalary}
+          value={20}
           label="Ca làm việc"
           icon={<MaterialIcons name="attach-money" size={24} color="#5cb85c" />}
           color="#5cb85c"
         />
         <IncomeCard
-          value={totalSalary}
+          value={2}
           label="Bị hủy"
           icon={<MaterialIcons name="attach-money" size={24} color="#5cb85c" />}
           color="#5cb85c"
