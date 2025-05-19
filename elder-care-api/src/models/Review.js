@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 
 const ReviewSchema = new mongoose.Schema({
-  booking: { 
+  bookingId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Booking',
     required: true
