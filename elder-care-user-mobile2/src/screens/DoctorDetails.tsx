@@ -1,49 +1,47 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../navigation/navigation';
-// import { useFavorites } from '../context/FavoritesContext';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
-type DoctorDetailsProps = {
-  route: RouteProp<RootStackParamList, 'DoctorDetails'>;
-  navigation: StackNavigationProp<RootStackParamList>;
-};
-
-const DoctorDetails: React.FC<DoctorDetailsProps> = ({ route, navigation }) => {
-  const { doctor } = route.params;
-  // const { isFavorite, addFavorite, removeFavorite } = useFavorites();
-
-  // const toggleFavorite = () => {
-  //   if (isFavorite(doctor.id)) {
-  //     removeFavorite(doctor.id);
-  //   } else {
-  //     addFavorite(doctor);
-  //   }
-  // };
+const DoctorDetails: React.FC = () => {
+  const doctor = {
+    id: "1",
+    name: "Luu Nguyen Van",
+    specialty: "Doctor",
+    clinic: "Luu.nguyenvan2511@gmail.com",
+    image: require("../asset/img/hinh1.png"),
+    rating: 4.5,
+    reviews: 120,
+  };
 
   const stats = [
-    { value: '2,000+', label: 'patients' },
-    { value: '10+', label: 'experience' },
-    { value: doctor.rating, label: 'rating' },
-    { value: doctor.reviews, label: 'reviews' },
+    { value: "20+", label: "Khách hàng" },
+    { value: "10+", label: "Kinh nghiệm" },
+    { value: doctor.rating.toString(), label: "Sao" },
+    { value: doctor.reviews.toString(), label: "Đánh giá" },
   ];
 
+  const handleGoBack = () => console.log("Back button pressed");
+  const handleBookAppointment = () =>
+    console.log("Book Appointment pressed for doctor:", doctor);
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 32 }}
+    >
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#2E3A59" />
+        <TouchableOpacity onPress={handleGoBack} activeOpacity={0.7}>
+          <Ionicons name="arrow-back" size={26} color="#2E3A59" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Doctor Details</Text>
-        {/* <TouchableOpacity onPress={toggleFavorite}>
-          <Ionicons 
-            name={isFavorite(doctor.id) ? "heart" : "heart-outline"} 
-            size={24} 
-            color={isFavorite(doctor.id) ? "#FF4B4B" : "#2E3A59"} 
-          />
-        </TouchableOpacity> */}
+        <Text style={styles.headerTitle}>Thông tin nhân viên y tế</Text>
+        <View style={{ width: 26 }} />
       </View>
 
       <View style={styles.doctorProfile}>
@@ -63,58 +61,56 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ route, navigation }) => {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>About me</Text>
+        <Text style={styles.sectionTitle}>Giới thiệu</Text>
         <Text style={styles.aboutText}>
-          {doctor.name} is a dedicated {doctor.specialty.toLowerCase()}, brings a wealth of experience to {doctor.clinic}.
-          <Text style={styles.viewMore}> view more</Text>
+          {doctor.name} là một {doctor.specialty.toLowerCase()} tận tâm, giàu
+          kinh nghiệm làm việc tại {doctor.clinic}.
+          <Text style={styles.viewMore}> xem thêm</Text>
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Working Time</Text>
-        <Text style={styles.workingTime}>Monday-Friday, 08:00 AM-18:00 PM</Text>
-      </View>
-
-      <View style={styles.section}>
         <View style={styles.reviewHeader}>
-          <Text style={styles.sectionTitle}>Reviews</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeAll}>See All</Text>
+          <Text style={styles.sectionTitle}>Đánh giá</Text>
+          <TouchableOpacity
+            onPress={() => console.log("See all reviews pressed")}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.seeAll}>Xem tất cả</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.reviewItem}>
-          <Image 
-            source={require('../asset/img/hinh1.png')} 
-            style={styles.reviewerImage} 
+          <Image
+            source={require("../asset/img/hinh1.png")}
+            style={styles.reviewerImage}
           />
           <View style={styles.reviewContent}>
-            <Text style={styles.reviewerName}>Emily Anderson</Text>
+            <Text style={styles.reviewerName}>Lê Đình Long</Text>
             <View style={styles.ratingStars}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <Ionicons 
-                  key={star} 
-                  name="star" 
-                  size={16} 
-                  color="#FFD700" 
+                <Ionicons
+                  key={star}
+                  name="star"
+                  size={18}
+                  color="#FFD700"
                   style={styles.star}
                 />
               ))}
             </View>
             <Text style={styles.reviewText}>
-              Dr. Patel is a true professional who genuinely cares about his patients. I highly recommend Dr. Patel to
+              Dr. Lưu là một chuyên gia tận tâm luôn quan tâm đến bệnh nhân
+              của mình. Tôi rất khuyên bạn chọn bác sĩ này.
             </Text>
           </View>
         </View>
       </View>
 
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.bookButton}
-        onPress={() => {
-          console.log('Navigating to BookAppointment with doctor:', doctor);
-          navigation.navigate('BookAppointment', { doctor });
-        }}
+        onPress={handleBookAppointment}
+        activeOpacity={0.8}
       >
-        <Text style={styles.bookButtonText}>Book Appointment</Text>
+        <Text style={styles.bookButtonText}>Quay lại</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -123,144 +119,178 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#F9FAFB",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 48,
-    paddingBottom: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 20,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#2E3A59',
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#2E3A59",
   },
   doctorProfile: {
-    alignItems: 'center',
-    paddingVertical: 24,
+    alignItems: "center",
+    paddingVertical: 30,
+    backgroundColor: "#fff",
+    marginHorizontal: 16,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 5,
   },
   doctorImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 16,
-    marginBottom: 16,
+    width: 110,
+    height: 110,
+    borderRadius: 60,
+    marginBottom: 20,
+    borderWidth: 3,
+    borderColor: "#2E3A59",
   },
   doctorName: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#2E3A59',
-    marginBottom: 8,
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#2E3A59",
+    marginBottom: 6,
   },
   specialty: {
     fontSize: 16,
-    color: '#8F9BB3',
+    color: "#6B7280",
     marginBottom: 4,
   },
   clinic: {
-    fontSize: 14,
-    color: '#8F9BB3',
+    fontSize: 15,
+    color: "#6B7280",
   },
   statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: "#EFF3F6",
+    marginHorizontal: 20,
     paddingVertical: 24,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#EDF1F7',
-    marginHorizontal: 16,
+    borderRadius: 16,
+    marginTop: 24,
+    marginBottom: 32,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
   },
   statItem: {
-    alignItems: 'center',
+    alignItems: "center",
+    flex: 1,
   },
   statValue: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#2E3A59',
-    marginBottom: 4,
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#2E3A59",
+    marginBottom: 6,
   },
   statLabel: {
     fontSize: 14,
-    color: '#8F9BB3',
+    color: "#9CA3AF",
   },
   section: {
-    padding: 16,
+    paddingHorizontal: 20,
+    marginBottom: 32,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#2E3A59',
-    marginBottom: 12,
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#2E3A59",
+    marginBottom: 16,
   },
   aboutText: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#8F9BB3',
+    fontSize: 15,
+    lineHeight: 24,
+    color: "#6B7280",
   },
   viewMore: {
-    color: '#2E3A59',
-    fontWeight: '500',
-  },
-  workingTime: {
-    fontSize: 14,
-    color: '#8F9BB3',
+    color: "#2563EB",
+    fontWeight: "600",
   },
   reviewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 18,
   },
   seeAll: {
-    fontSize: 14,
-    color: '#2E3A59',
-    fontWeight: '500',
+    fontSize: 15,
+    color: "#2563EB",
+    fontWeight: "600",
   },
   reviewItem: {
-    flexDirection: 'row',
-    marginBottom: 16,
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 14,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
   },
   reviewerImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 16,
   },
   reviewContent: {
     flex: 1,
   },
   reviewerName: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#2E3A59',
-    marginBottom: 4,
+    fontSize: 17,
+    fontWeight: "600",
+    color: "#2E3A59",
+    marginBottom: 6,
   },
   ratingStars: {
-    flexDirection: 'row',
-    marginBottom: 8,
+    flexDirection: "row",
+    marginBottom: 10,
   },
   star: {
-    marginRight: 4,
+    marginRight: 6,
   },
   reviewText: {
-    fontSize: 14,
-    color: '#8F9BB3',
-    lineHeight: 20,
+    fontSize: 15,
+    color: "#6B7280",
+    lineHeight: 22,
   },
   bookButton: {
-    backgroundColor: '#2E3A59',
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
+    backgroundColor: "#28a745",
+    marginHorizontal: 20,
+    paddingVertical: 18,
+    borderRadius: 14,
+    alignItems: "center",
+    shadowColor: "#2563EB",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 5,
   },
   bookButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700",
   },
 });
 
-export default DoctorDetails; 
+export default DoctorDetails;

@@ -5,6 +5,7 @@ import initData from "../utils/initData";
 import useScheduleStore from "../stores/scheduleStore";
 import { loadAllSounds } from "../utils/soundService";
 import { registerForPushNotificationsAsync } from "../utils/notificationService"
+// import { preloadAssetsAsync } from "../utils/preloadAssets";
 
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
@@ -23,6 +24,13 @@ const useInitService = () => {
   useEffect(() => {
     registerForPushNotificationsAsync();
   }, []);
+
+  // useEffect(() => {
+  //   async function loadAssets() {
+  //     await preloadAssetsAsync();
+  //   }
+  //   loadAssets();
+  // }, []);
 
   // Phục hồi session từ AsyncStorage
   useEffect(() => {
