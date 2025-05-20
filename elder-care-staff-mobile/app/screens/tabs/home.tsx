@@ -25,53 +25,58 @@ const Home = () => {
     0
   );
 
-const handleToggleAvailability = async (newValue: boolean) => {
-  const isTurningOn = !isAvailable && newValue; // Chuyển từ tắt sang bật
-  const isTurningOff = isAvailable && !newValue; // Chuyển từ bật sang tắt
+  const handleToggleAvailability = async (newValue: boolean) => {
+    const isTurningOn = !isAvailable && newValue; // Chuyển từ tắt sang bật
+    const isTurningOff = isAvailable && !newValue; // Chuyển từ bật sang tắt
 
-  if (isTurningOn) {
-    // Khi bật trạng thái, yêu cầu người dùng xác nhận
-    showModal(
-      "Xác nhận sẵn sàng đơn đặt lịch",
-      "Bạn sẽ nhận được thông báo khi có đơn đặt lịch mới!",
-      {
-        type: "dialog", // Loại modal là dialog
-        onConfirm: async () => {
-          try {
-            await updateAvailability(newValue); // Gọi API để bật trạng thái
-            if (extraInfo) {
-              const updatedExtraInfo = { ...extraInfo, isAvailable: newValue };
-              await setExtraInfo(updatedExtraInfo); // Cập nhật trạng thái mới
+    if (isTurningOn) {
+      // Khi bật trạng thái, yêu cầu người dùng xác nhận
+      showModal(
+        "Xác nhận sẵn sàng đơn đặt lịch",
+        "Bạn sẽ nhận được thông báo khi có đơn đặt lịch mới!",
+        {
+          type: "dialog", // Loại modal là dialog
+          onConfirm: async () => {
+            try {
+              await updateAvailability(newValue); // Gọi API để bật trạng thái
+              if (extraInfo) {
+                const updatedExtraInfo = {
+                  ...extraInfo,
+                  isAvailable: newValue,
+                };
+                await setExtraInfo(updatedExtraInfo); // Cập nhật trạng thái mới
+              }
+            } catch (error) {
+              console.error("Không thể cập nhật trạng thái:", error);
             }
-          } catch (error) {
-            console.error("Không thể cập nhật trạng thái:", error);
-          }
-        },
-        
-      }
-    );
-  } else if (isTurningOff) {
-    // Khi tắt trạng thái, yêu cầu người dùng xác nhận
-    showModal(
-      "Xác nhận tắt trạng thái sẵn sàng",
-      "Bạn sẽ không nhận được thông báo đơn đặt lịch mới cho tới khi bật lại.",
-      {
-        type: "dialog", // Loại modal là dialog
-        onConfirm: async () => {
-          try {
-            await updateAvailability(newValue); // Gọi API để tắt trạng thái
-            if (extraInfo) {
-              const updatedExtraInfo = { ...extraInfo, isAvailable: newValue };
-              await setExtraInfo(updatedExtraInfo); // Cập nhật trạng thái mới
+          },
+        }
+      );
+    } else if (isTurningOff) {
+      // Khi tắt trạng thái, yêu cầu người dùng xác nhận
+      showModal(
+        "Xác nhận tắt trạng thái sẵn sàng",
+        "Bạn sẽ không nhận được thông báo đơn đặt lịch mới cho tới khi bật lại.",
+        {
+          type: "dialog", // Loại modal là dialog
+          onConfirm: async () => {
+            try {
+              await updateAvailability(newValue); // Gọi API để tắt trạng thái
+              if (extraInfo) {
+                const updatedExtraInfo = {
+                  ...extraInfo,
+                  isAvailable: newValue,
+                };
+                await setExtraInfo(updatedExtraInfo); // Cập nhật trạng thái mới
+              }
+            } catch (error) {
+              console.error("Không thể cập nhật trạng thái:", error);
             }
-          } catch (error) {
-            console.error("Không thể cập nhật trạng thái:", error);
-          }
-        },
-      }
-    );
-  }
-};
+          },
+        }
+      );
+    }
+  };
 
   return (
     <View style={styles.container}>
