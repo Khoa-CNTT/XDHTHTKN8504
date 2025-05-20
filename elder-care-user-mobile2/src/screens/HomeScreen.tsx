@@ -14,11 +14,13 @@ import SearchBox from "../components/SearchBox";
 import Banner from "../components/Banner";
 import Footer from "../components/Footer";
 import { useServicesStore } from "../stores/serviceStore";
+import { Ionicons } from "@expo/vector-icons";
 
 type RootStackParamList = {
   Home: undefined;
   ServiceScreen: { serviceId: string };
   Seach: undefined;
+  Booking: undefined;
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -26,7 +28,7 @@ type NavigationProp = StackNavigationProp<RootStackParamList>;
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { services, fetchServices, isLoading, error } = useServicesStore();
-  const [showAll, setShowAll] = useState(false); // Trạng thái xem tất cả
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     fetchServices();
@@ -63,48 +65,41 @@ const HomeScreen: React.FC = () => {
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Dịch vụ nổi bật</Text>
-        <TouchableOpacity onPress={() => setShowAll(!showAll)}>
-          <Text style={styles.seeAll}>
-            {showAll ? "Thu gọn" : "Xem tất cả"}
-          </Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Booking")}>
+          <Text style={styles.seeAll}>Xem tất cả</Text>
         </TouchableOpacity>
       </View>
 
       <FlatList
-        key={showAll ? "vertical" : "horizontal"} // Bắt buộc render lại khi thay đổi số cột
         data={services}
         keyExtractor={(item) => item._id}
-        horizontal={!showAll}
-        numColumns={showAll ? 1 : undefined}
-        renderItem={({ item, index }) => (
+        numColumns={2}
+        renderItem={({ item }) => (
           <TouchableOpacity
-            style={[
-              styles.serviceItem,
-              showAll
-                ? { marginBottom: 20, width: "100%" }
-                : index % 2 === 0
-                  ? { marginRight: 12 }
-                  : { marginLeft: 12 },
-            ]}
-            onPress={() => {
-              navigation.navigate("ServiceScreen", { serviceId: item._id });
-            }}
-            activeOpacity={0.8}
+            style={styles.serviceCard}
+            onPress={() => navigation.navigate("ServiceScreen", { serviceId: item._id })}
+            activeOpacity={0.85}
           >
-            <View style={styles.imageContainer}>
+            <View style={styles.cardImageWrapper}>
               <Image
-                source={require("../asset/img/hinh2.jpeg")}
-                style={styles.serviceImage}
+                source={item.imgUrl ? { uri: item.imgUrl } : require("../asset/img/hinh2.jpeg")}
+                style={styles.cardImage}
                 resizeMode="cover"
               />
+              <TouchableOpacity style={styles.favoriteBtn}>
+                <Ionicons name="heart-outline" size={20} color="#000" />
+              </TouchableOpacity>
             </View>
-            <Text style={styles.serviceName}>{item.name}</Text>
+            <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
+            <View style={styles.cardRow}>
+              <Ionicons name="star" size={14} color="#FFB800" />
+              <Text style={styles.cardRating}>4.9</Text>
+              <Text style={styles.cardPrice}> {item.price ? `${item.price.toLocaleString("vi-VN")} VNĐ` : ""}</Text>
+            </View>
           </TouchableOpacity>
         )}
-        contentContainerStyle={[styles.listContent, { paddingBottom: 5 }]}
+        contentContainerStyle={styles.gridContent}
         style={{ flex: 1 }}
-        snapToAlignment="center"
-        decelerationRate="fast"
       />
 
       <Footer />
@@ -135,7 +130,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: "red",
+    color: "#000",
   },
   sectionHeader: {
     paddingHorizontal: 20,
@@ -143,60 +138,91 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 10,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 10,
-    color: '#000',
+    color: '#3E2723',
     letterSpacing: -0.5,
-  },
-  listContent: {
-    paddingHorizontal: 16,
-  },
-  serviceItem: {
-    width: 380,
-    backgroundColor: "#F7FFF9",
-    borderRadius: 20,
-    alignItems: "center",
-    elevation: 6,
-    borderColor: "#ecf0f1",
-    borderWidth: 1,
-    overflow: "hidden",
-    marginBottom: 20,
-    alignSelf: "center",
-  },
-  imageContainer: {
-    width: "100%",
-    height: 180,
-    overflow: "hidden",
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  serviceImage: {
-    width: "100%",
-    height: "100%",
-  },
-  serviceName: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "black",
-    textAlign: "center",
-    paddingVertical: 10,
   },
   seeAll: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#2c3e50",
+    color: "#47B33E",
     paddingHorizontal: 10,
     paddingVertical: 8,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    overflow: "hidden",
   },
-  footerContainer: {
-    marginTop: 30,
-    marginBottom: 30,
+  gridContent: {
+    paddingHorizontal: 12,
+    paddingBottom: 80,
+  },
+  serviceCard: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    margin: 8,
+    padding: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    elevation: 3,
+    alignItems: "flex-start",
+    minWidth: 160,
+    maxWidth: "48%",
+  },
+  cardImageWrapper: {
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: 14,
+    overflow: "hidden",
+    marginBottom: 10,
+    position: "relative",
+    backgroundColor: "#43B33f",
+  },
+  cardImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 14,
+  },
+  favoriteBtn: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 4,
+    elevation: 2,
+  },
+  cardTitle: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "#3E2723",
+    marginBottom: 4,
+    marginTop: 2,
+  },
+  cardRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2,
+  },
+  cardRating: {
+    fontSize: 13,
+    color: "#000",
+    marginLeft: 4,
+    marginRight: 8,
+    fontWeight: "600",
+  },
+  cardPrice: {
+    fontSize: 14,
+    color: "#3E2723",
+    fontWeight: "bold",
+    marginLeft: "auto",
   },
 });
 

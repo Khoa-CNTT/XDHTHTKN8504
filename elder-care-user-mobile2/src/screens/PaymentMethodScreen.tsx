@@ -1,4 +1,3 @@
-// PaymentMethodScreen.tsx
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native';
 import { MaterialIcons, FontAwesome5, FontAwesome } from '@expo/vector-icons';
@@ -41,7 +40,7 @@ const PaymentMethodScreen: React.FC = () => {
             <Text style={styles.sectionTitle}>Ví điện tử</Text>
             <TouchableOpacity style={styles.methodCard} onPress={() => handleMethodPress('momo')}>
                 <Image
-                    source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/MoMo_Logo.png' }}
+                    source={require("../asset/img/logo_momo.png")}
                     style={styles.momoLogo}
                 />
                 <Text style={styles.methodText}>Ví điện tử Momo</Text>
@@ -58,9 +57,9 @@ const PaymentMethodScreen: React.FC = () => {
             <Text style={styles.sectionTitle}>Thẻ tín dụng (Visa/MasterCard/JCB)</Text>
             <TouchableOpacity style={styles.methodCard} onPress={() => handleMethodPress('credit')}>
                 <View style={styles.iconRow}>
-                    <FontAwesome name="cc-visa" size={28} color="#1A1F71" style={{ marginRight: 4 }} />
-                    <FontAwesome name="cc-mastercard" size={28} color="#EB001B" style={{ marginRight: 4 }} />
-                    <FontAwesome5 name="cc-jcb" size={28} color="#0070BA" />
+                    <FontAwesome name="cc-visa" size={20} color="#1A1F71" style={{ marginRight: 5 }} />
+                    <FontAwesome name="cc-mastercard" size={20} color="#EB001B" style={{ marginRight: 5 }} />
+                    <FontAwesome5 name="cc-jcb" size={20} color="#0070BA" />
                 </View>
                 <Text style={styles.methodText}>Thẻ tín dụng (Visa/MasterCard/JCB)</Text>
             </TouchableOpacity>
@@ -76,7 +75,7 @@ const PaymentMethodScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff', padding: 16 ,paddingTop: 30,},
+    container: { flex: 1, backgroundColor: '#fff', padding: 16, paddingTop: 30, },
     headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
     headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#222' },
     sectionTitle: { fontWeight: 'bold', fontSize: 15, marginTop: 16, marginBottom: 8 },
