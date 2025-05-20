@@ -12,7 +12,6 @@ export type ScheduleUser = Schedule & {
 
 interface ScheduleStore {
   schedules: ScheduleUser[];
-  // schedule: ScheduleUser;
   loading: boolean;
   error: string | null;
   hasFetched: boolean;
