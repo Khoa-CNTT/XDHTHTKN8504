@@ -1,5 +1,4 @@
 import { Server as SocketIO } from "socket.io";
-import { checkPermissions } from "../controllers/chatController.js";
 import { v4 as uuidv4 } from "uuid";
 
 const userSocketMap = new Map(); // userId => socketId
