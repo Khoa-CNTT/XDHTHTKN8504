@@ -22,6 +22,7 @@ import configureSocket from "./src/config/socketConfig.js";
 import PaymentRouter from "./src/routes/paymentRoutes.js"; 
 import PackageRouter from "./src/routes/packageRoutes.js";
 import WalletRouter from "./src/routes/walletRoutes.js"
+import ReviewRouter from "./src/routes/reviewRoutes.js"
 import http from "http";
 
 const app = express();
@@ -80,6 +81,7 @@ app.use("/api/v1/user", UserRouter);
 app.use("/api/v1/payment", PaymentRouter); 
 app.use("/api/v1/packages", PackageRouter);
 app.use("/api/v1/wallet", WalletRouter);
+app.use("/api/v1/reviews", ReviewRouter)
 
 const port = process.env.SERVER_PORT || 8080;
 const listener = server.listen(port, '0.0.0.0',() => {
