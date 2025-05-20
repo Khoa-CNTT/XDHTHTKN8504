@@ -23,6 +23,7 @@ import PackageRouter from "./src/routes/packageRoutes.js";
 import WalletRouter from "./src/routes/walletRoutes.js"
 import ReviewRouter from "./src/routes/reviewRoutes.js"
 import ChatRouter from "./src/routes/chatRoutes.js"
+import './src/jobs/bookingMonitor.js';  
 import http from "http";
 
 const app = express();
