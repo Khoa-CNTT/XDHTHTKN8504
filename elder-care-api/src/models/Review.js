@@ -1,15 +1,25 @@
 import mongoose from 'mongoose'
 
 const ReviewSchema = new mongoose.Schema({
-  booking: { 
+  scheduleId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Schedule',
+    required: true,
+  },
+  bookingId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Booking',
     required: true
   },
   reviewer: { 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'User',
+    ref: 'Profile',
     required: true
+  },
+  staffId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
   },
   rating: {
     type: Number,

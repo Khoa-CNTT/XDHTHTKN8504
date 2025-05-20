@@ -26,7 +26,7 @@ const scheduleSchema = new mongoose.Schema({
         required: true,
     },
     date: {
-        type: Date, // Định dạng Date để dễ dàng truy vấn và so sánh
+        type: Date,
         required: true,
     },
     timeSlots: [

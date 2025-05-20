@@ -7,6 +7,7 @@ import {
     ActivityIndicator,
     TouchableOpacity,
     Alert,
+    Image,
 } from "react-native";
 import useProfileStore from "../stores/profileStore";
 import { Profile } from "../types/profile";
@@ -67,7 +68,13 @@ const ProfileListScreen: React.FC = () => {
     const renderItem = ({ item }: { item: Profile }) => (
         <View style={styles.listItem}>
             <View style={styles.leftContent}>
-                {item.firstName ? (
+                {item.avartar ? (
+                    <Image
+                        source={{ uri: item.avartar }}
+                        style={styles.avatarContainer}
+                        resizeMode="cover"
+                    />
+                ) : item.firstName ? (
                     <View style={styles.avatarContainer}>
                         <Text style={styles.avatarLetter}>
                             {item.firstName.charAt(0).toUpperCase()}
@@ -166,7 +173,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 10,
         color: '#000',
-    
+
     },
     listItem: {
         flexDirection: "row",

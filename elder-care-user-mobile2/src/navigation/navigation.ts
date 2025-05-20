@@ -7,7 +7,9 @@ export type RootStackParamList = {
   OTPVerification: undefined;
   // Add other screens here
   Home: undefined;
-  DoctorDetails: { doctor: any };
+  DoctorDetails: {
+    participantId: string;
+  };
   BookAppointment: { doctor: any };
   Profile: undefined;
   MyBookings: undefined;

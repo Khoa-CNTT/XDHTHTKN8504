@@ -12,7 +12,7 @@ export default function RatingDistribution({ ratingDistribution }) {
                                             item.stars === 3 ? 'bg-yellow-400' :
                                                 'bg-red-400'
                                     }`}
-                                style={{ width: `${(item.count / 2000) * 100}%` }}
+                                style={{ width: `${(item.count / 300) * 100}%` }}
                             ></div>
                         </div>
                     </div>
