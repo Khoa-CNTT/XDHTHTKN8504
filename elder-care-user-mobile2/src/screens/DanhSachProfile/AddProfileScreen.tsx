@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity,
-    StyleSheet, ScrollView, Image, Alert
+    StyleSheet, Image, Alert, FlatList
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
@@ -156,328 +156,336 @@ const AddProfileScreen: React.FC = () => {
         });
     };
 
-    return (
-        <ScrollView style={styles.container}>
-            {step === 1 && (
-                <View>
-                    <View style={styles.avatarContainer}>
-                        <TouchableOpacity onPress={handleUpload}>
-                            {avatar ? (
-                                <Image source={{ uri: avatar }} style={styles.avatarCircle} />
-                            ) : (
-                                <View style={styles.avatarPlaceholder}>
-                                    <Feather name="user" size={36} color="#fff" />
-                                </View>
-                            )}
-                            <View style={styles.avatarAdd}>
-                                <Feather name="plus" size={18} color="#fff" />
-                            </View>
-                        </TouchableOpacity>
+    // Render form step 1
+    const renderStep1 = () => (
+        <View>
+            <View style={styles.avatarContainer}>
+                <TouchableOpacity onPress={handleUpload}>
+                    {avatar ? (
+                        <Image source={{ uri: avatar }} style={styles.avatarCircle} />
+                    ) : (
+                        <View style={styles.avatarPlaceholder}>
+                            <Feather name="user" size={36} color="#fff" />
+                        </View>
+                    )}
+                    <View style={styles.avatarAdd}>
+                        <Feather name="plus" size={18} color="#fff" />
                     </View>
+                </TouchableOpacity>
+            </View>
 
-                    <Text style={styles.label}>
-                        Họ <Text style={styles.required}>*</Text>
-                    </Text>
-                    <TextInput
-                        style={[styles.input, errors.firstName && styles.inputError]}
-                        placeholder="Nhập họ của bạn"
-                        value={firstName}
-                        onChangeText={setFirstName}
-                    />
-                    {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
+            <Text style={styles.label}>
+                Họ <Text style={styles.required}>*</Text>
+            </Text>
+            <TextInput
+                style={[styles.input, errors.firstName && styles.inputError]}
+                placeholder="Nhập họ của bạn"
+                value={firstName}
+                onChangeText={setFirstName}
+            />
+            {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
 
-                    <Text style={styles.label}>
-                        Tên <Text style={styles.required}>*</Text>
-                    </Text>
-                    <TextInput
-                        style={[styles.input, errors.lastName && styles.inputError]}
-                        placeholder="Nhập tên của bạn"
-                        value={lastName}
-                        onChangeText={setLastName}
-                    />
-                    {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
+            <Text style={styles.label}>
+                Tên <Text style={styles.required}>*</Text>
+            </Text>
+            <TextInput
+                style={[styles.input, errors.lastName && styles.inputError]}
+                placeholder="Nhập tên của bạn"
+                value={lastName}
+                onChangeText={setLastName}
+            />
+            {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
 
-                    <Text style={styles.label}>
-                        Mối quan hệ <Text style={styles.required}>*</Text>
-                    </Text>
-                    <TextInput
-                        style={[styles.input, errors.relationship && styles.inputError]}
-                        placeholder="Bạn có quan hệ gì với chủ tài khoản?"
-                        value={relationship}
-                        onChangeText={setRelationship}
-                    />
-                    {errors.relationship && <Text style={styles.errorText}>{errors.relationship}</Text>}
+            <Text style={styles.label}>
+                Mối quan hệ <Text style={styles.required}>*</Text>
+            </Text>
+            <TextInput
+                style={[styles.input, errors.relationship && styles.inputError]}
+                placeholder="Bạn có quan hệ gì với chủ tài khoản?"
+                value={relationship}
+                onChangeText={setRelationship}
+            />
+            {errors.relationship && <Text style={styles.errorText}>{errors.relationship}</Text>}
 
-                    <Text style={styles.label}>
-                        Ngày sinh <Text style={styles.required}>*</Text>
-                    </Text>
-                    <TouchableOpacity onPress={() => setDatePickerVisibility(true)}>
-                        <TextInput
-                            style={[styles.input, errors.birthDate && styles.inputError]}
-                            placeholder="Chọn ngày/tháng/năm"
-                            value={birthDate}
-                            editable={false}
-                            pointerEvents="none"
-                        />
-                        <DateTimePickerModal
-                            isVisible={isDatePickerVisible}
-                            mode="date"
-                            onConfirm={handleDateConfirm}
-                            onCancel={() => setDatePickerVisibility(false)}
-                            maximumDate={new Date()}
-                        />
-                    </TouchableOpacity>
-                    {errors.birthDate && <Text style={styles.errorText}>{errors.birthDate}</Text>}
+            <Text style={styles.label}>
+                Ngày sinh <Text style={styles.required}>*</Text>
+            </Text>
+            <TouchableOpacity onPress={() => setDatePickerVisibility(true)}>
+                <TextInput
+                    style={[styles.input, errors.birthDate && styles.inputError]}
+                    placeholder="Chọn ngày/tháng/năm"
+                    value={birthDate}
+                    editable={false}
+                    pointerEvents="none"
+                />
+                <DateTimePickerModal
+                    isVisible={isDatePickerVisible}
+                    mode="date"
+                    onConfirm={handleDateConfirm}
+                    onCancel={() => setDatePickerVisibility(false)}
+                    maximumDate={new Date()}
+                />
+            </TouchableOpacity>
+            {errors.birthDate && <Text style={styles.errorText}>{errors.birthDate}</Text>}
 
-                    <Text style={styles.label}>
-                        Giới tính <Text style={styles.required}>*</Text>
-                    </Text>
-                    <View style={styles.genderRow}>
-                        {Object.entries(genderMap).map(([label, value]) => (
-                            <TouchableOpacity
-                                key={value}
-                                style={[
-                                    styles.radioBtn,
-                                    gender === value && styles.radioBtnActive,
-                                ]}
-                                onPress={() => setGender(value)}
-                            >
-                                <View
-                                    style={[
-                                        styles.radioCircle,
-                                        gender === value && styles.radioChecked,
-                                    ]}
-                                />
-                                <Text style={styles.radioLabel}>{label}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                    {errors.gender && <Text style={styles.errorText}>{errors.gender}</Text>}
-
-                    <Text style={styles.label}>Tỉnh/Thành phố</Text>
-                    <TextInput
-                        style={[styles.input, errors.province && styles.inputError]}
-                        placeholder="Nhập tỉnh/thành phố"
-                        value={province}
-                        onChangeText={setProvince}
-                    />
-                    {errors.province && <Text style={styles.errorText}>{errors.province}</Text>}
-
-                    <Text style={styles.label}>Quận/Huyện</Text>
-                    <TextInput
-                        style={[styles.input, errors.district && styles.inputError]}
-                        placeholder="Nhập quận/huyện"
-                        value={district}
-                        onChangeText={setDistrict}
-                    />
-                    {errors.district && <Text style={styles.errorText}>{errors.district}</Text>}
-
-                    <Text style={styles.label}>Địa chỉ</Text>
-                    <TextInput
-                        style={[styles.input, errors.homeAddress && styles.inputError]}
-                        placeholder="Nhập địa chỉ chi tiết"
-                        value={homeAddress}
-                        onChangeText={setHomeAddress}
-                    />
-                    {errors.homeAddress && <Text style={styles.errorText}>{errors.homeAddress}</Text>}
-
-                    <Text style={styles.label}>Số điện thoại</Text>
-                    <TextInput
-                        style={[styles.input, errors.phone && styles.inputError]}
-                        placeholder="Nhập số điện thoại"
-                        keyboardType="phone-pad"
-                        value={phone}
-                        onChangeText={setPhone}
-                    />
-                    {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
-
+            <Text style={styles.label}>
+                Giới tính <Text style={styles.required}>*</Text>
+            </Text>
+            <View style={styles.genderRow}>
+                {Object.entries(genderMap).map(([label, value]) => (
                     <TouchableOpacity
-                        style={styles.nextButton}
-                        onPress={() => {
-                            if (validateStep1()) setStep(2);
-                        }}
+                        key={value}
+                        style={[
+                            styles.radioBtn,
+                            gender === value && styles.radioBtnActive,
+                        ]}
+                        onPress={() => setGender(value)}
                     >
-                        <View style={{ flexDirection: "row", alignItems: "center" }}>
-                            <Text style={styles.nextButtonText}>Tiếp tục</Text>
-                            <Feather
-                                name="arrow-right"
-                                size={20}
-                                color="#fff"
-                                style={{ marginLeft: 8 }}
-                            />
-                        </View>
-                    </TouchableOpacity>
-                </View>
-            )}
-
-            {step === 2 && (
-                <View>
-                    <Text style={styles.label}>
-                        Nhóm máu <Text style={styles.required}>*</Text>
-                    </Text>
-                    <View style={styles.dropdown}>
-                        <Picker selectedValue={bloodGroup} onValueChange={setBloodGroup}>
-                            <Picker.Item label="Chọn nhóm máu" value="" />
-                            {bloodGroups.map((bg) => (
-                                <Picker.Item
-                                    key={bg.value}
-                                    label={bg.label}
-                                    value={bg.value}
-                                />
-                            ))}
-                        </Picker>
-                        <Feather
-                            name="chevron-down"
-                            size={20}
-                            color="#777"
-                            style={styles.dropdownIcon}
+                        <View
+                            style={[
+                                styles.radioCircle,
+                                gender === value && styles.radioChecked,
+                            ]}
                         />
-                    </View>
-                    {errors.bloodGroup && <Text style={styles.errorText}>{errors.bloodGroup}</Text>}
+                        <Text style={styles.radioLabel}>{label}</Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
+            {errors.gender && <Text style={styles.errorText}>{errors.gender}</Text>}
 
-                    <Text style={styles.label}>
-                        Cân nặng (kg) <Text style={styles.required}>*</Text>
-                    </Text>
-                    <TextInput
-                        style={[styles.input, errors.weight && styles.inputError]}
-                        placeholder="Nhập cân nặng"
-                        keyboardType="numeric"
-                        value={weight}
-                        onChangeText={setWeight}
+            <Text style={styles.label}>Tỉnh/Thành phố</Text>
+            <TextInput
+                style={[styles.input, errors.province && styles.inputError]}
+                placeholder="Nhập tỉnh/thành phố"
+                value={province}
+                onChangeText={setProvince}
+            />
+            {errors.province && <Text style={styles.errorText}>{errors.province}</Text>}
+
+            <Text style={styles.label}>Quận/Huyện</Text>
+            <TextInput
+                style={[styles.input, errors.district && styles.inputError]}
+                placeholder="Nhập quận/huyện"
+                value={district}
+                onChangeText={setDistrict}
+            />
+            {errors.district && <Text style={styles.errorText}>{errors.district}</Text>}
+
+            <Text style={styles.label}>Địa chỉ</Text>
+            <TextInput
+                style={[styles.input, errors.homeAddress && styles.inputError]}
+                placeholder="Nhập địa chỉ chi tiết"
+                value={homeAddress}
+                onChangeText={setHomeAddress}
+            />
+            {errors.homeAddress && <Text style={styles.errorText}>{errors.homeAddress}</Text>}
+
+            <Text style={styles.label}>Số điện thoại</Text>
+            <TextInput
+                style={[styles.input, errors.phone && styles.inputError]}
+                placeholder="Nhập số điện thoại"
+                keyboardType="phone-pad"
+                value={phone}
+                onChangeText={setPhone}
+            />
+            {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
+
+            <TouchableOpacity
+                style={styles.nextButton}
+                onPress={() => {
+                    if (validateStep1()) setStep(2);
+                }}
+            >
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text style={styles.nextButtonText}>Tiếp tục</Text>
+                    <Feather
+                        name="arrow-right"
+                        size={20}
+                        color="#fff"
+                        style={{ marginLeft: 8 }}
                     />
-                    {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
+                </View>
+            </TouchableOpacity>
+        </View>
+    );
 
-                    <Text style={styles.label}>
-                        Chiều cao (cm) <Text style={styles.required}>*</Text>
-                    </Text>
-                    <TextInput
-                        style={[styles.input, errors.height && styles.inputError]}
-                        placeholder="Nhập chiều cao"
-                        keyboardType="numeric"
-                        value={height}
-                        onChangeText={setHeight}
-                    />
-                    {errors.height && <Text style={styles.errorText}>{errors.height}</Text>}
-
-                    {/* Tiểu sử bệnh án + Thêm bệnh án */}
-                    <View
-                        style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            marginTop: 16,
-                            marginBottom: 8,
-                        }}
-                    >
-                        <Text style={[styles.label, { marginTop: 0, marginBottom: 0 }]}>
-                            Tiểu sử bệnh án
-                        </Text>
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: "#37B44E",
-                                borderRadius: 8,
-                                paddingVertical: 6,
-                                paddingHorizontal: 12,
-                                alignItems: "center",
-                                marginLeft: 8,
-                            }}
-                            onPress={() =>
-                                setMedicalHistories([
-                                    ...medicalHistories,
-                                    { name: "", description: "" },
-                                ])
-                            }
-                        >
-                            <Text
-                                style={{ color: "#fff", fontWeight: "bold", fontSize: 15 }}
-                            >
-                                + Thêm bệnh án
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                    {medicalHistories.map((item, idx) => (
-                        <View key={idx} style={{ marginBottom: 12 }}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Tên bệnh án"
-                                value={item.name}
-                                onChangeText={(text) =>
-                                    handleMedicalHistoryChange(idx, 'name', text)
-                                }
-                            />
-                            <TextInput
-                                style={styles.textArea}
-                                placeholder="Mô tả bệnh án"
-                                value={item.description}
-                                onChangeText={(text) =>
-                                    handleMedicalHistoryChange(idx, 'description', text)
-                                }
-                                multiline
-                            />
-                        </View>
+    // Render form step 2
+    const renderStep2 = () => (
+        <View>
+            <Text style={styles.label}>
+                Nhóm máu <Text style={styles.required}>*</Text>
+            </Text>
+            <View style={styles.dropdown}>
+                <Picker selectedValue={bloodGroup} onValueChange={setBloodGroup}>
+                    <Picker.Item label="Chọn nhóm máu" value="" />
+                    {bloodGroups.map((bg) => (
+                        <Picker.Item
+                            key={bg.value}
+                            label={bg.label}
+                            value={bg.value}
+                        />
                     ))}
+                </Picker>
+                <Feather
+                    name="chevron-down"
+                    size={20}
+                    color="#777"
+                    style={styles.dropdownIcon}
+                />
+            </View>
+            {errors.bloodGroup && <Text style={styles.errorText}>{errors.bloodGroup}</Text>}
 
-                    <Text style={styles.label}>Lưu ý chăm sóc</Text>
+            <Text style={styles.label}>
+                Cân nặng (kg) <Text style={styles.required}>*</Text>
+            </Text>
+            <TextInput
+                style={[styles.input, errors.weight && styles.inputError]}
+                placeholder="Nhập cân nặng"
+                keyboardType="numeric"
+                value={weight}
+                onChangeText={setWeight}
+            />
+            {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
+
+            <Text style={styles.label}>
+                Chiều cao (cm) <Text style={styles.required}>*</Text>
+            </Text>
+            <TextInput
+                style={[styles.input, errors.height && styles.inputError]}
+                placeholder="Nhập chiều cao"
+                keyboardType="numeric"
+                value={height}
+                onChangeText={setHeight}
+            />
+            {errors.height && <Text style={styles.errorText}>{errors.height}</Text>}
+
+            {/* Tiểu sử bệnh án + Thêm bệnh án */}
+            <View
+                style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginTop: 16,
+                    marginBottom: 8,
+                }}
+            >
+                <Text style={[styles.label, { marginTop: 0, marginBottom: 0 }]}>
+                    Tiểu sử bệnh án
+                </Text>
+                <TouchableOpacity
+                    style={{
+                        backgroundColor: "#37B44E",
+                        borderRadius: 8,
+                        paddingVertical: 6,
+                        paddingHorizontal: 12,
+                        alignItems: "center",
+                        marginLeft: 8,
+                    }}
+                    onPress={() =>
+                        setMedicalHistories([
+                            ...medicalHistories,
+                            { name: "", description: "" },
+                        ])
+                    }
+                >
+                    <Text
+                        style={{ color: "#fff", fontWeight: "bold", fontSize: 15 }}
+                    >
+                        + Thêm bệnh án
+                    </Text>
+                </TouchableOpacity>
+            </View>
+            {medicalHistories.map((item, idx) => (
+                <View key={idx} style={{ marginBottom: 12 }}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Tên bệnh án"
+                        value={item.name}
+                        onChangeText={(text) =>
+                            handleMedicalHistoryChange(idx, 'name', text)
+                        }
+                    />
                     <TextInput
                         style={styles.textArea}
-                        placeholder="Nhập các lưu ý đặc biệt về chăm sóc (nếu có)"
-                        value={notes}
-                        onChangeText={setNotes}
+                        placeholder="Mô tả bệnh án"
+                        value={item.description}
+                        onChangeText={(text) =>
+                            handleMedicalHistoryChange(idx, 'description', text)
+                        }
                         multiline
                     />
-
-                    <TouchableOpacity
-                        style={styles.saveButton}
-                        onPress={async () => {
-                            if (validateStep2()) {
-                                const formatDate = formatDateToISO(birthDate);
-                                const address = `${homeAddress}, ${district}, ${province}`;
-                                const payload: Partial<Profile> = {
-                                    avartar: avatar,
-                                    firstName,
-                                    lastName,
-                                    birthDate: formatDate,
-                                    sex: gender as "male" | "female" | "other",
-                                    relationship,
-                                    address,
-                                    phone,
-                                    healthInfo: [
-                                        {
-                                            typeBlood: bloodGroup,
-                                            weight: Number(weight),
-                                            height: Number(height),
-                                            notes: notes || undefined,
-                                            condition: medicalHistories.filter(
-                                                (m) => m.name && m.description
-                                            ),
-                                        },
-                                    ],
-                                };
-                                log("Payload gửi lên store:", payload);
-                                await addProfile(payload);
-                                navigation.goBack();
-                            }
-                        }}
-                    >
-                        <View style={{ flexDirection: "row", alignItems: "center" }}>
-                            <Text style={styles.saveButtonText}>Lưu hồ sơ</Text>
-                            <Feather
-                                name="check-circle"
-                                size={20}
-                                color="#fff"
-                                style={{ marginLeft: 8 }}
-                            />
-                        </View>
-                    </TouchableOpacity>
                 </View>
-            )}
-        </ScrollView>
+            ))}
+
+            <Text style={styles.label}>Lưu ý chăm sóc</Text>
+            <TextInput
+                style={styles.textArea}
+                placeholder="Nhập các lưu ý đặc biệt về chăm sóc (nếu có)"
+                value={notes}
+                onChangeText={setNotes}
+                multiline
+            />
+
+            <TouchableOpacity
+                style={styles.saveButton}
+                onPress={async () => {
+                    if (validateStep2()) {
+                        const formatDate = formatDateToISO(birthDate);
+                        const address = `${homeAddress}, ${district}, ${province}`;
+                        const payload: Partial<Profile> = {
+                            avartar: avatar,
+                            firstName,
+                            lastName,
+                            birthDate: formatDate,
+                            sex: gender as "male" | "female" | "other",
+                            relationship,
+                            address,
+                            phone,
+                            healthInfo: [
+                                {
+                                    typeBlood: bloodGroup,
+                                    weight: Number(weight),
+                                    height: Number(height),
+                                    notes: notes || undefined,
+                                    condition: medicalHistories.filter(
+                                        (m) => m.name && m.description
+                                    ),
+                                },
+                            ],
+                        };
+                        log("Payload gửi lên store:", payload);
+                        await addProfile(payload);
+                        navigation.goBack();
+                    }
+                }}
+            >
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text style={styles.saveButtonText}>Lưu hồ sơ</Text>
+                    <Feather
+                        name="check-circle"
+                        size={20}
+                        color="#fff"
+                        style={{ marginLeft: 8 }}
+                    />
+                </View>
+            </TouchableOpacity>
+        </View>
+    );
+
+    return (
+        <FlatList
+            data={[step]}
+            renderItem={({ item }) => (item === 1 ? renderStep1() : renderStep2())}
+            keyExtractor={(item) => item.toString()}
+            contentContainerStyle={styles.container}
+            keyboardShouldPersistTaps="handled"
+        />
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flexGrow: 1,
         backgroundColor: '#f4f6f8',
         paddingHorizontal: 20,
         paddingTop: 20,
