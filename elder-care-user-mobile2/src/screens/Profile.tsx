@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,24 +8,17 @@ import {
   SafeAreaView,
   Modal,
   Pressable,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import Footer from '../components/Footer';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import useAuthStore from '../stores/authStore';
-import type User from '../types/auth';
-import * as ImagePicker from 'expo-image-picker';
-import { uploadAvatar } from '../api/uploadService';
-
-type RootStackParamList = {
-  Login: undefined;
-  ServiceScreenTest: undefined;
-  Notifications: undefined;
-  ProfileList: undefined;
-  BookAService: undefined;
-  PaymentInfoScreen: undefined;
-};
+  ScrollView,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import Footer from "../components/Footer";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import useAuthStore from "../stores/authStore";
+import * as ImagePicker from "expo-image-picker";
+import { uploadAvatar } from "../api/uploadService";
+import { RootStackParamList } from "../navigation/navigation";
+import RatingModal from "../components/RatingModal";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -36,51 +29,33 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  {
-    id: 'payment',
-    title: 'Ví điện tử',
-    icon: 'chevron-forward',
-  },
-  {
-    id: 'notifications',
-    title: 'Thông báo',
-    icon: 'chevron-forward',
-  },
-  {
-    id: 'profile',
-    title: 'Danh sách Hồ sơ',
-    icon: 'chevron-forward',
-  },
-  {
-    id: 'help',
-    title: 'Trợ giúp và Hỗ trợ',
-    icon: 'chevron-forward',
-  },
-  {
-    id: 'terms',
-    title: 'Điều khoản và Điều kiện',
-    icon: 'chevron-forward',
-  },
-  {
-    id: 'logout',
-    title: 'Đăng xuất',
-    icon: 'chevron-forward',
-  },
+  { id: "payment", title: "Ví điện tử", icon: "chevron-forward" },
+  { id: "notifications", title: "Thông báo", icon: "chevron-forward" },
+  { id: "profile", title: "Danh sách Hồ sơ", icon: "chevron-forward" },
+  { id: "help", title: "Trợ giúp và Hỗ trợ", icon: "chevron-forward" },
+  { id: "terms", title: "Điều khoản và Điều kiện", icon: "chevron-forward" },
+  { id: "logout", title: "Đăng xuất", icon: "chevron-forward" },
+  {id: "test", title: "Test", icon: "chevron-forward"}
 ];
 
 const Profile: React.FC = () => {
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigation = useNavigation<NavigationProp>();
-  const { logout, user, updateUser } = useAuthStore();
-  const [avatarSource, setAvatarSource] = useState<string | ReturnType<typeof require> | null>(
-    user?.avatarUrl || require('../asset/img/hinh1.png')
-  );
+  const { user, logout, updateUser } = useAuthStore();
+
+  const [avatarSource, setAvatarSource] = useState<
+    string | ReturnType<typeof require> | null
+  >(user?.avatarUrl || require("../asset/img/hinh1.png"));
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+
 
   useEffect(() => {
     (async () => {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Bạn cần cấp quyền truy cập vào thư viện ảnh!');
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        alert("Bạn cần cấp quyền truy cập thư viện ảnh!");
       }
       if (user?.avatarUrl) {
         setAvatarSource(user.avatarUrl);
@@ -89,7 +64,7 @@ const Profile: React.FC = () => {
   }, [user?.avatarUrl]);
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 4],
@@ -97,60 +72,68 @@ const Profile: React.FC = () => {
     });
 
     if (!result.canceled) {
-      const selectedImageUri = result.assets[0].uri;
-      setAvatarSource(selectedImageUri);
+      const uri = result.assets[0].uri;
+      setAvatarSource(uri);
       try {
-        const uploadedAvatarUrl = await uploadAvatar(selectedImageUri);
-        if (uploadedAvatarUrl) {
-          updateUser({ ...user, avatarUrl: uploadedAvatarUrl });
+        const uploadedUrl = await uploadAvatar(uri);
+        if (uploadedUrl) {
+          updateUser({ ...user, avatarUrl: uploadedUrl });
         } else {
-          alert('Có lỗi khi tải lên ảnh đại diện.');
+          alert("Lỗi khi tải ảnh lên.");
         }
-      } catch (error: any) {
-        console.error('Lỗi tải lên avatar:', error);
-        alert('Có lỗi khi tải lên ảnh đại diện.');
+      } catch {
+        alert("Lỗi khi tải ảnh lên.");
       }
     }
   };
 
-  // Sửa lại hàm đăng xuất: xóa token, user khỏi store và chuyển về Login
-  const handleLogout = async () => {
-    setShowLogoutModal(false);
-    await logout();
-    navigation.replace('Login');
+  const handleMenuPress = (id: string) => {
+    switch (id) {
+      case "logout":
+        setShowLogoutModal(true);
+        break;
+      case "terms":
+        setShowTermsModal(true);
+        break;
+      case "payment":
+        navigation.navigate("PaymentInfoScreen");
+        break;
+      case "notifications":
+        navigation.navigate("Notifications");
+        break;
+      case "profile":
+        navigation.navigate("ProfileList");
+        break;
+      case "help":
+        navigation.navigate("BookAService");
+        break;
+      case "test":
+        navigation.navigate("DoctorDetails")
+        break;
+      default:
+        break;
+    }
   };
 
-  const handleMenuPress = (id: string) => {
-    if (id === 'logout') {
-      setShowLogoutModal(true);
-    } else if (id === 'favorite') {
-      navigation.navigate('ServiceScreenTest');
-    } else if (id === 'notifications') {
-      navigation.navigate('Notifications');
-    } else if (id === 'profile') {
-      navigation.navigate('ProfileList');
-    } else if (id === 'help') {
-      navigation.navigate('BookAService');
-    } else if (id === 'payment') {
-      navigation.navigate('PaymentInfoScreen');
-    } else if (id === 'terms') {
-      navigation.navigate('ServiceScreenTest');
-    }
+  const handleLogoutConfirm = async () => {
+    setShowLogoutModal(false);
+    await logout();
+    navigation.replace("Login");
   };
 
   const renderIcon = (id: string) => {
     switch (id) {
-      case 'notifications':
+      case "payment":
+        return <Ionicons name="wallet-outline" size={20} color="#000" />;
+      case "notifications":
         return <Ionicons name="notifications-outline" size={20} color="#000" />;
-      case 'profile':
+      case "profile":
         return <Ionicons name="person-circle-outline" size={20} color="#000" />;
-      case 'help':
+      case "help":
         return <Ionicons name="help-circle-outline" size={20} color="#000" />;
-      case 'terms':
-        return <Ionicons name="shield-outline" size={20} color="#000" />;
-      case 'payment':
-        return <Ionicons name="home-outline" size={20} color="#000" />;
-      case 'logout':
+      case "terms":
+        return <Ionicons name="document-text-outline" size={20} color="#000" />;
+      case "logout":
         return <Ionicons name="log-out-outline" size={20} color="#000" />;
       default:
         return null;
@@ -165,14 +148,18 @@ const Profile: React.FC = () => {
         <View style={styles.profileSection}>
           <TouchableOpacity style={styles.avatarContainer} onPress={pickImage}>
             <Image
-              source={typeof avatarSource === 'string' ? { uri: avatarSource } : avatarSource}
+              source={
+                typeof avatarSource === "string"
+                  ? { uri: avatarSource }
+                  : avatarSource
+              }
               style={styles.avatar}
             />
             <View style={styles.editIconContainer}>
               <Ionicons name="create" size={14} color="#fff" />
             </View>
           </TouchableOpacity>
-          <Text style={styles.name}>{user?.phone || '+84'}</Text>
+          <Text style={styles.name}>{user?.phone || "+84"}</Text>
         </View>
 
         <View style={styles.menuContainer}>
@@ -197,6 +184,7 @@ const Profile: React.FC = () => {
 
       <Footer />
 
+      {/* Modal Đăng xuất */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -206,7 +194,9 @@ const Profile: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Đăng xuất</Text>
-            <Text style={styles.modalText}>Bạn có chắc chắn muốn đăng xuất?</Text>
+            <Text style={styles.modalText}>
+              Bạn có chắc chắn muốn đăng xuất?
+            </Text>
             <View style={styles.modalButtons}>
               <Pressable
                 style={[styles.button, styles.buttonCancel]}
@@ -216,143 +206,130 @@ const Profile: React.FC = () => {
               </Pressable>
               <Pressable
                 style={[styles.button, styles.buttonLogout]}
-                onPress={handleLogout}
+                onPress={handleLogoutConfirm}
               >
-                <Text style={[styles.buttonText, styles.buttonLogoutText]}>Đồng ý</Text>
+                <Text style={[styles.buttonText, styles.buttonLogoutText]}>
+                  Đồng ý
+                </Text>
               </Pressable>
             </View>
           </View>
         </View>
       </Modal>
+
+      {/* Modal Điều khoản và Điều kiện */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showTermsModal}
+        onRequestClose={() => setShowTermsModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: "80%" }]}>
+            <Text style={styles.modalTitle}>Điều khoản và Điều kiện</Text>
+            <ScrollView style={{ marginVertical: 16 }}>
+              <Text style={styles.modalText}>
+                Đây là nội dung điều khoản và điều kiện sử dụng ứng dụng.
+                {"\n\n"}1. Điều khoản 1...
+                {"\n\n"}2. Điều khoản 2...
+                {"\n\n"}3. Điều khoản 3...
+                {"\n\n"}Bạn có thể thêm nội dung dài hơn tại đây.
+              </Text>
+            </ScrollView>
+            <Pressable
+              style={[styles.button, styles.buttonLogout]}
+              onPress={() => setShowTermsModal(false)}
+            >
+              <Text style={[styles.buttonText, styles.buttonLogoutText]}>
+                Đóng
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+      <RatingModal
+        visible={showRatingModal}
+        onClose={() => setShowRatingModal(false)}
+        onSubmit={(rating, comment) => {
+          console.log("Rating:", rating);
+          console.log("Comment:", comment);
+          setShowRatingModal(false); // Đóng modal sau khi gửi
+        }}
+      />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  content: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: "#fff" },
+  content: { flex: 1 },
   headerTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 30,
-    color: '#000',
+    fontWeight: "bold",
+    textAlign: "center",
     marginTop: 40,
+    marginBottom: 30,
+    color: "#000",
   },
-  profileSection: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  avatarContainer: {
-    position: 'relative',
-    marginBottom: 16,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
+  profileSection: { alignItems: "center", marginBottom: 32 },
+  avatarContainer: { position: "relative", marginBottom: 16 },
+  avatar: { width: 100, height: 100, borderRadius: 50 },
   editIconContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     right: 0,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
     width: 28,
     height: 28,
     borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 2,
-    borderColor: '#fff',
+    borderColor: "#fff",
   },
-  name: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '000',
-    marginBottom: 8,
-  },
-  phone: {
-    fontSize: 14,
-    color: '#000',
-  },
-  menuContainer: {
-    paddingHorizontal: 16,
-  },
+  name: { fontSize: 18, fontWeight: "600", color: "#000", marginBottom: 8 },
+  menuContainer: { paddingHorizontal: 16 },
   menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 16,
   },
-  menuItemBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#F7F9FC',
-  },
-  menuItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  menuItemText: {
-    fontSize: 16,
-    color: '#2E3A59',
-    marginLeft: 12,
-  },
+  menuItemBorder: { borderBottomWidth: 1, borderBottomColor: "#F7F9FC" },
+  menuItemLeft: { flexDirection: "row", alignItems: "center" },
+  menuItemText: { fontSize: 16, color: "#2E3A59", marginLeft: 12 },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 24,
-    width: '80%',
-    alignItems: 'center',
+    width: "80%",
+    alignItems: "center",
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#2E3A59',
-    marginBottom: 12,
-  },
-  modalText: {
-    fontSize: 16,
-    color: '#000',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
+  modalTitle: { fontSize: 20, fontWeight: "600", color: "#2E3A59" },
+  modalText: { fontSize: 16, color: "#000", textAlign: "left" },
   modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginTop: 24,
   },
   button: {
     flex: 1,
     paddingVertical: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginHorizontal: 8,
   },
-  buttonCancel: {
-    backgroundColor: '#F7F9FC',
-  },
-  buttonLogout: {
-    backgroundColor: '#FF4B4B',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2E3A59',
-  },
-  buttonLogoutText: {
-    color: 'white',
-  },
+  buttonCancel: { backgroundColor: "#F7F9FC" },
+  buttonLogout: { backgroundColor: "#FF4B4B" },
+  buttonText: { fontSize: 16, fontWeight: "600", color: "#2E3A59" },
+  buttonLogoutText: { color: "white" },
 });
 
 export default Profile;
