@@ -25,6 +25,7 @@ type RootStackParamList = {
   ProfileList: undefined;
   BookAService: undefined;
   PaymentInfoScreen: undefined;
+  ReviewScreen:undefined;
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -134,7 +135,7 @@ const Profile: React.FC = () => {
     } else if (id === 'payment') {
       navigation.navigate('PaymentInfoScreen');
     } else if (id === 'terms') {
-      navigation.navigate('ServiceScreenTest');
+      navigation.navigate('ReviewScreen');
     }
   };
 
@@ -149,7 +150,7 @@ const Profile: React.FC = () => {
       case 'terms':
         return <Ionicons name="shield-outline" size={20} color="#000" />;
       case 'payment':
-        return <Ionicons name="home-outline" size={20} color="#000" />;
+        return <Ionicons name="wallet-outline" size={20} color="#000" />;
       case 'logout':
         return <Ionicons name="log-out-outline" size={20} color="#000" />;
       default:
