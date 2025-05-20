@@ -15,6 +15,7 @@ const bookingController = {
     // create new booking
     createBooking: async (req, res) => {
         const io = getIO();
+
         try {
             const {
                 profileId,
@@ -31,12 +32,10 @@ const bookingController = {
 
             const { _id: userId, role } = req.user;
 
-            // Kiểm tra profile
+            // Kiểm tra hồ sơ và dịch vụ
             const profile = await Profile.findById(profileId);
             if (!profile) {
-                return res
-                    .status(404)
-                    .json({ message: "Không tìm thấy hồ sơ (profile)" });
+                return res.status(404).json({ message: "Không tìm thấy hồ sơ (profile)" });
             }
 
             const service = await Service.findById(serviceId);
@@ -44,65 +43,48 @@ const bookingController = {
                 return res.status(404).json({ message: "Không tìm thấy dịch vụ" });
             }
 
-            // Kiểm tra quyền của family_member
-            if (role === "family_member" || role === "admin") {
-                if (profile.userId.toString() !== userId.toString()) {
-                    return res
-                        .status(403)
-                        .json({ message: "Không có quyền đặt lịch cho profile này" });
-                }
+            // Kiểm tra quyền của người dùng
+            if ((role === "family_member" || role === "admin") &&
+                profile.userId.toString() !== userId.toString()) {
+                return res.status(403).json({ message: "Không có quyền đặt lịch cho profile này" });
             }
 
-            // Kiểm tra thời gian lặp lại
+            // Xử lý ngày và thời gian
             const fromDate = new Date(repeatFrom);
             const toDate = new Date(repeatTo);
-
             if (fromDate >= toDate) {
-                return res
-                    .status(400)
-                    .json({ message: "Ngày bắt đầu phải nhỏ hơn ngày kết thúc" });
+                return res.status(400).json({ message: "Ngày bắt đầu phải nhỏ hơn ngày kết thúc" });
             }
 
-            // Tính số ngày
-            const daysDiff =
-                Math.floor((toDate - fromDate) / (1000 * 60 * 60 * 24)) + 1;
+            const daysDiff = Math.floor((toDate - fromDate) / (1000 * 60 * 60 * 24)) + 1;
 
-            // Tính số giờ mỗi ngày (có xử lý qua đêm)
             const getHoursDiff = (start, end) => {
                 const [sh, sm] = start.split(":").map(Number);
                 const [eh, em] = end.split(":").map(Number);
                 const startMin = sh * 60 + sm;
                 const endMin = eh * 60 + em;
-                const diff =
-                    endMin >= startMin ? endMin - startMin : 24 * 60 - startMin + endMin;
+                const diff = endMin >= startMin ? endMin - startMin : 24 * 60 - startMin + endMin;
                 return diff / 60;
             };
 
             const hoursPerDay = getHoursDiff(timeSlot.start, timeSlot.end);
-
-            // Tổng tiền
             const totalPrice = hoursPerDay * daysDiff * service.price || 0;
             const totalDiscount = totalPrice * (service.percentage || 0);
 
+            // Kiểm tra ví
             const wallet = await Wallet.findOne({ userId });
             if (!wallet) {
-                return res
-                    .status(400)
-                    .json({ message: "Không tìm thấy ví của người dùng" });
+                return res.status(400).json({ message: "Không tìm thấy ví của người dùng" });
             }
 
             if (wallet.balance < totalPrice) {
-                return res
-                    .status(400)
-                    .json({ message: "Số dư không đủ để thanh toán booking" });
+                return res.status(400).json({ message: "Số dư không đủ để thanh toán booking" });
             }
 
-            // Xác định nếu là lịch lặp lại
-            const isRecurring =
-                new Date(repeatFrom).toDateString() !==
-                new Date(repeatTo).toDateString();
+            // Đánh dấu có phải lịch lặp không
+            const isRecurring = fromDate.toDateString() !== toDate.toDateString();
 
-            // Tạo booking mới
+            // Tạo booking
             const newBooking = new Booking({
                 profileId,
                 serviceId,
@@ -121,69 +103,37 @@ const bookingController = {
             });
             await newBooking.save();
 
-            const code = "PAY_" + new Date().getTime();
-            const orderId = "MOMO" + new Date().getTime();
-
+            // Tạo payment
+            const code = "PAY_" + Date.now();
+            const orderId = "MOMO" + Date.now();
             const newPayment = new Payments({
-                orderId: orderId,
+                orderId,
                 bookingId: newBooking._id,
                 amount: totalPrice,
                 transactionCode: code,
+                status: "pending"
             });
-
             await newPayment.save();
 
             io.to(userId).emit("newPaymentCreated");
 
-            const transactionId = "PAY_" + new Date().getTime();
-
-            // Trừ tiền và tạo transaction trong ví
+            // Trừ tiền ví và tạo transaction
+            const transactionId = "PAY_" + Date.now();
             wallet.balance -= totalPrice;
             wallet.transactions.push({
                 transactionId,
                 type: "PAYMENT",
                 amount: totalPrice,
                 status: "pending",
-                description: `Thanh toán booking ${newBooking._id}`,
+                description: `Thanh toán booking ${newBooking._id}`
             });
             await wallet.save();
-            // Sau 1 tiếng, kiểm tra trạng thái payment, nếu chưa success thì hoàn tiền
-            setTimeout(async () => {
-                try {
-                    const bookingCheck = await Booking.findById(newBooking._id);
-                    if (bookingCheck && bookingCheck.status !== "accepted") {
-                        const walletToRefund = await Wallet.findOne({ userId });
-                        if (!walletToRefund) return;
 
-                        const transaction = walletToRefund.transactions.find(
-                            (t) => t.transactionId === transactionId
-                        );
-                        if (transaction && transaction.status === "pending") {
-                            // Hoàn tiền
-                            walletToRefund.balance += transaction.amount;
-                            transaction.status = "failed";
-                            transaction.description +=
-                                " - Hoàn tiền do booking chưa được chấp nhận sau 1 tiếng";
-                            await walletToRefund.save();
-
-                            // Cập nhật payment
-                            const paymentCheck = await Payments.findOne({
-                                transactionCode: code,
-                            });
-                            if (paymentCheck) {
-                                paymentCheck.status = "failed";
-                                await paymentCheck.save();
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.error("Lỗi khi xử lý hoàn tiền tự động:", error);
-                }
-            }, 60 * 1000);
-
+            // Gửi thông báo tới các staff
             const populatedBooking = await Booking.findById(newBooking._id)
                 .populate("serviceId")
                 .populate("profileId");
+
             const targetRole = populatedBooking?.serviceId?.role;
             if (targetRole === "nurse" || targetRole === "doctor") {
                 io.to(`staff_${targetRole}`).emit("newBookingSignal", populatedBooking);
@@ -197,7 +147,9 @@ const bookingController = {
                 wallet,
                 payment: newPayment,
             });
+
         } catch (error) {
+            console.error("Lỗi khi tạo booking:", error);
             return res.status(500).json({
                 message: "Internal server error",
                 error: error.message,

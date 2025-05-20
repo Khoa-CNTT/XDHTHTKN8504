@@ -99,8 +99,6 @@ const chatController = {
             // Kiểm tra xem chatType có hợp lệ dựa trên vai trò của người dùng không
             let isValidChatType = true;
 
-            console.log(targetUser.role);
-
             if (chatType === "admin-doctor" &&
                 !([req.user.role, targetUser.role].includes("admin") && [req.user.role, targetUser.role].includes("doctor"))) {
                 isValidChatType = false;
