@@ -20,7 +20,7 @@ const reviewController = {
                 return res.status(404).json({ message: "Không tìm thấy lịch làm việc!" });
             }
 
-            const booking = await Booking.findById(schedule.bookingId);
+            const booking = await Booking.findById(schedule.bookingId).populate('profileId');
             if (!booking) {
                 return res.status(404).json({ message: "Không tìm thấy thông tin booking!" });
             }
@@ -28,6 +28,10 @@ const reviewController = {
             if (booking.createdBy.toString() !== userId.toString()) {
                 return res.status(403).json({ message: "Bạn không có quyền đánh giá lịch này." });
             }
+
+            const profileId = booking.profileId;
+            console.log(profileId);
+            
 
             const existingReview = await Review.findOne({
                 scheduleId,
@@ -42,7 +46,7 @@ const reviewController = {
             const newReview = new Review({
                 scheduleId,
                 bookingId: booking._id,
-                reviewer: userId,
+                reviewer: profileId,
                 staffId: schedule.staffId,
                 rating,
                 comment,
