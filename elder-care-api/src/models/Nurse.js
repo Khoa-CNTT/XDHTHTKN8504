@@ -33,12 +33,6 @@ const nurseSchema = new Schema(
       type: Boolean,
       default: true,
     },
-    // Đánh giá từ người dùng (từ 1 đến 5)
-    rating: {
-      type: Number,
-      min: 1,
-      max: 5,
-    },
     // Vị trí địa lý của điều dưỡng (hữu ích cho tìm kiếm gần)
     location: {
       type: { type: String, enum: ["Point"], default: "Point" },

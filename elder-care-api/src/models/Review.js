@@ -1,7 +1,12 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose'
 
 const ReviewSchema = new mongoose.Schema({
-  booking: { 
+  scheduleId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Schedule',
+    required: true,
+  },
+  bookingId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Booking',
     required: true
@@ -11,10 +16,10 @@ const ReviewSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  reviewee: { 
-    type: mongoose.Schema.Types.ObjectId, 
+  staffId: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
   },
   rating: {
     type: Number,
@@ -27,4 +32,6 @@ const ReviewSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Review', ReviewSchema);
+const Review = mongoose.model('Review', ReviewSchema);
+
+export default Review
