@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   Modal,
   Pressable,
+
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,6 +20,7 @@ import * as ImagePicker from "expo-image-picker";
 import { uploadAvatar } from "../api/uploadService";
 import { RootStackParamList } from "../navigation/navigation";
 import RatingModal from "../components/RatingModal";
+
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -88,6 +90,7 @@ const Profile: React.FC = () => {
   };
 
   const handleMenuPress = (id: string) => {
+
     switch (id) {
       case "logout":
         setShowLogoutModal(true);
@@ -112,6 +115,7 @@ const Profile: React.FC = () => {
         break;
       default:
         break;
+
     }
   };
 
@@ -131,9 +135,11 @@ const Profile: React.FC = () => {
         return <Ionicons name="person-circle-outline" size={20} color="#000" />;
       case "help":
         return <Ionicons name="help-circle-outline" size={20} color="#000" />;
+
       case "terms":
         return <Ionicons name="document-text-outline" size={20} color="#000" />;
       case "logout":
+
         return <Ionicons name="log-out-outline" size={20} color="#000" />;
       default:
         return null;
