@@ -839,7 +839,9 @@ const authController = {
       const { search, gender, dateFrom, dateTo, sort = "newest" } = req.query;
 
       // Lọc theo createdAt của User
-      const userFilter = {};
+      const userFilter = {
+        role: "family_member",
+      };
       if (dateFrom || dateTo) {
         userFilter.createdAt = {};
         if (dateFrom) userFilter.createdAt.$gte = new Date(dateFrom);
