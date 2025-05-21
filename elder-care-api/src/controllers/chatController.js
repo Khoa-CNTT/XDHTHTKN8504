@@ -1,104 +1,331 @@
 import Chat from "../models/Chat.js";
 import User from "../models/User.js";
-
-// Kiểm tra quyền gửi tin nhắn
-export const checkPermissions = async (senderId, receiverId) => {
-    const sender = await User.findById(senderId);
-    const receiver = await User.findById(receiverId);
-
-    if (!sender || !receiver) {
-        throw new Error('User not found');
-    }
-
-    const senderRole = sender.role;
-    const receiverRole = receiver.role;
-
-    // Cấu hình quyền theo vai trò
-    if (senderRole === 'admin') return true;
-    if (senderRole === 'family_member' && (receiverRole === 'doctor' || receiverRole === 'nurse')) return true;
-    if (senderRole === 'nurse' && (receiverRole === 'doctor' || receiverRole === 'family_member')) return true;
-    if (senderRole === 'doctor' && (receiverRole === 'family_member' || receiverRole === 'nurse')) return true;
-
-    return false;
-};
+import { notifyUser } from "../controllers/socketChat.js";
 
 const chatController = {
-    sendMessage: async (req, res) => {
-        const { senderId, receiverId, message } = req.body;
-
+    // Lấy danh sách cuộc trò chuyện của người dùng hiện tại
+    getMyChats: async (req, res) => {
         try {
-            // Kiểm tra quyền gửi tin nhắn
-            const isAllowed = await checkPermissions(senderId, receiverId);
-            if (!isAllowed) {
-                return res.status(403).json({ message: "You do not have permission to message this user" });
+            const userId = req.user._id;
+
+            const chats = await Chat.find({
+                participants: userId,
+                isActive: true
+            })
+                .populate("participants", "name role")
+                .sort({ "metadata.lastActivity": -1 });
+
+            return res.status(200).json({ success: true, chats });
+        } catch (error) {
+            console.error("Error fetching chats:", error);
+            return res.status(500).json({ success: false, message: "Không thể lấy danh sách cuộc trò chuyện" });
+        }
+    },
+
+    // Lấy chi tiết một cuộc trò chuyện
+    getChatDetail: async (req, res) => {
+        try {
+            const { chatId } = req.params;
+            const userId = req.user._id;
+
+            const chat = await Chat.findOne({
+                _id: chatId,
+                participants: userId
+            }).populate("participants", "name role");
+
+            if (!chat) {
+                return res.status(404).json({ success: false, message: "Không tìm thấy cuộc trò chuyện" });
             }
 
-            // Tạo cuộc trò chuyện mới hoặc thêm tin nhắn vào cuộc trò chuyện hiện tại
-            let conversation = await Chat.findOne({
-                participants: { $all: [senderId, receiverId] },
+            return res.status(200).json({ success: true, chat });
+        } catch (error) {
+            console.error("Error fetching chat details:", error);
+            return res.status(500).json({ success: false, message: "Không thể lấy chi tiết cuộc trò chuyện" });
+        }
+    },
+
+    // Lấy tin nhắn của một cuộc trò chuyện
+    getMessage: async (req, res) => {
+        try {
+            const { chatId } = req.params;
+            const userId = req.user._id;
+            const { page = 1, limit = 50 } = req.query;
+
+            const chat = await Chat.findOne({
+                _id: chatId,
+                participants: userId
             });
 
-            if (!conversation) {
-                conversation = new Chat({
-                    participants: [senderId, receiverId],
-                    messages: [],
+            if (!chat) {
+                return res.status(404).json({ success: false, message: "Không tìm thấy cuộc trò chuyện" });
+            }
+
+            // Phân trang và sắp xếp tin nhắn (mới nhất lên trên)
+            const skip = (page - 1) * limit;
+            const messages = chat.messages
+                .sort((a, b) => b.timestamp - a.timestamp)
+                .slice(skip, skip + parseInt(limit));
+
+            const totalMessages = chat.messages.length;
+
+            return res.status(200).json({
+                success: true,
+                messages,
+                pagination: {
+                    total: totalMessages,
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    pages: Math.ceil(totalMessages / limit)
+                }
+            });
+        } catch (error) {
+            console.error("Error fetching chat messages:", error);
+            return res.status(500).json({ success: false, message: "Không thể lấy tin nhắn" });
+        }
+    },
+
+    // Tạo cuộc trò chuyện mới
+    createNewChat: async (req, res) => { 
+        try {
+            const { targetUserId, chatType, title } = req.body;
+            const initiatorId = req.user._id;
+
+            // Kiểm tra người dùng đích tồn tại
+            const targetUser = await User.findById(targetUserId);
+            if (!targetUser) {
+                return res.status(404).json({ success: false, message: "Không tìm thấy người dùng đích" });
+            }
+
+            // Kiểm tra xem chatType có hợp lệ dựa trên vai trò của người dùng không
+            let isValidChatType = true;
+
+            if (chatType === "admin-doctor" &&
+                !([req.user.role, targetUser.role].includes("admin") && [req.user.role, targetUser.role].includes("doctor"))) {
+                isValidChatType = false;
+            } else if (chatType === "admin-nurse" &&
+                !([req.user.role, targetUser.role].includes("admin") && [req.user.role, targetUser.role].includes("nurse"))) {
+                isValidChatType = false;
+            } else if (chatType === "admin-family" &&
+                !([req.user.role, targetUser.role].includes("admin") && [req.user.role, targetUser.role].includes("family_member"))) {
+                isValidChatType = false;
+            } else if (chatType === "doctor-nurse" &&
+                !([req.user.role, targetUser.role].includes("doctor") && [req.user.role, targetUser.role].includes("nurse"))) {
+                isValidChatType = false;
+            } else if (chatType === "doctor-family" &&
+                !([req.user.role, targetUser.role].includes("doctor") && [req.user.role, targetUser.role].includes("family_member"))) {
+                isValidChatType = false;
+            } else if (chatType === "nurse-family" &&
+                !([req.user.role, targetUser.role].includes("nurse") && [req.user.role, targetUser.role].includes("family_member"))) {
+                isValidChatType = false;
+            }
+
+            if (!isValidChatType) {
+                return res.status(400).json({ success: false, message: "Loại cuộc trò chuyện không hợp lệ cho vai trò người dùng" });
+            }
+
+            // Kiểm tra xem đã có cuộc trò chuyện giữa hai người dùng chưa
+            const existingChat = await Chat.findOne({
+                participants: { $all: [initiatorId, targetUserId] },
+                isActive: true
+            });
+
+            if (existingChat) {
+                return res.status(200).json({ success: true, chat: existingChat, message: "Cuộc trò chuyện đã tồn tại" });
+            }
+
+            // Tạo cuộc trò chuyện mới
+            const newChat = new Chat({
+                participants: [initiatorId, targetUserId],
+                chatType,
+                title: title || `Chat với ${targetUser.name}`,
+                isActive: true,
+                messages: []
+            });
+
+            await newChat.save();
+
+            // Thông báo cho người dùng đích
+            notifyUser(targetUserId, "new_chat", {
+                chatId: newChat._id,
+                initiator: {
+                    _id: req.user._id,
+                    name: req.user.name,
+                    role: req.user.role
+                }
+            });
+
+            return res.status(201).json({ success: true, chat: newChat });
+        } catch (error) {
+            console.error("Error creating chat:", error);
+            return res.status(500).json({ success: false, message: "Không thể tạo cuộc trò chuyện mới" });
+        }
+    },
+
+    // Gửi tin nhắn mới
+    sendNewMessage: async (req, res) => {
+        try {
+            const { chatId } = req.params;
+            const { message } = req.body;
+            const senderId = req.user._id;
+
+            // Kiểm tra cuộc trò chuyện tồn tại và người dùng là thành viên
+            const chat = await Chat.findOne({
+                _id: chatId,
+                participants: senderId,
+                isActive: true
+            });
+
+            if (!chat) {
+                return res.status(404).json({ success: false, message: "Không tìm thấy cuộc trò chuyện hoặc bạn không có quyền truy cập" });
+            }
+
+            // Thêm tin nhắn mới
+            const newMessage = {
+                senderId,
+                message,
+                timestamp: new Date(),
+                isRead: false
+            };
+
+            chat.messages.push(newMessage);
+            chat.metadata.lastActivity = new Date();
+            await chat.save();
+
+            // Thông báo cho những người dùng khác trong cuộc trò chuyện
+            chat.participants.forEach(participantId => {
+                if (participantId.toString() !== senderId.toString()) {
+                    notifyUser(participantId.toString(), "new_message", {
+                        chatId,
+                        message: newMessage
+                    });
+                }
+            });
+
+            return res.status(201).json({ success: true, message: newMessage });
+        } catch (error) {
+            console.error("Error sending message:", error);
+            return res.status(500).json({ success: false, message: "Không thể gửi tin nhắn" });
+        }
+    },
+
+    // Đánh dấu tin nhắn đã đọc
+    isReadMessage: async (req, res) => {
+        try {
+            const { chatId } = req.params;
+            const { messageIds } = req.body;
+            const userId = req.user._id;
+
+            const chat = await Chat.findOne({
+                _id: chatId,
+                participants: userId
+            });
+
+            if (!chat) {
+                return res.status(404).json({ success: false, message: "Không tìm thấy cuộc trò chuyện" });
+            }
+
+            // Cập nhật các tin nhắn đã đọc
+            let updated = false;
+            chat.messages = chat.messages.map(msg => {
+                if (messageIds.includes(msg._id.toString()) &&
+                    msg.senderId.toString() !== userId.toString()) {
+                    updated = true;
+                    return { ...msg.toObject(), isRead: true };
+                }
+                return msg;
+            });
+
+            if (updated) {
+                await chat.save();
+
+                // Thông báo cho người gửi tin nhắn
+                chat.participants.forEach(participantId => {
+                    if (participantId.toString() !== userId.toString()) {
+                        notifyUser(participantId.toString(), "messages_read", {
+                            chatId,
+                            messageIds,
+                            readBy: userId
+                        });
+                    }
                 });
             }
 
-            if (!conversation.messages) {
-                conversation.messages = [];
+            return res.status(200).json({ success: true, message: "Đã đánh dấu tin nhắn là đã đọc" });
+        } catch (error) {
+            console.error("Error marking messages as read:", error);
+            return res.status(500).json({ success: false, message: "Không thể đánh dấu tin nhắn là đã đọc" });
+        }
+    },
+
+    // Vô hiệu hóa cuộc trò chuyện (chỉ dành cho admin)
+    deactivateMessage: async (req, res) => {
+        try {
+            const { chatId } = req.params;
+
+            const chat = await Chat.findByIdAndUpdate(
+                chatId,
+                { isActive: false },
+                { new: true }
+            );
+
+            if (!chat) {
+                return res.status(404).json({ success: false, message: "Không tìm thấy cuộc trò chuyện" });
             }
 
-            conversation.messages.push({ senderId, message });
-            await conversation.save();
+            // Thông báo cho tất cả người tham gia
+            chat.participants.forEach(participantId => {
+                notifyUser(participantId.toString(), "chat_deactivated", { chatId });
+            });
 
-            res.status(200).json(conversation);
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ message: "Server error" });
+            return res.status(200).json({ success: true, message: "Đã vô hiệu hóa cuộc trò chuyện" });
+        } catch (error) {
+            console.error("Error deactivating chat:", error);
+            return res.status(500).json({ success: false, message: "Không thể vô hiệu hóa cuộc trò chuyện" });
         }
     },
 
-    getMessages: async (req, res) => {
+    // API lấy danh sách người dùng có thể trò chuyện (dựa vào vai trò)
+    getUserCanChat: async (req, res) => {
         try {
-            const { user1, user2 } = req.query;
+            const { role } = req.params;
+            const currentUserRole = req.user.role;
 
-            const messages = await Chat.find({
-                participants: { $all: [user1, user2] },
-            }).sort({ createdAt: 1 });
+            let targetRoles = [];
 
-            res.json(messages);
-        } catch (err) {
-            res.status(500).json({ error: err.message });
+            // Xác định vai trò người dùng có thể trò chuyện dựa trên vai trò hiện tại
+            switch (currentUserRole) {
+                case "admin":
+                    targetRoles = ["doctor", "nurse", "family_member"];
+                    break;
+                case "doctor":
+                    targetRoles = ["admin", "nurse", "family_member"];
+                    break;
+                case "nurse":
+                    targetRoles = ["admin", "doctor", "family_member"];
+                    break;
+                case "family_member":
+                    targetRoles = ["admin", "doctor", "nurse"];
+                    break;
+                default:
+                    return res.status(400).json({ success: false, message: "Vai trò không hợp lệ" });
+            }
+
+            // Nếu role được chỉ định, chỉ lấy người dùng có vai trò đó
+            if (role && targetRoles.includes(role)) {
+                targetRoles = [role];
+            }
+
+            const users = await User.find({
+                role: { $in: targetRoles },
+                _id: { $ne: req.user._id } // Loại trừ người dùng hiện tại
+            }).select("name role");
+
+            return res.status(200).json({ success: true, users });
+        } catch (error) {
+            console.error("Error fetching available users:", error);
+            return res.status(500).json({ success: false, message: "Không thể lấy danh sách người dùng" });
         }
-    },
-
-    getRecentConversations: async (req, res) => {
-        try {
-            const { userId } = req.params;
-
-            const recent = await Chat.aggregate([
-                { $match: { participants: { $in: [new mongoose.Types.ObjectId(userId)] } } },
-                { $sort: { createdAt: -1 } },
-                {
-                    $group: {
-                        _id: {
-                            $cond: [
-                                { $eq: ["$senderId", new mongoose.Types.ObjectId(userId)] },
-                                "$receiverId",
-                                "$senderId"
-                            ]
-                        },
-                        lastMessage: { $first: "$$ROOT" }
-                    }
-                }
-            ]);
-
-            res.json(recent);
-        } catch (err) {
-            res.status(500).json({ error: err.message });
-        }
-    },
+    }
 }
 
 export default chatController;

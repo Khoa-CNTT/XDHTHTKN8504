@@ -10,7 +10,6 @@ const userSchema = new Schema({
         default: "family_member"
     },
     avatar: { type: String },
-    // Chỉ áp dụng cho family_member
     profiles: [{
         type: Schema.Types.ObjectId,
         ref: "Profile",
