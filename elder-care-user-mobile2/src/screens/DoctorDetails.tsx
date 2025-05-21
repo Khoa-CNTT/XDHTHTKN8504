@@ -14,75 +14,52 @@ import { getReviewsByStaffId } from "../api/ReviewService";
 import { getStaffDetail } from "../api/StaffAPI"; // Import your StaffService
 import { Review } from "../types/Review";
 import { Staff } from "../types/Staff"; // Import Staff type if you have one
+import { log } from "../utils/logger";
 
 const DoctorDetails: React.FC = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { participantId } = route.params as { participantId: string };
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [doctor, setDoctor] = useState({
-    id: "1",
-    name: "Loading...",
-    specialty: "Loading...",
-    clinic: "Loading...", // This will be updated with the email
-    image: require("../asset/img/hinh1.png"),
-    rating: 4.5,
-    reviews: 120,
-  });
 
+ 
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [staffDetail, setStaffDetail] = useState<Staff>(null)
 
   useEffect(() => {
-    console.log("Participant ID đã nhận:", participantId);
-
     const fetchData = async () => {
-      if (participantId) {
-        // Fetch staff details
-        try {
-          const staffDetail: Staff | null = await getStaffDetail(participantId);
-          if (staffDetail) {
-            setDoctor((prevDoctor) => ({
-              ...prevDoctor,
-              id: staffDetail._id || prevDoctor.id,
-              name: staffDetail.lastName || prevDoctor.name,
-              specialty: staffDetail.specialization || prevDoctor.specialty, // Assuming 'department' is specialty
-              clinic: staffDetail.email || prevDoctor.clinic, // Populate email here
-              // You might want to update image, rating, reviews if available in Staff object
-              // For now, these are static as they are not in the Staff type provided.
-            }));
-          } else {
-            Alert.alert("Lỗi", "Không tìm thấy thông tin nhân viên y tế.");
-          }
-        } catch (error) {
-          console.error("Lỗi khi lấy thông tin nhân viên:", error);
-          Alert.alert("Lỗi", "Không thể tải thông tin nhân viên. Vui lòng thử lại.");
-        }
+      try {
+        setIsLoading(true); // Bắt đầu loading
+        if (participantId) {
+          const staffDetail = await getStaffDetail(participantId);
+          log(staffDetail)
+          setStaffDetail(staffDetail);
 
-        // Fetch reviews
-        try {
           const fetchedReviews = await getReviewsByStaffId(participantId);
           setReviews(fetchedReviews);
-          console.log("Đánh giá đã nhận:", fetchedReviews);
-        } catch (error) {
-          console.error("Lỗi khi lấy đánh giá:", error);
-          Alert.alert("Lỗi", "Không thể tải đánh giá. Vui lòng thử lại.");
         }
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu:", error);
+        Alert.alert("Lỗi", "Không thể tải thông tin. Vui lòng thử lại.");
+      } finally {
+        setIsLoading(false); // Kết thúc loading
       }
     };
 
     fetchData();
   }, [participantId]);
-
-  const stats = [
-    { value: "20+", label: "Khách hàng" },
-    { value: "10+", label: "Kinh nghiệm" },
-    { value: doctor.rating.toString(), label: "Sao" },
-    { value: doctor.reviews.toString(), label: "Đánh giá" },
-  ];
+  
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Đang tải dữ liệu...</Text>
+      </View>
+    );
+  }
 
   const handleGoBack = () => navigation.goBack();
-  const handleBookAppointment = () =>
-    console.log("Nút Đặt lịch hẹn đã nhấn cho bác sĩ:", doctor);
+ 
 
   return (
     <ScrollView
@@ -98,25 +75,30 @@ const DoctorDetails: React.FC = () => {
       </View>
 
       <View style={styles.doctorProfile}>
-        <Image source={doctor.image} style={styles.doctorImage} />
-        <Text style={styles.doctorName}>{doctor.name}</Text>
-        <Text style={styles.specialty}>{doctor.specialty}</Text>
-        <Text style={styles.clinic}>{doctor.clinic}</Text>
+        <Image
+          source={
+            staffDetail?.userId?.avatar
+              ? { uri: staffDetail.userId.avatar }
+              : require("../asset/img/hinh1.png")
+          }
+          style={styles.doctorImage}
+        />
+        <Text
+          style={styles.doctorName}
+        >{`${staffDetail.firstName} ${staffDetail.lastName}`}</Text>
+        <Text style={styles.specialty}>{staffDetail.specialization}</Text>
+        <Text style={styles.clinic}>{staffDetail.email}</Text>
       </View>
 
       <View style={styles.statsContainer}>
-        {stats.map((stat, index) => (
-          <View key={index} style={styles.statItem}>
-            <Text style={styles.statValue}>{stat.value}</Text>
-            <Text style={styles.statLabel}>{stat.label}</Text>
-          </View>
-        ))}
+        
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Giới thiệu</Text>
         <Text style={styles.aboutText}>
-          {doctor.name} là một {doctor.specialty.toLowerCase()} tận tâm, giàu
+          {`${staffDetail.firstName} ${staffDetail.lastName}`} là một{" "}
+          {staffDetail.userId.role === "doctor" ? "bác sĩ" : "y tá"} tận tâm, giàu
           kinh nghiệm làm việc tại phòng khám.
           <Text style={styles.viewMore}> xem thêm</Text>
         </Text>
@@ -138,15 +120,15 @@ const DoctorDetails: React.FC = () => {
             <View key={review._id} style={styles.reviewItem}>
               <Image
                 source={
-                  review.reviewer?.avatar
-                    ? { uri: review.reviewer.avatar }
+                  review.staffId
+                    ? { uri: review.staffId }
                     : require("../asset/img/hinh1.png")
                 }
                 style={styles.reviewerImage}
               />
               <View style={styles.reviewContent}>
                 <Text style={styles.reviewerName}>
-                  {review.reviewer?.name || "Người dùng ẩn danh"}
+                  {review.staffId || "Người dùng ẩn danh"}
                 </Text>
                 <View style={styles.ratingStars}>
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -204,6 +186,16 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     color: "#2E3A59",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F9FAFB",
+  },
+  loadingText: {
+    fontSize: 18,
+    color: "#6B7280",
   },
   doctorProfile: {
     alignItems: "center",

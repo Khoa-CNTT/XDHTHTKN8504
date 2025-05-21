@@ -1,28 +1,16 @@
 import API from "../utils/api";
-import { Staff } from "../types/Staff";
+import { StaffResponse, Staff } from "../types/Staff";
 import { log } from "../utils/logger";
 
-interface GetStaffResponse {
-  message: string;
-  staff: Staff[]; // server trả về array dù chỉ 1 phần tử
-}
-
-export const getStaffDetail = async (
-  staffId: string
-): Promise<Staff | null> => {
+export const getStaffDetail = async (id: string): Promise<Staff> => {
   try {
-    const response = await API.get<GetStaffResponse>(`get-staff-detail/${staffId}`);
-
-    log("[API Staff] " + response.data.message);
-    log("[API Staff] Dữ liệu trả về:", response.data.staff);
-
-    if (response.data.staff && response.data.staff.length > 0) {
-      return response.data.staff[0]; // lấy phần tử đầu tiên
-    }
-
-    return null;
+    const response = await API.get<StaffResponse>(
+      `auth/get-staff-detail/${id}`
+    );
+    return response.data.staff;
   } catch (error: any) {
-    log("[API Staff] Lỗi khi lấy thông tin nhân viên:", error.message || error);
-    return null;
+    log(error);
+    // Nên ném lỗi tiếp để caller biết có lỗi
+    throw error;
   }
 };
