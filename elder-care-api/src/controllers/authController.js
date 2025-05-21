@@ -839,7 +839,9 @@ const authController = {
       const { search, gender, dateFrom, dateTo, sort = "newest" } = req.query;
 
       // Lọc theo createdAt của User
-      const userFilter = {};
+      const userFilter = {
+        role: "family_member",
+      };
       if (dateFrom || dateTo) {
         userFilter.createdAt = {};
         if (dateFrom) userFilter.createdAt.$gte = new Date(dateFrom);
@@ -907,6 +909,36 @@ const authController = {
 
     } catch (error) {
       res.status(500).json({ message: error.message });
+    }
+  },
+
+  getStaffDetail: async (req, res) => {
+    try {
+      const { userId } = req.params;
+
+      // Tìm trong Doctor trước
+      let staff = await Doctor.findOne({ userId }).populate('userId');
+      let type = "doctor";
+
+      if (!staff) {
+        // Nếu không phải doctor, tìm trong Nurse
+        staff = await Nurse.findOne({ userId }).populate('userId');
+        type = "nurse";
+      }
+
+      if (!staff) {
+        return res.status(404).json({ message: "Không tìm thấy nhân viên với userId này." });
+      }
+
+      return res.status(200).json({
+        type,
+        staff
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Error",
+        error
+      })
     }
   },
 

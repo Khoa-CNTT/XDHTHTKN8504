@@ -9,7 +9,7 @@ import { toast } from "react-hot-toast";
 import { Button, FromToDate, Select } from "../../components/Form";
 import { PatientTable } from "../../components/Tables";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchCustomers, deleteCustomerByAdmin, fetchCustomerCounts } from "../../store/customerSlice.js";
+import { fetchCustomers, deleteCustomerByAdmin, fetchCustomerCounts, searchCustomers } from "../../store/customerSlice.js";
 import { getUserIdFromToken } from "../../utils/jwtHelper.js";
 import { io } from "socket.io-client";
 import axios from "axios";
@@ -40,6 +40,9 @@ function Patients() {
       datas: sortsDatas.genderFilter,
     },
   ];
+  console.log(gender.name);
+
+
   // boxes
   const boxes = [
     {
@@ -98,6 +101,27 @@ function Patients() {
 
   if (loading) return <Loading />;
   if (error) return <p>Lỗi: {error}</p>;
+
+  const handleFilter = () => {
+    const queryParams = {};
+
+    if (gender.name !== "Giới tính...") {
+      queryParams.gender = gender.name;
+    }
+
+    if (status.name === "khách hàng mới nhất") {
+      queryParams.sort = "newest";
+    } else if (status.name === "khách hàng cũ nhất") {
+      queryParams.sort = "oldest";
+    }
+
+    if (startDate && endDate) {
+      queryParams.startDate = new Date(startDate).toISOString();
+      queryParams.endDate = new Date(endDate).toISOString();
+    }
+
+    dispatch(searchCustomers(queryParams));
+  };
 
   return (
     <Layout>
@@ -160,7 +184,13 @@ function Patients() {
               datas={item.datas}
             >
               <div className="h-14 w-full text-xs text-main rounded-md bg-dry border border-border px-4 flex items-center justify-between">
-                <p>{item.selected.name}</p>
+                <p>{
+                  item.selected.name === "male"
+                    ? "Nam"
+                    : item.selected.name === "female"
+                      ? "Nữ"
+                      : item.selected.name
+                }</p>
                 <BiChevronDown className="text-xl" />
               </div>
             </Select>
@@ -176,9 +206,7 @@ function Patients() {
           <Button
             label="Filter"
             Icon={MdFilterList}
-            onClick={() => {
-              toast.error("Filter data is not available yet");
-            }}
+            onClick={handleFilter}
           />
         </div>
         <div className="mt-8 w-full overflow-x-scroll">

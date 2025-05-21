@@ -381,11 +381,11 @@ export const sortsDatas = {
     },
     {
       id: 2,
-      name: "Nữ",
+      name: "female",
     },
     {
       id: 3,
-      name: "Nam",
+      name: "male",
     },
   ],
   bloodTypeFilter: [
