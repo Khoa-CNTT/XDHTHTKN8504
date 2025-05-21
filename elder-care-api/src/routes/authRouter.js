@@ -115,5 +115,10 @@ router.get(
   authController.searchCustomer
 )
 
+router.get(
+  '/get-staff-detail/:userId',
+  authController.getStaffDetail
+)
+
 
 export default router;
