@@ -845,6 +845,14 @@ const bookingController = {
         balance: wallet.balance,
         transactions: wallet.transactions,
       });
+      booking.participants.forEach((participant) => {
+        io.to("6828a04df275d961ac52afca").emit("canceledBooking", {
+          message: `Booking #${booking._id} đã bị hủy bởi người dùng.`,
+          bookingId: booking._id,
+          canceledAt: new Date(),
+        });
+      });
+      
 
       return res.status(200).json({
         message: "Hủy lịch hẹn thành công và cập nhật ví hoàn tiền.",
