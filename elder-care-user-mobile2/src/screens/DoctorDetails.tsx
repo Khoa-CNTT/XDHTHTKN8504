@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,19 +6,72 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRoute, useNavigation } from "@react-navigation/native";
+import { getReviewsByStaffId } from "../api/ReviewService";
+import { getStaffDetail } from "../api/StaffAPI"; // Import your StaffService
+import { Review } from "../types/Review";
+import { Staff } from "../types/Staff"; // Import Staff type if you have one
 
 const DoctorDetails: React.FC = () => {
-  const doctor = {
+  const route = useRoute();
+  const navigation = useNavigation();
+  const { participantId } = route.params as { participantId: string };
+
+  const [doctor, setDoctor] = useState({
     id: "1",
-    name: "Luu Nguyen Van",
-    specialty: "Doctor",
-    clinic: "Luu.nguyenvan2511@gmail.com",
+    name: "Loading...",
+    specialty: "Loading...",
+    clinic: "Loading...", // This will be updated with the email
     image: require("../asset/img/hinh1.png"),
     rating: 4.5,
     reviews: 120,
-  };
+  });
+
+  const [reviews, setReviews] = useState<Review[]>([]);
+
+  useEffect(() => {
+    console.log("Participant ID đã nhận:", participantId);
+
+    const fetchData = async () => {
+      if (participantId) {
+        // Fetch staff details
+        try {
+          const staffDetail: Staff | null = await getStaffDetail(participantId);
+          if (staffDetail) {
+            setDoctor((prevDoctor) => ({
+              ...prevDoctor,
+              id: staffDetail._id || prevDoctor.id,
+              name: staffDetail.lastName || prevDoctor.name,
+              specialty: staffDetail.specialization || prevDoctor.specialty, // Assuming 'department' is specialty
+              clinic: staffDetail.email || prevDoctor.clinic, // Populate email here
+              // You might want to update image, rating, reviews if available in Staff object
+              // For now, these are static as they are not in the Staff type provided.
+            }));
+          } else {
+            Alert.alert("Lỗi", "Không tìm thấy thông tin nhân viên y tế.");
+          }
+        } catch (error) {
+          console.error("Lỗi khi lấy thông tin nhân viên:", error);
+          Alert.alert("Lỗi", "Không thể tải thông tin nhân viên. Vui lòng thử lại.");
+        }
+
+        // Fetch reviews
+        try {
+          const fetchedReviews = await getReviewsByStaffId(participantId);
+          setReviews(fetchedReviews);
+          console.log("Đánh giá đã nhận:", fetchedReviews);
+        } catch (error) {
+          console.error("Lỗi khi lấy đánh giá:", error);
+          Alert.alert("Lỗi", "Không thể tải đánh giá. Vui lòng thử lại.");
+        }
+      }
+    };
+
+    fetchData();
+  }, [participantId]);
 
   const stats = [
     { value: "20+", label: "Khách hàng" },
@@ -27,9 +80,9 @@ const DoctorDetails: React.FC = () => {
     { value: doctor.reviews.toString(), label: "Đánh giá" },
   ];
 
-  const handleGoBack = () => console.log("Back button pressed");
+  const handleGoBack = () => navigation.goBack();
   const handleBookAppointment = () =>
-    console.log("Book Appointment pressed for doctor:", doctor);
+    console.log("Nút Đặt lịch hẹn đã nhấn cho bác sĩ:", doctor);
 
   return (
     <ScrollView
@@ -64,7 +117,7 @@ const DoctorDetails: React.FC = () => {
         <Text style={styles.sectionTitle}>Giới thiệu</Text>
         <Text style={styles.aboutText}>
           {doctor.name} là một {doctor.specialty.toLowerCase()} tận tâm, giàu
-          kinh nghiệm làm việc tại {doctor.clinic}.
+          kinh nghiệm làm việc tại phòng khám.
           <Text style={styles.viewMore}> xem thêm</Text>
         </Text>
       </View>
@@ -73,41 +126,51 @@ const DoctorDetails: React.FC = () => {
         <View style={styles.reviewHeader}>
           <Text style={styles.sectionTitle}>Đánh giá</Text>
           <TouchableOpacity
-            onPress={() => console.log("See all reviews pressed")}
+            onPress={() => console.log("Xem tất cả đánh giá đã nhấn")}
             activeOpacity={0.7}
           >
             <Text style={styles.seeAll}>Xem tất cả</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.reviewItem}>
-          <Image
-            source={require("../asset/img/hinh1.png")}
-            style={styles.reviewerImage}
-          />
-          <View style={styles.reviewContent}>
-            <Text style={styles.reviewerName}>Lê Đình Long</Text>
-            <View style={styles.ratingStars}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Ionicons
-                  key={star}
-                  name="star"
-                  size={18}
-                  color="#FFD700"
-                  style={styles.star}
-                />
-              ))}
+
+        {reviews.length > 0 ? (
+          reviews.map((review) => (
+            <View key={review._id} style={styles.reviewItem}>
+              <Image
+                source={
+                  review.reviewer?.avatar
+                    ? { uri: review.reviewer.avatar }
+                    : require("../asset/img/hinh1.png")
+                }
+                style={styles.reviewerImage}
+              />
+              <View style={styles.reviewContent}>
+                <Text style={styles.reviewerName}>
+                  {review.reviewer?.name || "Người dùng ẩn danh"}
+                </Text>
+                <View style={styles.ratingStars}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Ionicons
+                      key={star}
+                      name={star <= review.rating ? "star" : "star-outline"}
+                      size={18}
+                      color="#FFD700"
+                      style={styles.star}
+                    />
+                  ))}
+                </View>
+                <Text style={styles.reviewText}>{review.comment}</Text>
+              </View>
             </View>
-            <Text style={styles.reviewText}>
-              Dr. Lưu là một chuyên gia tận tâm luôn quan tâm đến bệnh nhân
-              của mình. Tôi rất khuyên bạn chọn bác sĩ này.
-            </Text>
-          </View>
-        </View>
+          ))
+        ) : (
+          <Text style={styles.noReviewsText}>Chưa có đánh giá nào.</Text>
+        )}
       </View>
 
       <TouchableOpacity
         style={styles.bookButton}
-        onPress={handleBookAppointment}
+        onPress={handleGoBack}
         activeOpacity={0.8}
       >
         <Text style={styles.bookButtonText}>Quay lại</Text>
@@ -176,6 +239,11 @@ const styles = StyleSheet.create({
   clinic: {
     fontSize: 15,
     color: "#6B7280",
+  },
+  participantIdText: {
+    fontSize: 14,
+    color: "#888",
+    marginTop: 8,
   },
   statsContainer: {
     flexDirection: "row",
@@ -246,6 +314,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 10,
     elevation: 2,
+    marginBottom: 12,
   },
   reviewerImage: {
     width: 50,
@@ -273,6 +342,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#6B7280",
     lineHeight: 22,
+  },
+  noReviewsText: {
+    textAlign: "center",
+    fontSize: 16,
+    color: "#6B7280",
+    marginTop: 20,
   },
   bookButton: {
     backgroundColor: "#28a745",
