@@ -9,6 +9,8 @@ import useCompletedBookingStore from "../stores/completedBookingStore";
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid"; 
 import { useChatStore } from "./chatStore";
+import * as Notifications from "expo-notifications";
+import { playNotificationSound } from "@/utils/soundService";
 
 
 type Payload = Partial<{
@@ -51,9 +53,19 @@ export const useSocketStore = create<SocketStore>((set) => {
       }
     });
 
-    socket.on("bookingAccepted", (bookingId: string) => {
+    socket.on("bookingAccepted", async(bookingId: string) => {
+      await playNotificationSound();
+      Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Đã tiếp nhận hồ sơ chăm sóc",
+          body: "Bạn đã tiếp nhận đơn đặt lịch thành công, lịch chăm sóc sẽ được đăng kí!",
+          sound: "default",
+        },
+        trigger: null, // gửi ngay lập tức
+      });
       fetchSchedules();
       getNearestSchedule();
+
     });
 
     // Lắng nghe tin nhắn

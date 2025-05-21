@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { Vibration } from "react-native";
 import { playNotificationSound } from "../utils/soundService";
-import { sendLocalNotification } from "../utils/notificationService";
 
 interface ModalState {
   visible: boolean;
@@ -58,12 +57,10 @@ export const useModalStore = create<ModalState>((set) => {
         onConfirm,
         playSound = true,
         vibrate = true,
-        notify = true,
       } = options || {};
 
       if (vibrate) Vibration.vibrate(300);
       if (playSound) await playNotificationSound(type);
-      if (notify) await sendLocalNotification({ title, body: message });
 
       set({
         visible: true,

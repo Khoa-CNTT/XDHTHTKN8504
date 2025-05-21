@@ -16,7 +16,7 @@ const getStatusLabel = (status: string) => {
     in_progress: "Đang chăm sóc",
     check_out: "Hoàn tất, chờ xác nhận",
     completed: "Đã hoàn tất",
-    cancelled: "Đã hủy",
+    canceled: "Lịch bị hủy",
     default: "Không rõ trạng thái",
   };
   return statusMap[status] || statusMap["default"];

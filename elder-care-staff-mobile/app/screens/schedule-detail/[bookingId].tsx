@@ -4,21 +4,18 @@ import { Text, Button } from "react-native-paper";
 import { format } from "date-fns";
 import { useLocalSearchParams } from "expo-router";
 import useBookingStore from "../../../stores/BookingStore";
+import { log } from "@/utils/logger";
 
 const Section = ({
   title,
-  subtitle,
   children,
 }: {
   title: string;
-  subtitle?: string;
   children: React.ReactNode;
 }) => (
   <View style={styles.section}>
     <Text style={styles.sectionTitle}>{title}</Text>
-    {subtitle ? <Text style={styles.sectionSubtitle}>{subtitle}</Text> : null}
     <View style={styles.sectionContent}>{children}</View>
-    <View style={styles.separator} />
   </View>
 );
 
@@ -29,15 +26,16 @@ const LabelText = ({
   label: string;
   value?: string | number | null;
 }) => (
-  <View style={styles.labelContainer}>
-    <Text style={styles.labelText}>{label}</Text>
-    <Text style={styles.valueText}>{value ?? "-"}</Text>
+  <View style={styles.row}>
+    <Text style={styles.label}>{label}</Text>
+    <Text style={styles.value}>{value ?? "—"}</Text>
   </View>
 );
 
 const BookingDetailScreen = () => {
   const { bookingId } = useLocalSearchParams();
   const { booking, loading, fetchBooking } = useBookingStore();
+  log("booking check: ", bookingId)
 
   useEffect(() => {
     if (!booking && typeof bookingId === "string") {
@@ -45,11 +43,17 @@ const BookingDetailScreen = () => {
     }
   }, [bookingId]);
 
+  const handleRetry = () => {
+    if (typeof bookingId === "string") {
+      fetchBooking(bookingId);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#000" />
-        <Text style={styles.loadingText}>Đang tải thông tin...</Text>
+        <ActivityIndicator size="large" color="#007bff" />
+        <Text style={styles.loadingText}>Đang tải thông tin đặt lịch...</Text>
       </View>
     );
   }
@@ -57,18 +61,11 @@ const BookingDetailScreen = () => {
   if (!booking) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.loadingText}>
-          Không tìm thấy thông tin lịch hẹn.
-        </Text>
+        <Text style={styles.loadingText}>Không tìm thấy lịch hẹn.</Text>
         <Button
           mode="outlined"
-          onPress={() => {
-            if (typeof bookingId === "string") {
-              fetchBooking(bookingId);
-            }
-          }}
+          onPress={handleRetry}
           style={styles.retryButton}
-          labelStyle={{ color: "#000" }}
         >
           Thử lại
         </Button>
@@ -88,37 +85,20 @@ const BookingDetailScreen = () => {
   } = booking;
 
   const healthInfo = profileId?.healthInfo?.[0];
-  const finalPrice = Math.max(0, totalPrice - totalDiscount);
+  log("booking Data: ", booking)
+
 
   return (
     <ScrollView style={styles.container}>
-      <Section
-        title="Thông tin đặt lịch"
-        subtitle={
-          createdAt
-            ? `Lên lịch lúc ${format(new Date(createdAt), "dd/MM/yyyy")}`
-            : undefined
-        }
-      >
-        <LabelText label="Dịch vụ" value={serviceId?.name} />
+      <Text style={styles.invoiceTitle}>HÓA ĐƠN DỊCH VỤ Y TẾ</Text>
+      <Text style={styles.invoiceDate}>
+        Ngày tạo:{" "}
+        {createdAt ? format(new Date(createdAt), "dd/MM/yyyy HH:mm") : "—"}
+      </Text>
+
+      <Section title="1. Thông tin khách hàng">
         <LabelText
-          label="Ngày bắt đầu"
-          value={
-            repeatFrom ? format(new Date(repeatFrom), "dd/MM/yyyy") : undefined
-          }
-        />
-        <LabelText
-          label="Ngày kết thúc"
-          value={
-            repeatTo ? format(new Date(repeatTo), "dd/MM/yyyy") : undefined
-          }
-        />
-        <LabelText
-          label="Thời gian"
-          value={timeSlot ? `${timeSlot.start} - ${timeSlot.end}` : undefined}
-        />
-        <LabelText
-          label="Khách hàng"
+          label="Họ tên"
           value={
             profileId
               ? `${profileId.firstName ?? ""} ${
@@ -127,51 +107,85 @@ const BookingDetailScreen = () => {
               : undefined
           }
         />
-        <LabelText
-          label="Địa chỉ"
-          value={profileId?.address ?? "Không có địa chỉ"}
-        />
-        <LabelText
-          label="Số điện thoại"
-          value={profileId?.phone ?? "Không có số điện thoại"}
-        />
+        <LabelText label="Số điện thoại" value={profileId?.phone} />
+        <LabelText label="Địa chỉ" value={profileId?.address} />
       </Section>
 
-      <Section
-        title="Thông tin sức khỏe"
-        subtitle="Thông tin được cập nhật từ hồ sơ cá nhân"
-      >
+      <Section title="2. Thông tin sức khỏe">
         <LabelText
           label="Chiều cao"
-          value={healthInfo?.height ? `${healthInfo.height} cm` : "?"}
+          value={healthInfo?.height ? `${healthInfo.height} cm` : undefined}
         />
         <LabelText
           label="Cân nặng"
-          value={healthInfo?.weight ? `${healthInfo.weight} kg` : "?"}
+          value={healthInfo?.weight ? `${healthInfo.weight} kg` : undefined}
+        />
+        <LabelText label="Nhóm máu" value={healthInfo?.typeBlood} />
+
+        <View style={{ marginTop: 8 }}>
+          <Text
+            style={{ color: "#34495e", fontWeight: "bold", marginBottom: 4 }}
+          >
+            Các bệnh lý, tình trạng sức khỏe:
+          </Text>
+          {healthInfo?.condition && healthInfo.condition.length > 0 ? (
+            healthInfo.condition.map((cond) => (
+              <Text key={cond._id} style={{ color: "#2c3e50", marginLeft: 8 }}>
+                - {cond.name}
+              </Text>
+            ))
+          ) : (
+            <Text style={{ color: "#7f8c8d", fontStyle: "italic" }}>
+              Không có bệnh lý nào được ghi nhận
+            </Text>
+          )}
+        </View>
+
+        {healthInfo?.notes ? (
+          <View style={{ marginTop: 12 }}>
+            <Text
+              style={{ color: "#34495e", fontWeight: "bold", marginBottom: 4 }}
+            >
+              Ghi chú sức khỏe:
+            </Text>
+            <Text style={{ color: "#2c3e50", marginLeft: 8 }}>
+              {healthInfo.notes}
+            </Text>
+          </View>
+        ) : null}
+      </Section>
+
+      <Section title="3. Thông tin dịch vụ">
+        <LabelText label="Dịch vụ" value={serviceId?.name} />
+        <LabelText
+          label="Ngày bắt đầu"
+          value={repeatFrom && format(new Date(repeatFrom), "dd/MM/yyyy")}
         />
         <LabelText
-          label="Nhóm máu"
-          value={healthInfo?.typeBlood ?? "Không rõ"}
+          label="Ngày kết thúc"
+          value={repeatTo && format(new Date(repeatTo), "dd/MM/yyyy")}
+        />
+        <LabelText
+          label="Khung giờ"
+          value={timeSlot && `${timeSlot.start} - ${timeSlot.end}`}
         />
       </Section>
 
-      <Section
-        title="Thông tin thanh toán"
-        subtitle="Chi tiết về chi phí và ưu đãi"
-      >
+      <Section title="4. Thông tin thanh toán">
         <LabelText
-          label="Tổng giá gốc"
+          label="Tổng giá"
           value={totalPrice ? `${totalPrice.toLocaleString()} VND` : undefined}
         />
         <LabelText
-          label="Tổng đã giảm"
+          label="Giảm giá"
           value={
-            totalDiscount ? `${totalDiscount.toLocaleString()} VND` : undefined
+            0
           }
         />
-        <View style={{ marginTop: 8 }}>
-          <Text style={styles.finalPrice}>
-            Thành tiền cuối cùng: {finalPrice.toLocaleString()} VND
+        <View style={styles.finalRow}>
+          <Text style={styles.finalLabel}>Nhận được</Text>
+          <Text style={styles.finalValue}>
+            {totalDiscount.toLocaleString()} VND
           </Text>
         </View>
       </Section>
@@ -181,73 +195,91 @@ const BookingDetailScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#fff",
-    padding: 24,
+    backgroundColor: "#f7f9fc",
+    padding: 16,
+  },
+  invoiceTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#2c3e50",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  invoiceDate: {
+    textAlign: "center",
+    color: "#7f8c8d",
+    marginBottom: 16,
   },
   section: {
-    marginBottom: 24,
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    shadowColor: "#ccc",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 2,
   },
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#000",
-    marginBottom: 4,
-    fontFamily: "serif",
-  },
-  sectionSubtitle: {
-    fontSize: 14,
-    color: "#444",
-    marginBottom: 12,
-    fontStyle: "italic",
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#34495e",
+    marginBottom: 10,
   },
   sectionContent: {
-    paddingLeft: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#ecf0f1",
+    paddingTop: 8,
   },
-  labelContainer: {
+  row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    paddingVertical: 6,
   },
-  labelText: {
-    fontSize: 16,
-    color: "#000",
-    fontFamily: "serif",
+  label: {
+    color: "#7f8c8d",
+    fontSize: 15,
+    flex: 1,
   },
-  valueText: {
-    fontSize: 16,
-    color: "#000",
-    fontFamily: "serif",
-    maxWidth: "65%",
+  value: {
+    color: "#2c3e50",
+    fontSize: 15,
+    fontWeight: "500",
+    flex: 1,
     textAlign: "right",
   },
-  finalPrice: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#000",
-    fontFamily: "serif",
+  finalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#ccc",
+    paddingTop: 10,
   },
-  separator: {
-    height: 1,
-    backgroundColor: "#aaa",
-    marginTop: 16,
+  finalLabel: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#000",
+  },
+  finalValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#e74c3c",
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
-    backgroundColor: "#fff",
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: "#000",
-    fontFamily: "serif",
+    color: "#333",
   },
   retryButton: {
-    borderColor: "#000",
+    marginTop: 12,
   },
 });
 

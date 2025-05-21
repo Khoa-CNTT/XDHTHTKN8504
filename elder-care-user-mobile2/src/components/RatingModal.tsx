@@ -7,43 +7,63 @@ import {
   TouchableOpacity,
   TextInput,
   Pressable,
-  Animated,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { createReview } from "../api/ReviewService"; // import hàm API tạo review
 
 type RatingModalProps = {
   visible: boolean;
   onClose: () => void;
-  onSubmit: (rating: number, comment: string) => void;
+  scheduleId: string; // cần truyền scheduleId để tạo review
+  onSuccess?: () => void; // callback khi tạo review thành công
 };
 
 const RatingModal: React.FC<RatingModalProps> = ({
   visible,
   onClose,
-  onSubmit,
+  scheduleId,
+  onSuccess,
 }) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
-  const [pressedStar, setPressedStar] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleStarPress = (star: number) => {
     setRating(star);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (rating === 0) {
-      alert("Vui lòng chọn số sao đánh giá");
+      Alert.alert("Thông báo", "Vui lòng chọn số sao đánh giá");
       return;
     }
-    onSubmit(rating, comment);
-    setRating(0);
-    setComment("");
+    setLoading(true);
+    try {
+      const newReview = await createReview(scheduleId, { rating, comment });
+      if (newReview) {
+        Alert.alert("Thành công", "Đánh giá đã được gửi");
+        setRating(0);
+        setComment("");
+        onSuccess && onSuccess();
+        onClose();
+      } else {
+        Alert.alert("Lỗi", "Không thể gửi đánh giá. Vui lòng thử lại.");
+      }
+    } catch (error) {
+      Alert.alert("Lỗi", "Có lỗi xảy ra. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleClose = () => {
-    setRating(0);
-    setComment("");
-    onClose();
+    if (!loading) {
+      setRating(0);
+      setComment("");
+      onClose();
+    }
   };
 
   return (
@@ -55,7 +75,9 @@ const RatingModal: React.FC<RatingModalProps> = ({
     >
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
-          <Text style={styles.title}>Bạn có cảm thấy hài lòng nhân viên chăm sóc?</Text>
+          <Text style={styles.title}>
+            Bạn có cảm thấy hài lòng nhân viên chăm sóc?
+          </Text>
 
           <View style={styles.starsContainer}>
             {[1, 2, 3, 4, 5].map((star) => {
@@ -64,13 +86,12 @@ const RatingModal: React.FC<RatingModalProps> = ({
                 <Pressable
                   key={star}
                   onPress={() => handleStarPress(star)}
-                  onPressIn={() => setPressedStar(star)}
-                  onPressOut={() => setPressedStar(null)}
                   style={({ pressed }) => [
                     styles.starButton,
                     pressed && { transform: [{ scale: 1.2 }] },
                   ]}
                   android_ripple={{ color: "#FFD700" }}
+                  disabled={loading}
                 >
                   <Ionicons
                     name={filled ? "star" : "star-outline"}
@@ -92,6 +113,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
             onChangeText={setComment}
             textAlignVertical="top"
             maxLength={250}
+            editable={!loading}
           />
 
           <View style={styles.buttonsContainer}>
@@ -99,6 +121,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
               style={[styles.button, styles.cancelButton]}
               onPress={handleClose}
               activeOpacity={0.8}
+              disabled={loading}
             >
               <Text style={styles.cancelText}>Hủy</Text>
             </TouchableOpacity>
@@ -106,8 +129,13 @@ const RatingModal: React.FC<RatingModalProps> = ({
               style={[styles.button, styles.submitButton]}
               onPress={handleSubmit}
               activeOpacity={0.8}
+              disabled={loading}
             >
-              <Text style={styles.submitText}>Gửi</Text>
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.submitText}>Gửi</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>

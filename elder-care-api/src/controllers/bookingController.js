@@ -512,6 +512,117 @@ const bookingController = {
                 .status(500)
                 .json({ message: "Lỗi server", error: error.message });
         }
+
+      }, 60 * 1000);
+
+      const io = getIO();
+
+      const populatedBooking = await Booking.findById(newBooking._id)
+        .populate("serviceId")
+        .populate("profileId");
+
+      const targetRole = populatedBooking?.serviceId?.role;
+
+      if (targetRole === "nurse" || targetRole === "doctor") {
+        io.to(`staff_${targetRole}`).emit("newBookingSignal", populatedBooking);
+      }
+
+      io.to("staff_admin").emit("newBookingCreated", populatedBooking);
+      io.to(userId.toString()).emit("newBookingCreated", {
+        title: "☑️Đặt lịch thành công",
+        message:
+          "Bạn đã đặt lịch thành công, chúng tôi sẽ thông báo cho bạn khi có nhân viên y tế chấp nhận!",
+      });
+      return res.status(201).json({
+        message: "Tạo booking theo gói thành công.",
+        data: newBooking,
+        wallet,
+        newPayment,
+      });
+    } catch (error) {
+      console.error("Lỗi tạo booking:", error);
+      return res.status(500).json({
+        message: "Đã xảy ra lỗi khi tạo booking theo gói.",
+        error,
+      });
+    }
+  },
+
+  acceptBooking: async (req, res) => {
+    const io = getIO();
+
+    try {
+      const { bookingId } = req.params;
+      const staff = req.user;
+
+      const booking = await Booking.findById(bookingId);
+      if (!booking)
+        return res.status(404).json({ message: "Đơn đặt lịch không tồn tại" });
+
+      const service = await Service.findById(booking.serviceId);
+      if (!service)
+        return res
+          .status(404)
+          .json({ message: "Không tìm thấy dịch vụ liên quan" });
+
+      const profile = await Profile.findById(booking.profileId);
+      if (!profile)
+        return res
+          .status(404)
+          .json({ message: "Không tìm thấy thông tin bệnh nhân" });
+
+      const patientName = `${profile.firstName} ${profile.lastName}`;
+      const timeSlots = Array.isArray(booking.timeSlot)
+        ? booking.timeSlot
+        : [booking.timeSlot];
+
+      const timeZone = "Asia/Ho_Chi_Minh";
+
+      let currentDate = moment.tz(booking.repeatFrom, timeZone);
+      const repeatTo = moment.tz(booking.repeatTo, timeZone);
+      const repeatInterval = booking.repeatInterval;
+      const schedules = [];
+
+      const add7Hours = (date) => {
+        return moment(date).add(7, "hours").toDate();
+      };
+
+      while (currentDate <= repeatTo) {
+        for (const timeSlot of timeSlots) {
+          const startDateTime = moment.tz(
+            `${currentDate.format("YYYY-MM-DD")}T${timeSlot.start}:00`,
+            "Asia/Ho_Chi_Minh"
+          );
+          const endDateTime = moment.tz(
+            `${currentDate.format("YYYY-MM-DD")}T${timeSlot.end}:00`,
+            "Asia/Ho_Chi_Minh"
+          );
+
+          // Nếu giờ kết thúc nhỏ hơn giờ bắt đầu (02:00 sáng qua ngày hôm sau), cộng thêm 1 ngày
+          if (endDateTime.isBefore(startDateTime)) {
+            endDateTime.add(1, "days"); // Cộng thêm một ngày cho giờ kết thúc
+          }
+
+          // Cộng thêm 7 giờ vào thời gian
+          const adjustedStartDateTime = add7Hours(startDateTime);
+          const adjustedEndDateTime = add7Hours(endDateTime);
+
+          // Kiểm tra trùng lịch
+          const isConflict = await Schedule.findOne({
+            staffId: staff._id,
+            date: {
+              $gte: currentDate.clone().startOf("day").toDate(),
+              $lte: currentDate.clone().endOf("day").toDate(),
+            },
+            "timeSlots.start": { $lt: adjustedEndDateTime },
+            "timeSlots.end": { $gt: adjustedStartDateTime },
+          });
+
+          if (isConflict) {
+            return res.status(409).json({
+              message: `Lịch bị trùng vào ngày ${currentDate.format(
+                "DD/MM/YYYY"
+
     },
 
     getBookingById: async (req, res) => {
@@ -548,6 +659,7 @@ const bookingController = {
             return res.status(500).json({
                 message: "Internal server error",
                 error: error.message,
+
             });
         }
     },
@@ -596,7 +708,7 @@ const bookingController = {
             return res.status(200).json({
                 message: "Danh sách booking đã hoàn thành trong tháng",
                 bookings: results,
-            });
+            });d
         } catch (error) {
             console.error("Lỗi khi lấy booking:", error);
             return res
@@ -1026,7 +1138,202 @@ const bookingController = {
                 error
             })
         }
+
+      });
+
+      res.status(200).json({ patients: uniqueProfiles });
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách bệnh nhân:", error);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  deleteBookingById: async (req, res) => {
+    try {
+      const { userId } = req.user;
+      const { bookingId } = req.params;
+
+      const deleteBooking = await Booking.findByIdAndDelete({ _id: bookingId });
+
+      if (!deleteBooking) {
+        return res.status(404).json({
+          message: "Không tìm thấy booking",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Xóa booking thành công!",
+        booking: deleteBooking,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Lỗi khi xóa booking",
+        error,
+      });
+    }
+  },
+
+  deleteAllBookings: async (req, res) => {
+    try {
+      await Booking.deleteMany();
+      return res
+        .status(200)
+        .json({ message: "Tất cả bookings đã được xoá thành công." });
+    } catch (error) {
+      console.error("Lỗi khi xóa booking:", error);
+      return res
+        .status(500)
+        .json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  countBookingsPerMonthLast12Months: async (req, res) => {
+    try {
+      const now = new Date();
+      const startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+      // Lấy số lượng booking mỗi tháng trong 12 tháng gần nhất
+      const result = await Booking.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: startDate },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" },
+            },
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $sort: { "_id.year": 1, "_id.month": 1 },
+        },
+      ]);
+
+      // Chuẩn hóa dữ liệu trả về đủ 12 tháng
+      const labels = [];
+      const counts = [];
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+        const year = d.getFullYear();
+        const month = d.getMonth() + 1;
+        const found = result.find(
+          (r) => r._id.year === year && r._id.month === month
+        );
+        labels.push(`${month < 10 ? "0" + month : month}/${year}`);
+        counts.push(found ? found.count : 0);
+      }
+
+      return res.status(200).json({
+        labels,
+        counts,
+      });
+    } catch (error) {
+      console.error("Lỗi khi đếm booking 12 tháng:", error);
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
+    }
+  },
+
+  getBookingForCustomer2: async (req, res) => {
+    try {
+      const { userId } = req.params;
+
+      if (!userId) {
+        return res.status(400).json({ message: "Thiếu userId trong params" });
+      }
+
+      const bookings = await Booking.find({ createdBy: userId }).populate(
+        "serviceId"
+      );
+
+      if (!bookings || bookings.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "Không tìm thấy booking nào cho userId này" });
+      }
+
+      const filteredBookings = bookings.filter((booking) => booking.serviceId);
+
+      return res.status(200).json({
+        message: "Lấy booking theo userId thành công!",
+        data: filteredBookings,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Internal server error",
+        error: error.message,
+      });
+    }
+  },
+
+  getBookingDetail: async (req, res) => {
+    try {
+      const { bookingId } = req.params;
+
+      if (!bookingId) {
+        return res
+          .status(400)
+          .json({ message: "Thiếu bookingId trong params" });
+      }
+
+      const booking = await Booking.findById(bookingId)
+        .populate("profileId")
+        .populate("serviceId")
+        .populate("participants.userId", "firstName lastName role");
+
+      if (!booking) {
+        return res.status(404).json({ message: "Không tìm thấy booking" });
+      }
+
+      return res.status(200).json({
+        message: "Lấy chi tiết booking thành công",
+        booking,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        error,
+      });
+    }
+  },
+  getBookingForParticipant: async (req, res) => {
+    try {
+      const userId = req.user._id;
+      if (!userId) {
+        return res.status(400).json({ message: "Thiếu userId" });
+      }
+
+      const now = new Date();
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const firstDayOfNextMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        1
+      );
+
+      const bookings = await Booking.find({
+        "participants.userId": userId,
+        createdAt: { $gte: firstDayOfMonth, $lt: firstDayOfNextMonth }, // lọc tháng hiện tại
+      }).populate("serviceId profileId");
+
+      return res.status(200).json({
+        message: "Lấy booking thành công!",
+        data: bookings,
+      });
+    } catch (error) {
+      console.error("Lỗi khi lấy booking:", error);
+      return res
+        .status(500)
+        .json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
     },
+
 };
 
 export default bookingController;

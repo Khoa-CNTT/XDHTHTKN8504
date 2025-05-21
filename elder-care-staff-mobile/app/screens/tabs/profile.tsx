@@ -75,7 +75,7 @@ export default function Profile() {
         router.push("/screens/Test");
         break;
       case "Hỗ trợ khách hàng":
-        router.push("/screens/book-a-service");
+        
         break;
       case "Điều khoản sử dụng":
         // router.push("/screens/terms-screen");
@@ -101,7 +101,15 @@ export default function Profile() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Hồ sơ</Text>
+      <View style={styles.header}>
+              <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()}>
+                <Ionicons name="arrow-back" size={33} color="#000" />
+              </TouchableOpacity>
+              <Text style={styles.headerTitle}>Dịch vụ</Text>
+              <TouchableOpacity activeOpacity={0.7}>
+                <Ionicons name="person-circle-outline" size={33} color="#000" />
+              </TouchableOpacity>
+      </View>
 
       {/* Avatar */}
       <View style={styles.profileSection}>
@@ -143,13 +151,25 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 20 },
+  container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 20},
   header: {
-    fontSize: 30,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    backgroundColor: "#fff",
+    marginBottom: 20
+  },
+  headerTitle: {
+    fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 20,
-    color: "#28A745",
+    marginBottom: 10,
+    color: "#000",
   },
 
   profileSection: { alignItems: "center", marginBottom: 20 },

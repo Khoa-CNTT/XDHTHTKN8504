@@ -1,8 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, View, ActivityIndicator } from "react-native";
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
+import React, { useEffect, useState, useRef } from "react";
+import { StyleSheet, View, ActivityIndicator, Text } from "react-native";
+import MapView, {
+  Marker,
+  Polyline,
+  PROVIDER_GOOGLE,
+  MapViewProps,
+} from "react-native-maps";
+import { FontAwesome5 } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import axios from "axios";
+import { log } from "@/utils/logger";
 
 type MapWithRouteProps = {
   customerAddress: string;
@@ -13,14 +20,56 @@ type Coord = {
   longitude: number;
 };
 
+interface ORSDirectionsResponse {
+  features: Array<{
+    geometry: {
+      coordinates: [number, number][];
+    };
+    properties: {
+      segments: Array<{
+        distance: number;
+        duration: number;
+      }>;
+    };
+  }>;
+}
+
 export const MapWithRoute: React.FC<MapWithRouteProps> = ({
   customerAddress,
 }) => {
   const [currentLocation, setCurrentLocation] = useState<Coord | null>(null);
+  const [prevLocation, setPrevLocation] = useState<Coord | null>(null);
   const [customerLocation, setCustomerLocation] = useState<Coord | null>(null);
   const [routeCoords, setRouteCoords] = useState<Coord[]>([]);
+  const [distance, setDistance] = useState<string>("");
+  const [duration, setDuration] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [heading, setHeading] = useState<number>(0);
+  const [isMoving, setIsMoving] = useState<boolean>(false);
 
+  const mapRef = useRef<MapView>(null);
+
+  // Hàm tính khoảng cách 2 điểm (đơn vị mét)
+  const getDistanceBetweenCoords = (c1: Coord, c2: Coord) => {
+    const toRad = (x: number) => (x * Math.PI) / 180;
+
+    const R = 6378137; // bán kính Trái Đất theo mét
+    const dLat = toRad(c2.latitude - c1.latitude);
+    const dLon = toRad(c2.longitude - c1.longitude);
+    const lat1 = toRad(c1.latitude);
+    const lat2 = toRad(c2.latitude);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c;
+
+    return d; // mét
+  };
+
+  // Theo dõi vị trí real-time và heading
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -30,15 +79,34 @@ export const MapWithRoute: React.FC<MapWithRouteProps> = ({
         return;
       }
 
-      const location = await Location.getCurrentPositionAsync({});
-      const coords = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-      setCurrentLocation(coords);
-    })();
-  }, []);
+      const subscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          timeInterval: 5000,
+          distanceInterval: 10,
+        },
+        (location) => {
+          const coords = {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          };
 
+          if (prevLocation) {
+            const dist = getDistanceBetweenCoords(prevLocation, coords);
+            setIsMoving(dist > 10);
+          }
+
+          setPrevLocation(currentLocation);
+          setCurrentLocation(coords);
+          setHeading(location.coords.heading ?? 0);
+        }
+      );
+
+      return () => subscription.remove();
+    })();
+  }, [currentLocation, prevLocation]);
+
+  // Khi có currentLocation và customerAddress thì lấy địa chỉ khách và route
   useEffect(() => {
     if (customerAddress && currentLocation) {
       fetchCustomerLocationAndRoute();
@@ -65,118 +133,155 @@ export const MapWithRoute: React.FC<MapWithRouteProps> = ({
   };
 
   const getRoute = async (origin: Coord, destination: Coord) => {
-    const apiKey = process.env.EXPO_PUBLIC_GOOGLE_MAP_API_KEY;
-    const originStr = `${origin.latitude},${origin.longitude}`;
-    const destinationStr = `${destination.latitude},${destination.longitude}`;
+    const apiKey = "5b3ce3597851110001cf6248c1185ad859c649078346f01e4a9adddb";
 
     try {
-     const response = await axios.get<{
-       routes: { overview_polyline: { points: string } }[];
-     }>(`https://maps.googleapis.com/maps/api/directions/json`, {
-       params: {
-         origin: originStr,
-         destination: destinationStr,
-         key: apiKey,
-       },
-     });
+      const response = await axios.post<ORSDirectionsResponse>(
+        "https://api.openrouteservice.org/v2/directions/driving-car/geojson",
+        {
+          coordinates: [
+            [origin.longitude, origin.latitude],
+            [destination.longitude, destination.latitude],
+          ],
+        },
+        {
+          headers: {
+            Authorization: apiKey,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-     const points = decodePolyline(
-       response.data.routes[0]?.overview_polyline?.points || ""
-     );
-      setRouteCoords(points);
-    } catch (error) {
-      console.error("Failed to get directions:", error);
+      const features = response.data.features[0];
+      if (!features) return;
+
+      const coords: Coord[] = features.geometry.coordinates.map((c) => ({
+        latitude: c[1],
+        longitude: c[0],
+      }));
+      setRouteCoords(coords);
+
+      const distMeters = features.properties.segments[0].distance;
+      const durationSeconds = features.properties.segments[0].duration;
+
+      setDistance(`${(distMeters / 1000).toFixed(1)} km`);
+      setDuration(`${Math.round(durationSeconds / 60)} phút`);
+
+      if (!isMoving && mapRef.current) {
+        // Fit toàn bộ tuyến đường khi chưa di chuyển
+        mapRef.current.fitToCoordinates(coords, {
+          edgePadding: { top: 100, right: 100, bottom: 100, left: 100 },
+          animated: true,
+        });
+      }
+    } catch (err) {
+      log("OpenRouteService API error:", err);
     }
   };
 
-  const decodePolyline = (encoded: string): Coord[] => {
-    let index = 0,
-      len = encoded.length;
-    let lat = 0,
-      lng = 0;
-    const coordinates: Coord[] = [];
+  // Khi vị trí, trạng thái di chuyển hoặc tuyến đường thay đổi
+  useEffect(() => {
+    if (!currentLocation || !mapRef.current) return;
 
-    while (index < len) {
-      let b,
-        shift = 0,
-        result = 0;
-      do {
-        b = encoded.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      const dlat = result & 1 ? ~(result >> 1) : result >> 1;
-      lat += dlat;
+    if (isMoving) {
+      // Zoom gần lại và xoay theo hướng (vị trí hiện tại hướng xuống dưới màn hình)
+      const rotatedHeading = (heading + 180) % 360;
 
-      shift = 0;
-      result = 0;
-      do {
-        b = encoded.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-      const dlng = result & 1 ? ~(result >> 1) : result >> 1;
-      lng += dlng;
-
-      coordinates.push({
-        latitude: lat / 1e5,
-        longitude: lng / 1e5,
+      mapRef.current.animateCamera({
+        center: currentLocation,
+        heading: rotatedHeading,
+        pitch: 0,
+        zoom: 16,
+      });
+    } else if (routeCoords.length > 0) {
+      // Khi không di chuyển thì zoom nhỏ, fit hết đường đi
+      mapRef.current.fitToCoordinates(routeCoords, {
+        edgePadding: { top: 100, right: 100, bottom: 100, left: 100 },
+        animated: true,
+      });
+    } else {
+      // Nếu chưa có route, chỉ center vào vị trí hiện tại với zoom nhỏ
+      mapRef.current.animateCamera({
+        center: currentLocation,
+        zoom: 14,
       });
     }
-
-    return coordinates;
-  };
+  }, [currentLocation, heading, isMoving, routeCoords]);
 
   if (loading || !currentLocation) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#007AFF" />
       </View>
     );
   }
 
   return (
-    <MapView
-      style={styles.map}
-      provider={PROVIDER_GOOGLE}
-      initialRegion={{
-        ...currentLocation,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      }}
-    >
-      <Marker
-        coordinate={currentLocation}
-        title="Vị trí của bạn"
-        pinColor="blue"
-      />
-      {customerLocation && (
-        <Marker
-          coordinate={customerLocation}
-          title="Khách hàng"
-          pinColor="red"
-        />
-      )}
-      {routeCoords.length > 0 && (
-        <Polyline
-          coordinates={routeCoords}
-          strokeWidth={4}
-          strokeColor="blue"
-        />
-      )}
-    </MapView>
+    <View style={styles.container}>
+      <MapView
+        ref={mapRef}
+        style={styles.map}
+        provider={PROVIDER_GOOGLE}
+        initialRegion={{
+          ...currentLocation,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        }}
+      >
+        <Marker coordinate={currentLocation} title="Vị trí của bạn">
+          <FontAwesome5 name="user-circle" size={30} color="blue" />
+        </Marker>
+        {customerLocation && (
+          <Marker coordinate={customerLocation} title="Khách hàng">
+            <FontAwesome5 name="map-marker-alt" size={30} color="red" />
+          </Marker>
+        )}
+        {routeCoords.length > 0 && (
+          <Polyline
+            coordinates={routeCoords}
+            strokeWidth={4}
+            strokeColor="#007AFF"
+          />
+        )}
+      </MapView>
+      <View style={styles.infoContainer}>
+        <Text style={styles.infoText}>Khoảng cách: {distance}</Text>
+        <Text style={styles.infoText}>Thời gian: {duration}</Text>
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   map: {
     flex: 1,
-    height: "100%",
     width: "100%",
   },
   loaderContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  infoContainer: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    padding: 15,
+    borderRadius: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  infoText: {
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

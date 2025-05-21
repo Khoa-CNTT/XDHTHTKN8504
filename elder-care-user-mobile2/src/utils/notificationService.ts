@@ -23,10 +23,11 @@ export async function registerForPushNotificationsAsync() {
 // Tuỳ chọn: cấu hình hiển thị
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
     shouldPlaySound: false,
     shouldSetBadge: false,
     shouldShowBanner: true, // thêm dòng này
     shouldShowList: true, // và dòng này
+
+    
   }),
 });

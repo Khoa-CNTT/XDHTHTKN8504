@@ -31,11 +31,9 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
   hasFetched: false,
 
   setSchedules: (schedules) => {
-    const filtered = schedules.filter(
-      (s) => s.status !== "completed" && s.status !== "cancelled"
-    );
+    // Giữ nguyên tất cả lịch, không lọc trạng thái
     set(() => ({
-      schedules: filtered,
+      schedules,
     }));
   },
 
@@ -44,14 +42,10 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
     try {
       const schedules = await getSchedules();
-     
 
-      const filtered = schedules.filter(
-        (s) => s.status !== "completed" && s.status !== "cancelled"
-      );
-
+      // Giữ nguyên tất cả lịch, không lọc trạng thái
       set({
-        schedules: filtered,
+        schedules,
         loading: false,
         error: null,
         hasFetched: true,
@@ -68,14 +62,13 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
   updateSchedule: ({ scheduleId, newStatus }) => {
     set((state) => {
-      const updatedSchedules = state.schedules
-        .map((schedule) =>
-          schedule._id === scheduleId
-            ? { ...schedule, status: newStatus }
-            : schedule
-        )
-        .filter((s) => s.status !== "completed" && s.status !== "cancelled");
+      const updatedSchedules = state.schedules.map((schedule) =>
+        schedule._id === scheduleId
+          ? { ...schedule, status: newStatus }
+          : schedule
+      );
 
+      // Không lọc bỏ lịch hoàn thành hay huỷ
       return { schedules: updatedSchedules };
     });
   },

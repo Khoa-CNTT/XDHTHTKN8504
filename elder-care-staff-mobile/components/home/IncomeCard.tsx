@@ -13,7 +13,14 @@ interface InfoCardProps {
 const InfoCard: React.FC<InfoCardProps> = ({ value, label, icon, color }) => {
   return (
     <View style={styles.infoCard}>
-      <Text style={styles.infoValue}>{value}</Text>
+      <Text style={styles.infoValue}>
+        {typeof value === "number" && value > 100
+          ? value.toLocaleString("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            })
+          : value}
+      </Text>
       <Text style={styles.infoLabel}>{label}</Text>
       <View style={[styles.iconContainer, { borderColor: color }]}>{icon}</View>
     </View>

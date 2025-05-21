@@ -1,12 +1,17 @@
 import API from "@/utils/api";
 import useAuthStore from "../stores/authStore";
 import { Booking } from "../types/Booking";
+import { log } from "@/utils/logger";
+
 
 interface ApiResponse {
   message: string;
   booking: Booking;
 }
-
+interface ApiResponse1<T> {
+  message: string;
+  data: T;
+}
 export const acceptBooking = async (bookingId: string) => {
   try {
     const token = useAuthStore.getState().token;
@@ -62,6 +67,28 @@ const getBookingById = async (bookingId: string): Promise<Booking> => {
     );
   }
 };
+
+export const getBookingsForParticipant = async (): Promise<Booking[]> => {
+  try {
+    const token = useAuthStore.getState().token;
+    const response = await API.get("/bookings/get-bookings-for-participant", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const { data } = response.data as { data: Booking[] };
+
+    return data;
+  } catch (error: any) {
+    log(
+      "Fetch booking failed:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
 
 
 export default getBookingById;
