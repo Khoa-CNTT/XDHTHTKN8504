@@ -80,25 +80,6 @@ export const useSocketStore = create<SocketStore>((set) => {
       });
     });
 
-    // Lắng nghe tin nhắn
-    socket.on("receive-message", (data: {
-      roomId: string;
-      senderId: string;
-      message: string;
-      timestamp: string;
-    }) => {
-      const { roomId, message, timestamp } = data;
-      console.log(`📩 Tin nhắn từ phòng ${roomId}:`, message);
-      const id = uuidv4();
-      const addMessage = useChatStore.getState().addMessage;
-      addMessage({
-        id: id,
-        text: message,
-        time: timestamp,
-        isReceived: true,
-        roomId,
-      });
-    });
 
     socket.on("connect", () => {
       set({ isConnected: true });
@@ -116,7 +97,19 @@ export const useSocketStore = create<SocketStore>((set) => {
     socket.on("connect_error", (err) => {
       console.warn("⚠️ from socketStore :", err.message);
     });
-
+    socket.on("canceledBooking", (data: any) =>{
+      log("Nhận thông báo hủy lịch")
+      showModal(
+        "Hủy lịch hẹn chăm sóc",
+        "Khách hàng hủy lịch hẹn chăm sóc mất!",
+        {
+          type: "popup",
+          autoHideDuration: 3000,
+        }
+        
+      );
+      fetchSchedules();
+    });
     socket.on("scheduleStatusUpdated", (data: any) => {
       console.log("🚨 Lịch hẹn đã được cập nhật:", data);
       const { scheduleId, newStatus } = data;
