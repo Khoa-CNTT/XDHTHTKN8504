@@ -910,6 +910,36 @@ const authController = {
     }
   },
 
+  getStaffDetail: async (req, res) => {
+    try {
+      const { userId } = req.params;
+
+      // Tìm trong Doctor trước
+      let staff = await Doctor.findOne({ userId }).populate('userId');
+      let type = "doctor";
+
+      if (!staff) {
+        // Nếu không phải doctor, tìm trong Nurse
+        staff = await Nurse.findOne({ userId }).populate('userId');
+        type = "nurse";
+      }
+
+      if (!staff) {
+        return res.status(404).json({ message: "Không tìm thấy nhân viên với userId này." });
+      }
+
+      return res.status(200).json({
+        type,
+        staff
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Error",
+        error
+      })
+    }
+  },
+
   deleteAll: async (req, res) => {
     try {
       // Xóa tất cả dữ liệu ở tất cả các bảng (collection)
