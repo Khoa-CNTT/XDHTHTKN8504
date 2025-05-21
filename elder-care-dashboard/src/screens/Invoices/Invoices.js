@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Layout from "../../Layout";
 import { Button } from "../../components/Form";
 import { MdOutlineCloudDownload } from "react-icons/md";
@@ -7,9 +7,20 @@ import { InvoiceTable } from "../../components/Tables";
 import { invoicesData } from "../../components/Datas";
 import { BiPlus } from "react-icons/bi";
 import { Link } from "react-router-dom";
-import * as XLSX from "xlsx"; // 👈 Thêm thư viện export Excel
+import * as XLSX from "xlsx"; 
+import { fetchInvoice } from "../../store/invoiceSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 function Invoices() {
+  const { data, loading, error } = useSelector((state) => state.invoice);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchInvoice());
+  }, [dispatch]);
+
+  console.log("ddas", data);
+
   // 🔹 Chuyển chuỗi sang ArrayBuffer
   const s2ab = (s) => {
     const buf = new ArrayBuffer(s.length);
@@ -90,7 +101,7 @@ function Invoices() {
         </div>
 
         <div className="mt-8 w-full overflow-x-scroll">
-          <InvoiceTable data={invoicesData} />
+          <InvoiceTable data={data} />
         </div>
       </div>
     </Layout>

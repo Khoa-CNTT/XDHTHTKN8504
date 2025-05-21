@@ -168,41 +168,52 @@ export function InvoiceTable({ data }) {
         </tr>
       </thead>
       <tbody>
-        {data.map((item) => (
-          <tr
-            key={item.id}
-            className="border-b border-border hover:bg-greyed transitions"
-          >
-            <td className={tdclass}>#{item?.id}</td>
-            <td className={tdclass}>
-              <div className="flex gap-4 items-center">
-                <span className="w-12">
-                  <img
-                    src={item?.to?.image}
-                    alt={item?.to?.title}
-                    className="w-full h-12 rounded-full object-cover border border-border"
-                  />
-                </span>
-                <div>
-                  <h4 className="text-sm font-medium">{item?.to?.title}</h4>
-                  <p className="text-xs mt-1 text-textGray">
-                    {item?.to?.email}
-                  </p>
+        {data.map((item) => {
+          const invoiceCode = item?.invoiceId;
+          const avatarUrl = item?.bookingId?.profileId?.avartar;
+          const firstName = item?.bookingId?.profileId?.firstName;
+          const lastName = item?.bookingId?.profileId?.lastName;
+          const phone = item?.bookingId?.profileId?.phone;
+          const createdDate = new Date(item?.createdAt).toLocaleDateString('vi-VN');
+          const dueDate = new Date(item?.dueDate).toLocaleDateString('vi-VN');
+          const totalAmount = item?.totalAmount.toLocaleString("vi");
+
+          return (
+            <tr
+              key={item._id}
+              className="border-b border-border hover:bg-greyed transitions"
+            >
+              <td className={tdclass}>#{invoiceCode}</td>
+              <td className={tdclass}>
+                <div className="flex gap-4 items-center">
+                  <span className="w-12">
+                    <img
+                      src={avatarUrl}
+                      alt={lastName}
+                      className="w-full h-12 rounded-full object-cover border border-border"
+                    />
+                  </span>
+                  <div>
+                    <h4 className="text-sm font-medium">{firstName} {lastName}</h4>
+                    <p className="text-xs mt-1 text-textGray">
+                      {phone}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td className={tdclass}>{item?.createdDate}</td>
-            <td className={tdclass}>{item?.dueDate}</td>
-            <td className={`${tdclass} font-semibold`}>{item?.total}</td>
-            <td className={tdclass}>
-              <MenuSelect datas={DropDown1} item={item}>
-                <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
-                  <BiDotsHorizontalRounded />
-                </div>
-              </MenuSelect>
-            </td>
-          </tr>
-        ))}
+              </td>
+              <td className={tdclass}>{createdDate}</td>
+              <td className={tdclass}>{dueDate}</td>
+              <td className={`${tdclass} font-semibold`}>{totalAmount}</td>
+              <td className={tdclass}>
+                <MenuSelect datas={DropDown1} item={item}>
+                  <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg z-50">
+                    <BiDotsHorizontalRounded />
+                  </div>
+                </MenuSelect>
+              </td>
+            </tr>
+          )
+        })}
       </tbody>
     </table>
   );
@@ -392,6 +403,8 @@ export function PatientTable({ data, functions, used }) {
             new Date(item.createdAt).toLocaleDateString("vi-VN") || "Không rõ";
           const gender = item?.profiles[0]?.sex === "Male" ? "Nam" : "Nữ";
           const bloodType = item?.profiles[0]?.healthInfo[0]?.typeBlood;
+          // const bloodType = "";
+
 
           function calculateAge(birthDateString) {
             const today = new Date();
