@@ -119,11 +119,19 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handleLogoutConfirm = async () => {
-    setShowLogoutModal(false);
+const handleLogoutConfirm = async () => {
+  try {
     await logout();
-    navigation.replace("Login");
-  };
+    setShowLogoutModal(false);
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Login" }],
+    });
+  } catch (error) {
+    console.error("Lỗi khi đăng xuất:", error);
+    alert("Có lỗi xảy ra khi đăng xuất. Vui lòng thử lại.");
+  }
+};
 
   const renderIcon = (id: string) => {
     switch (id) {
@@ -253,15 +261,6 @@ const Profile: React.FC = () => {
           </View>
         </View>
       </Modal>
-      <RatingModal
-        visible={showRatingModal}
-        onClose={() => setShowRatingModal(false)}
-        onSubmit={(rating, comment) => {
-          console.log("Rating:", rating);
-          console.log("Comment:", comment);
-          setShowRatingModal(false); // Đóng modal sau khi gửi
-        }}
-      />
     </SafeAreaView>
   );
 };
