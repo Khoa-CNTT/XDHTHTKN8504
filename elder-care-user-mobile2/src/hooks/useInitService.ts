@@ -25,12 +25,6 @@ const useInitService = () => {
     registerForPushNotificationsAsync();
   }, []);
 
-  // useEffect(() => {
-  //   async function loadAssets() {
-  //     await preloadAssetsAsync();
-  //   }
-  //   loadAssets();
-  // }, []);
 
   // Phục hồi session từ AsyncStorage
   useEffect(() => {

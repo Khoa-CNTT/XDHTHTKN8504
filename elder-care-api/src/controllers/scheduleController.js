@@ -281,6 +281,7 @@ const scheduleController = {
       // 1. Tìm lịch làm việc hiện tại
       let schedule = await Schedule.findOne({
         staffId,
+        status: { $nin: ["canceled", "completed"] }, // Bỏ qua những status này
         timeSlots: {
           $elemMatch: {
             start: { $lte: now },
@@ -293,6 +294,7 @@ const scheduleController = {
       if (!schedule) {
         const upcomingSchedules = await Schedule.find({
           staffId,
+          status: { $nin: ["canceled", "completed"] },
           timeSlots: { $elemMatch: { start: { $gt: now } } },
         });
 
@@ -312,7 +314,7 @@ const scheduleController = {
       // 3. Tìm thông tin booking liên quan
       const booking = await Booking.findOne({ _id: schedule.bookingId })
         .populate("serviceId") // Lấy thông tin dịch vụ
-        .populate("profileId"); // Lấy thông tin hồ sơ người dùng
+        .populate("profileId"); 
 
       if (!booking) {
         return res.status(404).json({
@@ -324,9 +326,11 @@ const scheduleController = {
       const serviceName = booking.serviceId?.name || "No service name";
       const customerAddress = booking.profileId?.address || "No address";
       const phoneNumber = booking.profileId?.phone || "No phone number";
+      const avatar = booking.profileId?.avartar || "";
 
       // 5. Trả kết quả về client
       return res.status(200).json({
+        avatar,
         schedule,
         serviceName,
         customerAddress,

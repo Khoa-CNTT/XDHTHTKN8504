@@ -12,8 +12,8 @@ const getStatusLabel = (status: string) => {
     check_in: "Nhân viên đã đến nơi",
     in_progress: "Đang thực hiện chăm sóc",
     check_out: "Đã hoàn tất, chờ xác nhận",
-    completed: "Khách đã xác nhận hoàn tất",
-    cancelled: "Bị hủy",
+    completed: "Ca chăm sóc đã hoàn tất",
+    canceled: "Bị hủy",
     default: "Không thực hiện",
   };
   return statusMap[status] || statusMap["default"];
@@ -28,7 +28,7 @@ const statusStyles: Record<string, any> = {
   check_in: { color: "#28A745" },
   check_out: { color: "#28A745" },
   completed: { color: "#28A745" },
-  cancelled: { color: "#DC3545" },
+  canceled: { color: "#DC3545" },
   default: { color: "#6C757D" },
 };
 

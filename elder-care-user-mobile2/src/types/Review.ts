@@ -1,11 +1,10 @@
 export interface Review {
-  _id?: string; // nếu cần ID (thường từ server)
-  scheduleId: string;
+  scheduleId: string; // id dạng string (ObjectId thường được serialize thành string)
   bookingId: string;
   reviewer: string;
   staffId: string;
-  rating: number;
+  rating: number; // 1 đến 5
   comment?: string;
   tags?: string[];
-  createdAt?: string; // hoặc Date nếu bạn parse rồi
+  createdAt?: string; // hoặc Date, tuỳ theo API trả về dạng nào (thường là ISO string)
 }

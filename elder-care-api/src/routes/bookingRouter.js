@@ -162,6 +162,7 @@ router.post(
 router.get(
     '/get-booking-detail/:bookingId',
     bookingController.getBookingDetail
-)
+);
+router.get('/get-bookings-for-participant', auth, bookingController.getBookingForParticipant);
 
 export default router

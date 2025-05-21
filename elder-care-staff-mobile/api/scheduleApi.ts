@@ -2,13 +2,6 @@ import API from "@/utils/api";
 import useAuthStore from "../stores/authStore";
 import { Schedule } from "@/types/Schedule";
 
-// Hàm chuyển đổi từ ISO string sang thời gian Việt Nam (UTC +7)
-const toVietnamDate = (isoString: string): Date => {
-  const date = new Date(isoString);
-  const utc = date.getTime() + date.getTimezoneOffset() * 60000;
-  return new Date(utc + 7 * 60 * 60000); // Thêm 7 giờ để chuyển sang múi giờ Việt Nam
-};
-
 
 interface ApiResponse {
   message: string;

@@ -8,7 +8,7 @@ import {
   Linking,
 } from "react-native";
 import { Button } from "react-native-paper";
-import { MapPin, Phone, MessageCircle } from "lucide-react-native";
+import { MapPin, Phone, MessageCircle, MapPlus } from "lucide-react-native";
 import { router } from "expo-router";
 import TooEarlyModal from "../../../components/TooEarlyModal";
 import useScheduleStore from "../../../stores/scheduleStore";
@@ -17,6 +17,7 @@ import { useScheduleSocket } from "../../../hooks/useScheduleSocket";
 import ScheduleStatusApi from "../../../api/ScheduleStatusApi";
 import { MapWithRoute } from "@/components/MapWithRoute";
 import canStartSchedule from "@/utils/canStartSchedule";
+
 
 const ShiftWorkScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -107,7 +108,7 @@ const ShiftWorkScreen = () => {
           </TouchableOpacity>
         );
       case "completed":
-      case "cancelled":
+      case "canceled":
         return (
           <TouchableOpacity
             style={styles.actionButton}
@@ -153,9 +154,33 @@ const ShiftWorkScreen = () => {
 
       <View style={styles.overlay}>
         <View style={styles.arrivalInfo}>
+          <View style={styles.navigateRow}>
+            <TouchableOpacity
+              style={styles.navigateButton}
+              onPress={() => {
+                const address = nearestSchedule.customerAddress;
+                if (address) {
+                  // encode địa chỉ để đưa vào URL
+                  const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                    address
+                  )}`;
+                  Linking.openURL(url);
+                } else {
+                  console.log("Địa chỉ không hợp lệ");
+                }
+              }}
+            >
+              <Text style={styles.navigateText}>Mở điều hướng hệ thống</Text>
+              <MapPlus size={16} color="#127df0" style={{ marginLeft: 8 }} />
+            </TouchableOpacity>
+          </View>
           <View style={styles.userInfo}>
             <Image
-              source={ require("../../../assets/images/avatar.jpg")}
+              source={
+                nearestSchedule.avatar
+                  ? { uri: nearestSchedule.avatar }
+                  : require("../../../assets/images/avatar.jpg")
+              }
               style={styles.avatar}
             />
             <View>
@@ -213,89 +238,137 @@ const ShiftWorkScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F5F5F5" },
-  map: { ...StyleSheet.absoluteFillObject },
+  container: { flex: 1, backgroundColor: "#f0f4f8" },
   overlay: {
     position: "absolute",
     bottom: 0,
     width: "100%",
-    backgroundColor: "white",
-    padding: 16,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    backgroundColor: "rgba(255, 255, 255, 0.97)",
+    paddingHorizontal: 24,
+    paddingBottom: 25,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 10,
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 12,
   },
-  arrivalInfo: { marginBottom: 16 },
   userInfo: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 8,
+    marginBottom: 20,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 16,
+    borderWidth: 1,
+    borderColor: "#ddd",
   },
-  userName: { fontWeight: "bold", fontSize: 16 },
-  travelInfo: { fontSize: 14, color: "gray" },
-  actionButton: {
-    marginTop: 10,
-    backgroundColor: "#4CAF50",
-    borderRadius: 20,
+  userName: {
+    fontWeight: "700",
+    fontSize: 18,
+    color: "#222",
   },
-  actionButtonText: {
-    padding: 14,
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "bold",
+  travelInfo: {
+    fontSize: 15,
+    color: "#666",
+    marginTop: 4,
   },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 16,
+    marginBottom: 5,
   },
-  button: { width: "48%" },
-
-  // Giao diện khi không có lịch
+  button: {
+    width: "48%",
+    alignItems: "center"
+  },
+  actionButton: {
+    marginTop: 12,
+    borderRadius: 25,
+    paddingVertical: 16,
+    backgroundColor: "#3b82f6", // Màu xanh dương hiện đại
+    shadowColor: "#3b82f6",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  actionButtonDisabled: {
+    backgroundColor: "#a1a1aa",
+  },
+  actionButtonText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
+    textAlign: "center",
+  },
+  // phần không có lịch
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
-    backgroundColor: "#fff",
+    padding: 30,
+    backgroundColor: "#fefefe",
   },
   emptyImage: {
-    width: 200,
-    height: 200,
-    marginBottom: 24,
+    width: 220,
+    height: 220,
+    marginBottom: 32,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 8,
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#444",
+    marginBottom: 10,
     textAlign: "center",
   },
   emptyText: {
-    fontSize: 14,
-    color: "gray",
+    fontSize: 16,
+    color: "#777",
+    marginBottom: 26,
     textAlign: "center",
-    marginBottom: 20,
   },
   backButton: {
-    backgroundColor: "#28a745",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 20,
+    backgroundColor: "#3b82f6",
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 25,
+    shadowColor: "#3b82f6",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 8,
   },
   backButtonText: {
     color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "700",
+    fontSize: 18,
+  },
+  arrivalInfo: {
     fontSize: 16,
+    color: "#444",
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  navigateRow: {
+    marginTop: 5,
+    marginBottom: 20
+  },
+
+  navigateButton: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  navigateText: {
+    color: "#154b85",
+    fontWeight: "600",
+    fontSize: 12,
+    fontStyle: "italic",
+    marginVertical: 10,
   },
 });
-
 export default ShiftWorkScreen;

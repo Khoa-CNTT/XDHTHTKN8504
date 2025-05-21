@@ -7,6 +7,7 @@ import {
   FlatList,
   StyleSheet,
   Dimensions,
+  Image, // Add Image here
 } from "react-native";
 import useProfileStore from "../stores/profileStore";
 import { Profile } from "../types/profile";
@@ -37,26 +38,34 @@ const CareRecipientModal: React.FC<Props> = ({ visible, onClose, onApply }) => {
   //   }
   // }, [visible]);
 
-  const renderItem = ({ item }: { item: Profile }) => {
-    const isSelected = selected?._id === item._id;
+const renderItem = ({ item }: { item: Profile }) => {
+  const isSelected = selected?._id === item._id;
 
-    return (
-      <TouchableOpacity
-        style={[styles.item, isSelected && styles.selectedItem]}
-        onPress={() => setSelected(item)}
-      >
-        {/* Avatar Container */}
-        <View style={styles.avatarContainer}>
+  return (
+    <TouchableOpacity
+      style={[styles.item, isSelected && styles.selectedItem]}
+      onPress={() => setSelected(item)}
+    >
+      {/* Avatar Container */}
+      <View style={styles.avatarContainer}>
+        {item.avartar ? (
+          <Image
+            source={{ uri: item.avartar }}
+            style={{ width: 40, height: 40, borderRadius: 20 }}
+            resizeMode="cover"
+          />
+        ) : (
           <Text style={styles.avatarLetter}>
             {item.firstName.charAt(0).toUpperCase()}
           </Text>
-        </View>
-        <Text style={styles.name}>
-          {item.firstName}{item.lastName}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
+        )}
+      </View>
+      <Text style={styles.name}>
+        {item.firstName}{item.lastName}
+      </Text>
+    </TouchableOpacity>
+  );
+};
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -178,14 +187,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   addText: {
-    color: '#00A8E8',
+    color: '#34B44E',
     fontWeight: "600", // Stronger font weight
     fontSize: 17,
     textAlign: 'center',
     paddingVertical: 12,
   },
   applyBtn: {
-    backgroundColor: '#FFC107',
+    backgroundColor: '#34B44E',
     padding: 18, // Increased padding
     borderRadius: 12, // More rounded
 
@@ -197,7 +206,7 @@ const styles = StyleSheet.create({
   },
   applyText: {
     fontWeight: "bold",
-    color: 'black',
+    color: '#fff',
     fontSize: 18, // Larger font
 
   },

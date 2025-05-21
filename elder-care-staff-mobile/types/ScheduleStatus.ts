@@ -7,4 +7,4 @@ export type ScheduleStatus =
   | "in_progress" // Đang thực hiện chăm sóc
   | "check_out" // Đã hoàn tất, chờ xác nhận
   | "completed" // Khách xác nhận hoàn tất
-  | "cancelled";             // Bị hủy bởi bất kỳ bên nào
+  | "canceled";             // Bị hủy bởi bất kỳ bên nào

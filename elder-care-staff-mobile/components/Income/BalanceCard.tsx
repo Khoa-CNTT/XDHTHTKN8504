@@ -1,86 +1,46 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { Card } from "react-native-paper";
+import { View, Text } from "react-native";
+import { FontAwesome5 } from "@expo/vector-icons";
 
-interface BalanceCardProps {
+type BalanceCardProps = {
   salary: number;
-  completed: number;
-  distance: string;
-}
-
-const BalanceCard: React.FC<BalanceCardProps> = ({
-  salary,
-  completed,
-  distance,
-}) => {
+  completed: number; // ví dụ số công việc hoàn thành
+  distance: number; // ví dụ khoảng cách (km)
+};
+const BalanceCard = ({ salary, completed, distance }: BalanceCardProps) => {
   return (
-    <View style={styles.card}>
-      <Text style={styles.todayText}>Tháng này</Text>
-      <Text style={styles.amountText}>{salary} VND</Text>
-      <View style={styles.infoRow}>
-        <View style={styles.infoBox}>
-          <Text style={styles.infoValue}>{completed}</Text>
-          <Text style={styles.infoLabel}>Hoàn thành</Text>
+    <Card style={{ margin: 16, borderRadius: 16, elevation: 4 }}>
+      <Card.Content>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <View>
+            <Text style={{ fontSize: 16, color: "#666" }}>Tổng thu nhập</Text>
+            <Text
+              style={{ fontSize: 28, fontWeight: "bold", color: "#28a745" }}
+            >
+              {salary.toLocaleString()}đ
+            </Text>
+          </View>
+          <FontAwesome5 name="wallet" size={32} color="#28a745" />
         </View>
-        <View style={styles.infoBox}>
-          <Text style={styles.infoValue}>{distance}</Text>
-          <Text style={styles.infoLabel}>Đang thực hiện</Text>
+        <View
+          style={{
+            marginTop: 16,
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
+          <Text>{completed} đơn hoàn thành</Text>
+          <Text>{distance} đang thực hiện</Text>
         </View>
-      </View>
-    </View>
+      </Card.Content>
+    </Card>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#ffffff",
-    marginHorizontal: 20,
-    marginTop: -50,
-    borderRadius: 20,
-    padding: 25,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-  },
-  todayText: {
-    fontSize: 18,
-    color: "#888",
-    textAlign: "center",
-  },
-  amountText: {
-    fontSize: 38,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginVertical: 12,
-    color: "#28A745",
-  },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 15,
-  },
-  infoBox: {
-    alignItems: "center",
-    flex: 1,
-    backgroundColor: "#f9f9f9",
-    borderRadius: 12,
-    paddingVertical: 12,
-    marginHorizontal: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-  },
-  infoValue: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#28A745",
-  },
-  infoLabel: {
-    fontSize: 14,
-    color: "#888",
-  },
-});
 
 export default BalanceCard;

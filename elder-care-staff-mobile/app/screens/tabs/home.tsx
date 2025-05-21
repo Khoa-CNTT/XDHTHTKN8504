@@ -1,19 +1,18 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet, Text,Alert } from "react-native";
 import HomeHeader from "../../../components/home/HomeHeader";
 import AvailabilitySwitch from "../../../components/home/AvailabilitySwitch";
 import IncomeCard from "../../../components/home/IncomeCard";
 import useCompletedBookingStore from "@/stores/completedBookingStore";
 import updateAvailability from "../../../api/updateAvailability";
 import useAuthStore from "@/stores/authStore";
-import { useModalStore } from "@/stores/modalStore"; // Import useModalStore
-import { MaterialIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import UpcomingSchedule from "@/components/home/UpcomingSchedule";
-
+import useScheduleStore from "@/stores/scheduleStore";
+import useBookingStore from "@/stores/BookingStore";
 const Home = () => {
   const extraInfo = useAuthStore((state) => state.extraInfo);
   const setExtraInfo = useAuthStore((state) => state.setExtraInfo);
-  const { showModal } = useModalStore(); // Lấy phương thức showModal từ Zustand
 
   const isAvailable = extraInfo?.isAvailable ?? false;
 
@@ -24,54 +23,79 @@ const Home = () => {
     (total, booking) => total + booking.salary,
     0
   );
+  const activeSchedules = useScheduleStore(
+    (state) =>
+      state.schedules.filter(
+        (s) => s.status !== "canceled" && s.status !== "completed"
+      ).length
+  );
+  const acceptedBooking = useBookingStore(
+    (state) =>
+      state.participantBookings.filter(
+        (s) => s.status === "accepted" || s.status === "completed"
+      ).length
+  );
+  const canceledBooking = useBookingStore(
+    (state) =>
+      state.participantBookings.filter((s) => s.status === "cancelled").length
+  );
+  const handleToggleAvailability = async (newValue: boolean) => {
+    const isTurningOn = !isAvailable && newValue;
 
-const handleToggleAvailability = async (newValue: boolean) => {
-  const isTurningOn = !isAvailable && newValue; // Chuyển từ tắt sang bật
-  const isTurningOff = isAvailable && !newValue; // Chuyển từ bật sang tắt
+    const confirmAndUpdate = async () => {
+      try {
+        // Optimistically cập nhật giao diện
+        if (extraInfo) {
+          setExtraInfo({ ...extraInfo, isAvailable: newValue });
+        }
+        await updateAvailability(newValue);
+      } catch (error) {
+        console.error("Không thể cập nhật trạng thái:", error);
+        // Nếu thất bại, rollback lại trạng thái cũ
+        if (extraInfo) {
+          setExtraInfo({ ...extraInfo, isAvailable: !newValue });
+        }
+      }
+    };
 
-  if (isTurningOn) {
-    // Khi bật trạng thái, yêu cầu người dùng xác nhận
-    showModal(
-      "Xác nhận sẵn sàng đơn đặt lịch",
-      "Bạn sẽ nhận được thông báo khi có đơn đặt lịch mới!",
-      {
-        type: "dialog", // Loại modal là dialog
-        onConfirm: async () => {
-          try {
-            await updateAvailability(newValue); // Gọi API để bật trạng thái
-            if (extraInfo) {
-              const updatedExtraInfo = { ...extraInfo, isAvailable: newValue };
-              await setExtraInfo(updatedExtraInfo); // Cập nhật trạng thái mới
-            }
-          } catch (error) {
-            console.error("Không thể cập nhật trạng thái:", error);
-          }
-        },
-        
-      }
-    );
-  } else if (isTurningOff) {
-    // Khi tắt trạng thái, yêu cầu người dùng xác nhận
-    showModal(
-      "Xác nhận tắt trạng thái sẵn sàng",
-      "Bạn sẽ không nhận được thông báo đơn đặt lịch mới cho tới khi bật lại.",
-      {
-        type: "dialog", // Loại modal là dialog
-        onConfirm: async () => {
-          try {
-            await updateAvailability(newValue); // Gọi API để tắt trạng thái
-            if (extraInfo) {
-              const updatedExtraInfo = { ...extraInfo, isAvailable: newValue };
-              await setExtraInfo(updatedExtraInfo); // Cập nhật trạng thái mới
-            }
-          } catch (error) {
-            console.error("Không thể cập nhật trạng thái:", error);
-          }
-        },
-      }
-    );
-  }
-};
+    if (isTurningOn) {
+      Alert.alert(
+        "Xác nhận sẵn sàng đơn đặt lịch",
+        "Bạn sẽ nhận được thông báo khi có đơn đặt lịch mới!",
+        [
+          {
+            text: "Hủy",
+            style: "cancel",
+            onPress: () => {
+              // Nếu hủy, rollback trạng thái
+              if (extraInfo) {
+                setExtraInfo({ ...extraInfo, isAvailable: !newValue });
+              }
+            },
+          },
+          { text: "Đồng ý", onPress: confirmAndUpdate },
+        ]
+      );
+    } else if (isTurningOff) {
+      Alert.alert(
+        "Xác nhận tắt trạng thái sẵn sàng",
+        "Bạn sẽ không nhận được thông báo đơn đặt lịch mới cho tới khi bật lại.",
+        [
+          {
+            text: "Hủy",
+            style: "cancel",
+            onPress: () => {
+              if (extraInfo) {
+                setExtraInfo({ ...extraInfo, isAvailable: !newValue });
+              }
+            },
+          },
+          { text: "Đồng ý", onPress: confirmAndUpdate },
+        ]
+
+      );
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -89,21 +113,27 @@ const handleToggleAvailability = async (newValue: boolean) => {
           color="#5cb85c"
         />
         <IncomeCard
-          value={4}
+          value={acceptedBooking}
           label="Đơn đặt lịch"
-          icon={<MaterialIcons name="attach-money" size={24} color="#5cb85c" />}
+          icon={<Ionicons name="bag-check-outline" size={24} color="#0aeeee" />}
           color="#5cb85c"
         />
         <IncomeCard
-          value={8}
+          value={activeSchedules}
           label="Ca làm việc"
-          icon={<MaterialIcons name="attach-money" size={24} color="#5cb85c" />}
+          icon={
+            <Ionicons
+              name="calendar-number-outline"
+              size={24}
+              color="#f78f07"
+            />
+          }
           color="#5cb85c"
         />
         <IncomeCard
-          value={0}
+          value={canceledBooking}
           label="Bị hủy"
-          icon={<MaterialIcons name="attach-money" size={24} color="#5cb85c" />}
+          icon={<MaterialIcons name="cancel" size={24} color="#ee0b0b" />}
           color="#5cb85c"
         />
       </View>
@@ -138,3 +168,56 @@ const styles = StyleSheet.create({
 });
 
 export default Home;
+
+
+// =======
+//   const handleToggleAvailability = async (newValue: boolean) => {
+//     const isTurningOn = !isAvailable && newValue; // Chuyển từ tắt sang bật
+//     const isTurningOff = isAvailable && !newValue; // Chuyển từ bật sang tắt
+
+//     if (isTurningOn) {
+//       // Khi bật trạng thái, yêu cầu người dùng xác nhận
+//       showModal(
+//         "Xác nhận sẵn sàng đơn đặt lịch",
+//         "Bạn sẽ nhận được thông báo khi có đơn đặt lịch mới!",
+//         {
+//           type: "dialog", // Loại modal là dialog
+//           onConfirm: async () => {
+//             try {
+//               await updateAvailability(newValue); // Gọi API để bật trạng thái
+//               if (extraInfo) {
+//                 const updatedExtraInfo = {
+//                   ...extraInfo,
+//                   isAvailable: newValue,
+//                 };
+//                 await setExtraInfo(updatedExtraInfo); // Cập nhật trạng thái mới
+//               }
+//             } catch (error) {
+//               console.error("Không thể cập nhật trạng thái:", error);
+//             }
+//           },
+//         }
+//       );
+//     } else if (isTurningOff) {
+//       // Khi tắt trạng thái, yêu cầu người dùng xác nhận
+//       showModal(
+//         "Xác nhận tắt trạng thái sẵn sàng",
+//         "Bạn sẽ không nhận được thông báo đơn đặt lịch mới cho tới khi bật lại.",
+//         {
+//           type: "dialog", // Loại modal là dialog
+//           onConfirm: async () => {
+//             try {
+//               await updateAvailability(newValue); // Gọi API để tắt trạng thái
+//               if (extraInfo) {
+//                 const updatedExtraInfo = {
+//                   ...extraInfo,
+//                   isAvailable: newValue,
+//                 };
+//                 await setExtraInfo(updatedExtraInfo); // Cập nhật trạng thái mới
+//               }
+//             } catch (error) {
+//               console.error("Không thể cập nhật trạng thái:", error);
+//             }
+//           },
+//         }
+// >>>>>>> main
