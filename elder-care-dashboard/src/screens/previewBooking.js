@@ -1,12 +1,7 @@
-import React from 'react'
+import React from "react";
 
-function previewBooking() {
-  return (
-    <div>
-      trongdrfhruifrf
-      rhfrufbrfyrf
-    </div>
-  )
+function PreviewBooking() {
+  return <div>trongdrfhruifrf rhfrufbrfyrf</div>;
 }
 
-export default previewBooking
+export default PreviewBooking;

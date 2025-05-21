@@ -107,7 +107,7 @@ function Booking() {
   };
 
   const previewBooking = (_id) => {
-    navigate(`/bookings/preview/${_id}`);
+    navigate(`/bookings/preview1/${_id}`);
   };
 
   return (
