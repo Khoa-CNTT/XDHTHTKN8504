@@ -1,4 +1,5 @@
 export interface Review {
+  _id: string;
   scheduleId: string; // id dạng string (ObjectId thường được serialize thành string)
   bookingId: string;
   reviewer: string;
@@ -8,3 +9,4 @@ export interface Review {
   tags?: string[];
   createdAt?: string; // hoặc Date, tuỳ theo API trả về dạng nào (thường là ISO string)
 }
+

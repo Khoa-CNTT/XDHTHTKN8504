@@ -323,6 +323,7 @@ const scheduleController = {
       }
 
       // 4. Trích xuất thông tin cần thiết từ booking
+      const customerId = booking.createdBy;
       const serviceName = booking.serviceId?.name || "No service name";
       const customerAddress = booking.profileId?.address || "No address";
       const phoneNumber = booking.profileId?.phone || "No phone number";
@@ -330,6 +331,7 @@ const scheduleController = {
 
       // 5. Trả kết quả về client
       return res.status(200).json({
+        customerId,
         avatar,
         schedule,
         serviceName,
@@ -442,14 +444,14 @@ const scheduleController = {
   getTodaySchedulesByUser: async (req, res) => {
     try {
       const customerId = req.user._id;
-
+  
       // Lấy ngày bắt đầu và kết thúc của ngày hôm nay
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
-
+  
       const endOfDay = new Date();
       endOfDay.setHours(23, 59, 59, 999);
-
+  
       // Tìm các Schedule có ngày trong ngày hôm nay
       const schedules = await Schedule.find({
         date: { $gte: startOfDay, $lte: endOfDay },
@@ -461,45 +463,42 @@ const scheduleController = {
       })
         .populate({
           path: "staffId", // Populate thông tin nhân viên từ bảng User
-          select: "phone avatar role", // Lấy các trường cần thiết từ User
+          select: "phone avatar role _id", // Chỉ lấy các trường cần thiết
         })
-        .lean() // Tối ưu hóa truy vấn với lean()
+        .lean()
         .exec();
-
+  
       if (!schedules.length) {
-        return res
-          .status(404)
-          .json({ message: "No schedules found for today" });
+        return res.status(404).json({ message: "No schedules found for today" });
       }
-
-      // Sau khi populate staffId, lấy thêm thông tin chi tiết từ Doctor hoặc Nurse
+  
       for (let schedule of schedules) {
         const staff = schedule.staffId;
-
+  
         // Lấy thông tin từ Doctor hoặc Nurse tùy theo role
         if (staff.role === "doctor") {
           const doctor = await Doctor.findOne({ userId: staff._id }).select(
             "firstName lastName"
           );
-          staff.firstName = doctor.firstName;
-          staff.lastName = doctor.lastName;
+          staff.firstName = doctor?.firstName || "";
+          staff.lastName = doctor?.lastName || "";
         } else if (staff.role === "nurse") {
           const nurse = await Nurse.findOne({ userId: staff._id }).select(
             "firstName lastName"
           );
-          staff.firstName = nurse.firstName;
-          staff.lastName = nurse.lastName;
+          staff.firstName = nurse?.firstName || "";
+          staff.lastName = nurse?.lastName || "";
         }
-
-        // Tạo fullname từ firstName và lastName
-        schedule.staffFullName = `${staff.firstName} ${staff.lastName}`;
+  
+        // Gán lại staffId là _id của staff
+        schedule.staffId = staff._id;
+  
+        // Gán thêm thông tin
+        schedule.staffFullName = `${staff.firstName} ${staff.lastName}`.trim();
         schedule.staffPhone = staff.phone;
         schedule.staffAvatar = staff.avatar;
-
-        // Xóa trường staffId đi (nếu không cần nữa)
-        delete schedule.staffId;
       }
-
+  
       res.status(200).json(schedules);
     } catch (err) {
       console.error("Error fetching schedules:", err);

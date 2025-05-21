@@ -2,6 +2,7 @@ import Chat from "../models/Chat.js";
 import User from "../models/User.js";
 import { notifyUser } from "../controllers/socketChat.js";
 
+
 const chatController = {
     // Lấy danh sách cuộc trò chuyện của người dùng hiện tại
     getMyChats: async (req, res) => {
@@ -90,7 +91,7 @@ const chatController = {
             const { targetUserId, chatType, title } = req.body;
             const initiatorId = req.user._id;
 
-            // Kiểm tra người dùng đích tồn tại
+            // Kiểm tra người dùng đích tồn tại`
             const targetUser = await User.findById(targetUserId);
             if (!targetUser) {
                 return res.status(404).json({ success: false, message: "Không tìm thấy người dùng đích" });

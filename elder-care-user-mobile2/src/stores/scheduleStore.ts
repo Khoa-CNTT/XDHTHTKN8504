@@ -3,6 +3,7 @@ import { Schedule } from "../types/schedule";
 import getSchedules from "../api/scheduleApi";
 import { ScheduleStatus } from "../types/ScheduleStatus";
 import { useSocketStore } from "./socketStore";
+import { log } from "../utils/logger";
 
 export type ScheduleUser = Schedule & {
   staffFullName: string;
@@ -42,6 +43,7 @@ const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
     try {
       const schedules = await getSchedules();
+      log(schedules)
 
       // Giữ nguyên tất cả lịch, không lọc trạng thái
       set({
