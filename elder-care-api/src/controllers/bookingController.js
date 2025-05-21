@@ -259,39 +259,6 @@ const bookingController = {
                 description: `Thanh toán booking ${newBooking._id}`,
             });
             await wallet.save();
-            // Sau 1 tiếng, kiểm tra trạng thái payment, nếu chưa success thì hoàn tiền
-            setTimeout(async () => {
-                try {
-                    const bookingCheck = await Booking.findById(newBooking._id);
-                    if (bookingCheck && bookingCheck.status !== "accepted") {
-                        const walletToRefund = await Wallet.findOne({ userId });
-                        if (!walletToRefund) return;
-
-                        const transaction = walletToRefund.transactions.find(
-                            (t) => t.transactionId === transactionId
-                        );
-                        if (transaction && transaction.status === "pending") {
-                            // Hoàn tiền
-                            walletToRefund.balance += transaction.amount;
-                            transaction.status = "failed";
-                            transaction.description +=
-                                " - Hoàn tiền do booking chưa được chấp nhận sau 1 tiếng";
-                            await walletToRefund.save();
-
-                            // Cập nhật payment
-                            const paymentCheck = await Payments.findOne({
-                                transactionCode: code,
-                            });
-                            if (paymentCheck) {
-                                paymentCheck.status = "failed";
-                                await paymentCheck.save();
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.error("Lỗi khi xử lý hoàn tiền tự động:", error);
-                }
-            }, 60 * 1000);
 
             const io = getIO();
 
