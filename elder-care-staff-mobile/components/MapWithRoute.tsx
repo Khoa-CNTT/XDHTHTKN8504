@@ -1,14 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import { StyleSheet, View, ActivityIndicator, Text } from "react-native";
-import MapView, {
-  Marker,
-  Polyline,
-  PROVIDER_GOOGLE,
-  MapViewProps,
-} from "react-native-maps";
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import { FontAwesome5 } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import axios from "axios";
+import { useTheme } from "react-native-paper";
 import { log } from "@/utils/logger";
 
 type MapWithRouteProps = {
@@ -48,28 +44,25 @@ export const MapWithRoute: React.FC<MapWithRouteProps> = ({
   const [isMoving, setIsMoving] = useState<boolean>(false);
 
   const mapRef = useRef<MapView>(null);
+  const { colors } = useTheme();
 
-  // Hàm tính khoảng cách 2 điểm (đơn vị mét)
+  // Ref để kiểm soát việc gọi fetch route
+  const hasFetchedRoute = useRef(false);
+
   const getDistanceBetweenCoords = (c1: Coord, c2: Coord) => {
     const toRad = (x: number) => (x * Math.PI) / 180;
-
-    const R = 6378137; // bán kính Trái Đất theo mét
+    const R = 6378137;
     const dLat = toRad(c2.latitude - c1.latitude);
     const dLon = toRad(c2.longitude - c1.longitude);
     const lat1 = toRad(c1.latitude);
     const lat2 = toRad(c2.latitude);
-
     const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const d = R * c;
-
-    return d; // mét
+    return R * c;
   };
 
-  // Theo dõi vị trí real-time và heading
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -82,8 +75,8 @@ export const MapWithRoute: React.FC<MapWithRouteProps> = ({
       const subscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
-          timeInterval: 5000,
-          distanceInterval: 10,
+          timeInterval: 10000000, // Tăng thời gian giữa các lần cập nhật
+          distanceInterval: 25, // Tăng khoảng cách để cập nhật
         },
         (location) => {
           const coords = {
@@ -104,17 +97,24 @@ export const MapWithRoute: React.FC<MapWithRouteProps> = ({
 
       return () => subscription.remove();
     })();
-  }, [currentLocation, prevLocation]);
+  }, []);
 
-  // Khi có currentLocation và customerAddress thì lấy địa chỉ khách và route
+  // Reset ref mỗi khi địa chỉ khách hàng thay đổi (cho phép gọi lại API)
   useEffect(() => {
-    if (customerAddress && currentLocation) {
+    hasFetchedRoute.current = false;
+  }, [customerAddress]);
+
+  // Chỉ gọi fetch route khi có địa chỉ và vị trí hiện tại, và chưa gọi lần nào
+  useEffect(() => {
+    if (customerAddress && currentLocation && !hasFetchedRoute.current) {
+      hasFetchedRoute.current = true;
       fetchCustomerLocationAndRoute();
     }
   }, [customerAddress, currentLocation]);
 
   const fetchCustomerLocationAndRoute = async () => {
     try {
+      setLoading(true);
       const geocoded = await Location.geocodeAsync(customerAddress);
       if (!geocoded[0]) return;
 
@@ -168,7 +168,6 @@ export const MapWithRoute: React.FC<MapWithRouteProps> = ({
       setDuration(`${Math.round(durationSeconds / 60)} phút`);
 
       if (!isMoving && mapRef.current) {
-        // Fit toàn bộ tuyến đường khi chưa di chuyển
         mapRef.current.fitToCoordinates(coords, {
           edgePadding: { top: 100, right: 100, bottom: 100, left: 100 },
           animated: true,
@@ -179,14 +178,11 @@ export const MapWithRoute: React.FC<MapWithRouteProps> = ({
     }
   };
 
-  // Khi vị trí, trạng thái di chuyển hoặc tuyến đường thay đổi
   useEffect(() => {
     if (!currentLocation || !mapRef.current) return;
 
     if (isMoving) {
-      // Zoom gần lại và xoay theo hướng (vị trí hiện tại hướng xuống dưới màn hình)
       const rotatedHeading = (heading + 180) % 360;
-
       mapRef.current.animateCamera({
         center: currentLocation,
         heading: rotatedHeading,
@@ -194,13 +190,11 @@ export const MapWithRoute: React.FC<MapWithRouteProps> = ({
         zoom: 16,
       });
     } else if (routeCoords.length > 0) {
-      // Khi không di chuyển thì zoom nhỏ, fit hết đường đi
       mapRef.current.fitToCoordinates(routeCoords, {
         edgePadding: { top: 100, right: 100, bottom: 100, left: 100 },
         animated: true,
       });
     } else {
-      // Nếu chưa có route, chỉ center vào vị trí hiện tại với zoom nhỏ
       mapRef.current.animateCamera({
         center: currentLocation,
         zoom: 14,
@@ -211,7 +205,7 @@ export const MapWithRoute: React.FC<MapWithRouteProps> = ({
   if (loading || !currentLocation) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -229,7 +223,7 @@ export const MapWithRoute: React.FC<MapWithRouteProps> = ({
         }}
       >
         <Marker coordinate={currentLocation} title="Vị trí của bạn">
-          <FontAwesome5 name="user-circle" size={30} color="blue" />
+          <FontAwesome5 name="user-circle" size={30} color={colors.primary} />
         </Marker>
         {customerLocation && (
           <Marker coordinate={customerLocation} title="Khách hàng">
@@ -240,13 +234,22 @@ export const MapWithRoute: React.FC<MapWithRouteProps> = ({
           <Polyline
             coordinates={routeCoords}
             strokeWidth={4}
-            strokeColor="#007AFF"
+            strokeColor={colors.primary}
           />
         )}
       </MapView>
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoText}>Khoảng cách: {distance}</Text>
-        <Text style={styles.infoText}>Thời gian: {duration}</Text>
+      <View
+        style={[
+          styles.infoContainer,
+          { backgroundColor: colors.elevation.level2 },
+        ]}
+      >
+        <Text style={[styles.infoText, { color: colors.onSurface }]}>
+          📍 {distance}
+        </Text>
+        <Text style={[styles.infoText, { color: colors.onSurface }]}>
+          ⏱️ {duration}
+        </Text>
       </View>
     </View>
   );
@@ -270,7 +273,6 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 20,
     right: 20,
-    backgroundColor: "rgba(255,255,255,0.9)",
     padding: 15,
     borderRadius: 10,
     flexDirection: "row",

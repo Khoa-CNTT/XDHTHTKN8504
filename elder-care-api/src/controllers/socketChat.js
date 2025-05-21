@@ -288,7 +288,6 @@ export const notifyUser = (userId, event, data) => {
     }
 };
 
-// Lấy danh sách người dùng online theo vai trò
 export const getOnlineUsersByRole = (role) => {
     const onlineUsers = [];
 

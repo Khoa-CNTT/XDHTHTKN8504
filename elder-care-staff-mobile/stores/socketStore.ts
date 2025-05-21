@@ -67,6 +67,18 @@ export const useSocketStore = create<SocketStore>((set) => {
       getNearestSchedule();
 
     });
+    socket.on("new_message", async(data: any) => {
+      log("nhận được tin nhắn mới");
+      await playNotificationSound();
+      Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Tin nhắn mới",
+          body: "Bạn nhận được tin nhắn mới",
+          sound: "default",
+        },
+        trigger: null, // gửi ngay lập tức
+      });
+    });
 
     // Lắng nghe tin nhắn
     socket.on("receive-message", (data: {

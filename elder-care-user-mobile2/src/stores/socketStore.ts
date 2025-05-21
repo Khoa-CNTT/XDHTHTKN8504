@@ -8,6 +8,7 @@ import { useBookingStore } from "./BookingStore";
 import { v4 as uuidv4 } from "uuid";
 import * as Notifications from "expo-notifications";
 import { log } from "../utils/logger";
+import { playNotificationSound } from "../utils/soundService";
 
 const getStatusLabel = (status: string) =>
   ({
@@ -104,6 +105,20 @@ export const useSocketStore = create<SocketStore>((set, get) => {
       });
       await Promise.all([fetchWallet(), fetchBookings()]);
     });
+
+    socket.on("new_message", async (data: any) => {
+      log("nhận được tin nhắn mới")
+      await playNotificationSound();
+      Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Tin nhắn mới",
+          body: "Bạn nhận được tin nhắn mới",
+          sound: "default",
+        },
+        trigger: null, // gửi ngay lập tức
+      });
+    });
+
 
     socket.on("receive-message", (data) => {
       const { id, roomId, message, timestamp, senderId } = data;

@@ -6,12 +6,11 @@ import { useNavigation } from "@react-navigation/native";
 
 type Props = {
   phone: string;
-  scheduleId: string;
+  onStartChat: () => void; // thêm prop này
 };
 
-const ContactButtons: React.FC<Props> = ({ phone, scheduleId }) => {
-  const navigation = useNavigation<any>();
 
+const ContactButtons: React.FC<Props> = ({ phone, onStartChat }) => {
   return (
     <View style={styles.row}>
       <Button
@@ -32,12 +31,11 @@ const ContactButtons: React.FC<Props> = ({ phone, scheduleId }) => {
         mode="outlined"
         icon={() => <MessageCircle size={20} />}
         style={styles.button}
-        onPress={() => {
-          navigation.navigate("Chat", { scheduleId });
-        }}
+        onPress={onStartChat} // dùng prop thay vì navigate trực tiếp
       >
-        Chat
-      </Button>
+     Chat
+  </Button>
+        
     </View>
   );
 };

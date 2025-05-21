@@ -28,7 +28,12 @@ export type RootStackParamList = {
   ServiceScreen: undefined;
   Seach: undefined;
 
-  Chat: { scheduleId: string };
+  Chat: {
+    chatId: string;
+    staffName: string,
+    staffPhone: string,
+    avatar: string;
+  };
   ReviewScreen: undefined;
   PaymentInfoScreen: undefined;
   TopUpScreen: undefined;

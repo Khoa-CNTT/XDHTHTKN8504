@@ -17,12 +17,16 @@ import { useScheduleSocket } from "../../../hooks/useScheduleSocket";
 import ScheduleStatusApi from "../../../api/ScheduleStatusApi";
 import { MapWithRoute } from "@/components/MapWithRoute";
 import canStartSchedule from "@/utils/canStartSchedule";
+import { log } from "@/utils/logger";
+import { createNewChat } from "@/api/chatService";
+import { ChatType } from "@/types/Chat";
 
 
 const ShiftWorkScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const nearestSchedule = useScheduleStore((state) => state.nearestSchedule);
   const updateSchedule = useScheduleStore((state) => state.updateSchedule);
+  log(nearestSchedule)
 
   useScheduleSocket(nearestSchedule?.schedule._id || "");
 
@@ -124,6 +128,40 @@ const ShiftWorkScreen = () => {
     }
   };
 
+  const handleStartChat = async ({
+    targetUserId,
+    chatType,
+    title,
+  }: {
+    targetUserId: string;
+    chatType: ChatType;
+    title?: string;
+  }) => {
+    try {
+      const chat = await createNewChat({
+        targetUserId,
+        chatType,
+        title,
+      });
+
+      if (chat && chat._id) {
+        // Truyền chatId qua query param (không đổi tên file)
+        router.push({
+          pathname: "/screens/chat",
+          params: {
+            chatId: chat._id,
+            title: chat.title || "",
+            chatType: chat.chatType,
+            customerName: nearestSchedule?.schedule.patientName,
+            customerPhone: nearestSchedule?.phoneNumber,
+            avatar: nearestSchedule?.avatar
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Không thể tạo cuộc trò chuyện:", error);
+    }
+  };
   if (!nearestSchedule) {
     return (
       <View style={styles.emptyContainer}>
@@ -215,7 +253,11 @@ const ShiftWorkScreen = () => {
             icon={() => <MessageCircle size={20} />}
             style={styles.button}
             onPress={() => {
-              router.push("/screens/chat");
+              handleStartChat({
+                targetUserId: nearestSchedule.customerId,
+                chatType: "doctor-family",
+                title: nearestSchedule.serviceName
+              })
             }}
           >
             Chat
