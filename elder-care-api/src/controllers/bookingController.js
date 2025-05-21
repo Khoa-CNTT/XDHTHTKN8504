@@ -361,6 +361,7 @@ const bookingController = {
                         },
                         "timeSlots.start": { $lt: adjustedEndDateTime },
                         "timeSlots.end": { $gt: adjustedStartDateTime },
+                        status: { $ne: "canceled" }
                     });
 
                     if (isConflict) {
