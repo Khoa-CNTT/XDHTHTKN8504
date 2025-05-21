@@ -284,11 +284,11 @@ export const notifyRole = (role, event, data) => {
 // Chức năng gửi thông báo đến một người dùng cụ thể
 export const notifyUser = (userId, event, data) => {
     if (ioInstance) {
+        console.log(`🔔 [Server emit] Event "${event}" to user ${userId}`, data);
         ioInstance.to(userId).emit(event, data);
     }
 };
 
-// Lấy danh sách người dùng online theo vai trò
 export const getOnlineUsersByRole = (role) => {
     const onlineUsers = [];
 

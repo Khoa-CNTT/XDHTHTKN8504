@@ -16,6 +16,9 @@ import ActionButtonByStatus from "../components/workScreen/ActionButtonByStatus"
 import Footer from "../components/Footer";
 import RatingModal from "../components/RatingModal"; // đổi tên import cho thống nhất
 import updateScheduleStatus from "../api/ScheduleStatusApi";
+import { log } from "../utils/logger";
+import { createNewChat } from "../api/chatService";
+import { ChatType } from "../types/Chat";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -27,10 +30,12 @@ const MapScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setModalVisible] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
-
+  
   const nearestSchedule = useScheduleStore((state) =>
     state.getScheduleById(id)
   );
+  log(nearestSchedule.staffId)
+  
   const updateSchedule = useScheduleStore((state) => state.updateSchedule);
 
   useEffect(() => {
@@ -54,6 +59,36 @@ const MapScreen: React.FC = () => {
       console.error("Không thể cập nhật trạng thái:", error);
     } finally {
       setUpdatingStatus(false);
+    }
+  };
+
+  const handleStartChat = async ({
+    targetUserId,
+    chatType,
+    title,
+  }: {
+    targetUserId: string;
+    chatType: ChatType;
+    title?: string;
+  }) => {
+    try {
+      log(targetUserId);
+      const chat = await createNewChat({
+        targetUserId,
+        chatType,
+        title,
+      });
+
+      if (chat && chat._id) {
+        navigation.navigate("Chat", {
+          chatId: chat._id,
+          staffName: nearestSchedule?.staffFullName,
+          staffPhone: nearestSchedule?.staffPhone,
+          avatar: nearestSchedule?.staffAvatar,
+        });
+      }
+    } catch (error) {
+      console.error("Không thể tạo cuộc trò chuyện:", error);
     }
   };
 
@@ -89,13 +124,18 @@ const MapScreen: React.FC = () => {
 
           <ContactButtons
             phone={nearestSchedule.staffPhone}
-            scheduleId={nearestSchedule._id}
+            onStartChat={() =>
+              handleStartChat({
+                targetUserId: nearestSchedule.staffId,
+                chatType: "doctor-family",
+                title: nearestSchedule.serviceName,
+              })
+            }
           />
 
           <ActionButtonByStatus
             status={nearestSchedule.status}
             onUpdate={handleUpdateStatus}
-            
           />
         </View>
         <Footer />

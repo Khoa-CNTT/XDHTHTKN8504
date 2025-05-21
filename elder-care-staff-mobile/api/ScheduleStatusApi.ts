@@ -9,6 +9,7 @@ interface ApiResponse {
   schedule: Schedule;
 }
 interface nearestSchedule {
+  customerId: string,
   serviceName: string;
   customerAddress: string;
   phoneNumber: string;

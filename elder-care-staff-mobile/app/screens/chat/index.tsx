@@ -9,29 +9,28 @@ import {
   Platform,
   Image,
   Linking,
+  Animated,
+  StyleSheet,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { Ionicons, Feather } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+
 import { useSocketStore } from "@/stores/socketStore";
-import { useChatStore } from "@/stores/chatStore";
-import useScheduleStore from "@/stores/scheduleStore";
 import useAuthStore from "@/stores/authStore";
+import { getChatDetail, sendNewChatMessage } from "@/api/chatService";
+import { ChatMessage } from "@/types/Chat";
+import { formatTime } from "@/utils/dateHelper";
+
 
 const Header = ({ onBack, onCall, avatar, name }: any) => (
   <View
-    style={{
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      backgroundColor: "#28a745",
-      borderBottomWidth: 1,
-      borderBottomColor: "#eee",
-      elevation: 2,
-    }}
+    style={styles.headerContainer}
   >
-    <TouchableOpacity onPress={onBack} style={{ paddingRight: 12 }}>
-      <Ionicons name="arrow-back" size={24} color="#fff" />
+    <TouchableOpacity onPress={onBack} style={styles.headerBackButton}>
+      <Ionicons name="arrow-back" size={26} color="#28a745" />
     </TouchableOpacity>
     <Image
       source={
@@ -39,68 +38,72 @@ const Header = ({ onBack, onCall, avatar, name }: any) => (
           ? { uri: avatar }
           : require("../../../assets/images/unknownAvatar.png")
       }
-      style={{ width: 36, height: 36, borderRadius: 18, marginRight: 10 }}
+      style={styles.headerAvatar}
     />
     <View style={{ flex: 1 }}>
-      <Text style={{ fontSize: 16, fontWeight: "600", color: "#fff" }}>
-        {name}
-      </Text>
-      <Text style={{ fontSize: 12, color: "#fff" }}>{"Đang trò chuyện"}</Text>
+      <Text style={styles.headerTitle}>{name}</Text>
+      <Text style={styles.headerSubtitle}>Đang trò chuyện</Text>
     </View>
-    <TouchableOpacity onPress={onCall}>
-      <Feather name="phone-call" size={22} color="#fff" />
+    <TouchableOpacity onPress={onCall} style={styles.headerCallButton}>
+      <Feather name="phone-call" size={24} color="#28a745" />
     </TouchableOpacity>
   </View>
 );
 
-const MessageBubble = ({ isMe, avatar, message, timestamp }: any) => (
-  <View
-    style={{
-      flexDirection: isMe ? "row-reverse" : "row",
-      alignItems: "flex-end",
-      marginBottom: 12,
-    }}
-  >
-    {!isMe && (
-      <Image
-        source={
-          avatar
-            ? { uri: avatar }
-            : require("../../../assets/images/unknownAvatar.png")
-        }
-        style={{ width: 28, height: 28, borderRadius: 14, marginRight: 8 }}
-      />
-    )}
+const MessageBubble = ({
+  isMe,
+  avatar,
+  message,
+  timestamp,
+}: {
+  isMe: boolean;
+  avatar?: string;
+  message: string;
+  timestamp: string;
+}) => {
+  return (
     <View
-      style={{
-        backgroundColor: isMe ? "#28A745" : "#ffffff",
-        padding: 10,
-        borderRadius: 16,
-        maxWidth: "75%",
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 4,
-        elevation: 2,
-      }}
+      style={[
+        styles.messageContainer,
+        isMe ? styles.messageContainerRight : styles.messageContainerLeft,
+      ]}
     >
-      <Text style={{ color: isMe ? "#fff" : "#000" }}>{message}</Text>
-      <Text
-        style={{
-          fontSize: 10,
-          color: isMe ? "#e0e0e0" : "#999",
-          marginTop: 4,
-          alignSelf: "flex-end",
-        }}
+      {!isMe && (
+        <Image
+          source={
+            avatar
+              ? { uri: avatar }
+              : require("../../../assets/images/unknownAvatar.png")
+          }
+          style={styles.messageAvatar}
+        />
+      )}
+      <View
+        style={[
+          styles.messageBubble,
+          isMe ? styles.messageBubbleRight : styles.messageBubbleLeft,
+        ]}
       >
-        {new Date(timestamp).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        })}
-      </Text>
+        <Text
+          style={[
+            styles.messageText,
+            isMe ? { color: "#fff" } : { color: "#222" },
+          ]}
+        >
+          {message}
+        </Text>
+        <Text
+          style={[
+            styles.messageTime,
+            isMe ? { color: "#ddd" } : { color: "#888" },
+          ]}
+        >
+          {`${formatTime(timestamp,'datetime')}`}
+        </Text>
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 const MessageInputBar = ({
   input,
@@ -111,80 +114,114 @@ const MessageInputBar = ({
   setInput: (text: string) => void;
   onSend: () => void;
 }) => (
-  <View
-    style={{
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 8,
-      borderTopWidth: 1,
-      borderTopColor: "#ddd",
-      paddingTop: 8,
-    }}
-  >
+  <View style={styles.inputBar}>
     <TextInput
       value={input}
       onChangeText={setInput}
       placeholder="Nhập tin nhắn..."
-      style={{
-        flex: 1,
-        padding: 10,
-        backgroundColor: "#fff",
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: "#ddd",
-      }}
+      placeholderTextColor="#999"
+      style={styles.inputText}
+      multiline
     />
-    <TouchableOpacity
-      onPress={onSend}
-      style={{
-        backgroundColor: "#28A745",
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 20,
-      }}
-    >
-      <Text style={{ color: "#fff", fontWeight: "bold" }}>Gửi</Text>
+    <TouchableOpacity onPress={onSend} style={styles.sendButton}>
+      <Feather name="send" size={22} color="#fff" />
     </TouchableOpacity>
   </View>
 );
 
 const ChatScreen = () => {
   const router = useRouter();
-  const { sendMessage } = useSocketStore();
-  const currentUser = useAuthStore((state) => state.user);
-  const profile = useScheduleStore((state) => state.nearestSchedule);
-  const getMessagesByRoom = useChatStore((state) => state.getMessagesByRoom);
+  const params = useLocalSearchParams();
 
-  const roomId = profile?.schedule._id;
-  const roomMessages = roomId ? getMessagesByRoom(roomId) : [];
+  const chatId = params.chatId as string | undefined;
+  const customerName = params.customerName as string | undefined;
+  const avatar = params.avatar as string | undefined;
+  const customerPhone = params.customerPhone as string;
+
+  const currentUser = useAuthStore((state) => state.user);
 
   const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+
   const scrollViewRef = useRef<ScrollView>(null);
 
+  // Load message khi chatId thay đổi
   useEffect(() => {
-    scrollViewRef.current?.scrollToEnd({ animated: true });
-  }, [roomMessages.length]);
+    if (!chatId) return;
 
-  const handleSendMessage = () => {
-    if (roomId && input.trim() !== "") {
-      sendMessage(roomId, input.trim(), currentUser?._id || "");
+    (async () => {
+      try {
+        const chatDetail = await getChatDetail(chatId);
+        setMessages(chatDetail.messages || []);
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      } catch (error) {
+        Alert.alert("Lỗi", "Không thể tải tin nhắn.");
+        console.error(error);
+      }
+    })();
+  }, [chatId]);
+
+  // Xử lý gửi tin nhắn
+  const handleSendMessage = async () => {
+    if (!chatId || input.trim() === "") return;
+
+    const message = input.trim();
+
+    try {
+      // Gọi API gửi tin nhắn mới
+      const newMessage = await sendNewChatMessage(chatId, { message });
+
+      // Thêm message mới vào local
+      setMessages((prev) => [
+        ...prev,
+        {
+          _id: newMessage._id || `${Date.now()}`, // đảm bảo có id
+          message: newMessage.message,
+          senderId: newMessage.senderId,
+          time: newMessage.timestamp,
+        },
+      ]);
+
       setInput("");
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+
+      // Nếu bạn vẫn muốn gửi qua socket (tùy backend) thì gọi thêm sendMessage ở đây
+    } catch (error: any) {
+      Alert.alert("Lỗi", error.message || "Không thể gửi tin nhắn");
+      console.error("Lỗi gửi tin nhắn:", error);
     }
   };
 
+  // Xử lý gọi điện
   const callCustomer = () => {
-    const phone = profile?.phoneNumber;
-    if (phone) {
-      Linking.openURL(`tel:${phone}`);
-    } else {
-      alert(`Không tìm thấy số điện thoại.`);
+    if (!customerPhone) {
+      Alert.alert("Lỗi", "Không tìm thấy số điện thoại.");
+      return;
     }
+
+    const telURL = `tel:${customerPhone}`;
+
+    Linking.canOpenURL(telURL)
+      .then((supported) => {
+        if (supported) {
+          Linking.openURL(telURL);
+        } else {
+          Alert.alert("Lỗi", "Không thể mở ứng dụng gọi điện.");
+        }
+      })
+      .catch((err) => console.error("Lỗi khi gọi điện:", err));
   };
 
-  if (!roomId || !profile) {
+  if (!chatId) {
     return (
-      <View style={{ padding: 16 }}>
-        <Text>Đang tải phòng trò chuyện...</Text>
+      <View style={styles.loadingContainer}>
+        <Text style={{ fontSize: 16, color: "#444" }}>
+          Đang tải phòng trò chuyện...
+        </Text>
       </View>
     );
   }
@@ -192,28 +229,30 @@ const ChatScreen = () => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      style={{ flex: 1, backgroundColor: "#f9f9f9" }}
+      style={styles.screenContainer}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
       <Header
         onBack={() => router.back()}
         onCall={callCustomer}
-        avatar={profile.avatar}
-        name={profile.schedule.patientName}
+        avatar={avatar}
+        name={customerName || "Cuộc trò chuyện"}
       />
 
-      <View style={{ flex: 1, padding: 16 }}>
+      <View style={styles.chatContainer}>
         <ScrollView
           ref={scrollViewRef}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={styles.messagesContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          {roomMessages.map((msg) => (
+          {messages.map((msg) => (
             <MessageBubble
-              key={msg.id} // 🔑 Sử dụng id duy nhất để tránh render thừa
-              isMe={!msg.isReceived}
-              avatar={profile.avatar}
-              message={msg.text}
-              timestamp={msg.time}
+              key={msg._id}
+              isMe={msg.senderId === currentUser?._id}
+              avatar={avatar}
+              message={msg.message}
+              timestamp={msg.timestamp || ""}
             />
           ))}
         </ScrollView>
@@ -227,5 +266,130 @@ const ChatScreen = () => {
     </KeyboardAvoidingView>
   );
 };
+
+const styles = StyleSheet.create({
+  screenContainer: { flex: 1, backgroundColor: "#f0f2f5" },
+
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomColor: "#2e7d32", // màu xanh mảnh
+    borderBottomWidth: 1,
+    backgroundColor: "transparent", // hoặc có thể bỏ dòng này
+  },
+  headerBackButton: {
+    paddingRight: 12,
+  },
+  headerCallButton: {
+    paddingLeft: 12,
+    padding: 6,
+  },
+  headerAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    marginRight: 12,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#2e7d32",
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: "#2e7d32",
+    marginTop: 2,
+  },
+
+  chatContainer: { flex: 1, paddingHorizontal: 16, paddingBottom: 12 },
+  messagesContent: { paddingVertical: 12 },
+
+  messageContainer: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    marginBottom: 12,
+  },
+  messageContainerRight: { justifyContent: "flex-end", alignSelf: "flex-end" },
+  messageContainerLeft: {
+    justifyContent: "flex-start",
+    alignSelf: "flex-start",
+  },
+
+  messageAvatar: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  messageBubble: {
+    maxWidth: "75%",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 18,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  messageBubbleRight: {
+    backgroundColor: "#4caf50",
+    borderTopRightRadius: 0,
+  },
+  messageBubbleLeft: {
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 0,
+  },
+  messageText: {
+    fontSize: 15,
+    lineHeight: 20,
+  },
+  messageTime: {
+    fontSize: 11,
+    marginTop: 4,
+    alignSelf: "flex-end",
+  },
+
+  inputBar: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 30,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    elevation: 3,
+    marginTop: 6,
+  },
+  inputText: {
+    flex: 1,
+    maxHeight: 120,
+    fontSize: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    color: "#222",
+  },
+  sendButton: {
+    backgroundColor: "#2e7d32",
+    borderRadius: 25,
+    padding: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 8,
+  },
+
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
 
 export default ChatScreen;
