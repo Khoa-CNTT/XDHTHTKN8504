@@ -164,7 +164,7 @@ const socketController = (io) => {
                     return;
                 }
 
-                const messageId = uuidv4();
+                // const messageId = uuidv4();
                 const timestamp = new Date();
 
                 // Lưu tin nhắn vào database
@@ -173,7 +173,7 @@ const socketController = (io) => {
                     {
                         $push: {
                             messages: {
-                                _id: messageId,
+                                // _id: messageId,
                                 senderId,
                                 message,
                                 timestamp,
@@ -193,14 +193,14 @@ const socketController = (io) => {
                 // Phát tin nhắn đến room chat
                 io.to(`chat_${chatId}`).emit("receive_message", {
                     chatId,
-                    messageId,
+                    // messageId,
                     senderId,
                     message,
                     timestamp,
                     isRead: false
                 });
 
-                console.log(`✅ Message sent in chat ${chatId} by ${senderId}`);
+                console.log(`Message sent in chat ${chatId} by ${senderId}`);
 
             } catch (error) {
                 console.error("Error sending message:", error);
