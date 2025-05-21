@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import socketController from '../controllers/socketController.js';
+import socketChat from '../controllers/socketChat.js';
 
 let io;
 
@@ -11,6 +12,7 @@ function configureSocket(server) {
         }
     });
 
+    socketChat(io);
     socketController(io);
 }
 

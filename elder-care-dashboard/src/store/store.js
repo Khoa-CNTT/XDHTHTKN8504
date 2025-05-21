@@ -8,6 +8,7 @@ import scheduleReducer from '../store/scheduleSlice.js'
 import walletReducer from '../store/walletSlice.js'
 import dashboardReducer from '../store/dashboardSlice.js'
 import invoiceReducer from "../store/invoiceSlice.js"
+import chatReducer from "../store/chatSlice.js"
 
 export const store = configureStore({
     reducer: {
@@ -20,5 +21,6 @@ export const store = configureStore({
         wallet: walletReducer,
         dashboard: dashboardReducer,
         invoice: invoiceReducer,
+        chat: chatReducer,
     }
 })

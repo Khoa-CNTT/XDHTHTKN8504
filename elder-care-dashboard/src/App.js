@@ -33,7 +33,7 @@ import NotFound from "./screens/NotFound";
 import Login from "./screens/Login";
 import ForgotPassword from "./screens/ForgotPassword";
 import Register from "./screens/Register";
-import Chat from "./screens/Chats/Chat";
+import Chat from "./screens/Chats/AdminChatPage";
 import Booking from "./screens/Booking";
 import PreviewBooking from "./screens/previewBooking";
 import RequireAuth from "./components/RequireAuth";
