@@ -284,6 +284,7 @@ export const notifyRole = (role, event, data) => {
 // Chức năng gửi thông báo đến một người dùng cụ thể
 export const notifyUser = (userId, event, data) => {
     if (ioInstance) {
+        console.log(`🔔 [Server emit] Event "${event}" to user ${userId}`, data);
         ioInstance.to(userId).emit(event, data);
     }
 };
