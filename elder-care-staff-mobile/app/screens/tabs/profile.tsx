@@ -115,8 +115,8 @@ export default function Profile() {
       <View style={styles.profileSection}>
         <Image
           source={
-            userData?.avatarUrl
-              ? { uri: userData.avatarUrl }
+            userData?.avatar
+              ? { uri: userData.avatar }
               : require("../../../assets/images/avatar.jpg")
           }
           style={styles.avatar}

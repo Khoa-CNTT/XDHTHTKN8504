@@ -4,6 +4,7 @@ import { Schedule } from "../types/Schedule";
 import ScheduleStatusApi from "../api/ScheduleStatusApi"; // API lấy lịch trình gần nhất
 import { ScheduleStatus } from "@/types/ScheduleStatus";
 interface nearestSchedule {
+  customerId: string,
   avatar?: string;
   serviceName: string;
   customerAddress: string;
