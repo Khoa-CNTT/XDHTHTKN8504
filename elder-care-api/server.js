@@ -23,6 +23,7 @@ import PackageRouter from "./src/routes/packageRoutes.js";
 import WalletRouter from "./src/routes/walletRoutes.js"
 import ReviewRouter from "./src/routes/reviewRoutes.js"
 import ChatRouter from "./src/routes/chatRoutes.js"
+import InvoiceRouter from "./src/routes/invoiceRoutes.js"
 import './src/jobs/bookingMonitor.js';  
 import http from "http";
 
@@ -83,6 +84,7 @@ app.use("/api/v1/packages", PackageRouter);
 app.use("/api/v1/wallet", WalletRouter);
 app.use("/api/v1/reviews", ReviewRouter)
 app.use("/api/v1/chats", ChatRouter)
+app.use("/api/v1/invoices", InvoiceRouter)
 
 const port = process.env.SERVER_PORT || 8080;
 const listener = server.listen(port, '0.0.0.0',() => {

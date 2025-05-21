@@ -4,7 +4,7 @@ import axios from '../api/axios.js';
 export const fetchCustomers = createAsyncThunk(
     'customers/fetchCustomers',
     async () => {
-        const response = await axios.get('/auth/get-customer'); 
+        const response = await axios.get('/auth/get-customer');
         return response.data.data;
     }
 );
@@ -39,6 +39,20 @@ export const fetchCustomerById = createAsyncThunk(
         try {
             const response = await axios.get(`/auth/get-customer-info/${customerId}`);
             return response.data.customer;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || error.message);
+        }
+    }
+);
+
+export const searchCustomers = createAsyncThunk(
+    'customers/searchCustomers',
+    async (filters, { rejectWithValue }) => {
+        try {
+            const params = new URLSearchParams(filters).toString();
+            const response = await axios.get(`/auth/search-customer?${params}`);
+            console.log(response.data.data);            
+            return response.data.reviews;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || error.message);
         }
@@ -119,7 +133,19 @@ const customerSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload || action.error.message;
                 state.selectedCustomer = null;
-            });
+            })
+            .addCase(searchCustomers.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(searchCustomers.fulfilled, (state, action) => {
+                state.loading = false;
+                state.data = action.payload;
+            })
+            .addCase(searchCustomers.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || action.error.message;
+            })
     },
 });
 

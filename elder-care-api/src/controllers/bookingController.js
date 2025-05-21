@@ -10,6 +10,7 @@ import Nurse from "../models/Nurse.js";
 import Payments from "../models/Payment.js";
 import Packages from "../models/Package.js";
 import Wallet from "../models/Wallet.js";
+import Invoice from "../models/Invoice.js"
 
 const bookingController = {
     // create new booking
@@ -449,6 +450,16 @@ const bookingController = {
                 }
             }
 
+            const invoiceId = "HD_" + Date.now();
+            const newInvoice = new Invoice({
+                invoiceId,
+                bookingId: booking._id,
+                staffId: staff._id,
+                totalAmount: booking.totalPrice
+            })
+
+            await newInvoice.save();
+
             // Gửi thông báo socket cho người tạo và tất cả người tham gia
             const allUserIds = new Set([
                 booking.createdBy?.toString(),
@@ -472,6 +483,7 @@ const bookingController = {
             return res.status(200).json({
                 message: "Đã chấp nhận lịch hẹn và tạo lịch làm việc thành công",
                 schedule: schedules,
+                newInvoice
             });
         } catch (error) {
             console.error(error);
