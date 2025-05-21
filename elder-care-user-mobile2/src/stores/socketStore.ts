@@ -4,14 +4,13 @@ import useScheduleStore from "./scheduleStore";
 import { useModalStore } from "./modalStore";
 import { useWalletStore } from "./WalletStore";
 import { useChatStore } from "./chatStore";
-import "react-native-get-random-values";
+import { useBookingStore } from "./BookingStore";
 import { v4 as uuidv4 } from "uuid";
 import * as Notifications from "expo-notifications";
 import { log } from "../utils/logger";
 
-
-const getStatusLabel = (status: string) => {
-  const statusMap: Record<string, string> = {
+const getStatusLabel = (status: string) =>
+  ({
     scheduled: "Đang lên lịch",
     waiting_for_client:
       "Bạn ơi, nhân viên đã sẵn sàng chăm sóc. Bạn đã sẵn sàng chưa?",
@@ -23,33 +22,32 @@ const getStatusLabel = (status: string) => {
     completed: "Ca làm việc đã hoàn tất, chúc bạn một ngày tốt lành!",
     cancelled: "Bị hủy",
     default: "Không thực hiện",
-  };
-  return statusMap[status] || statusMap["default"];
-};
+  }[status] || "Không thực hiện");
 
-type Payload = Partial<{
-  userId: string;
-  role?: string;
-  scheduleId?: string;
-}>;
+type Payload = Partial<{ userId: string; role?: string; scheduleId?: string }>;
 
 interface SocketStore {
   socket: typeof socket;
   isConnected: boolean;
   hasSetupListeners: boolean;
-  messages: Record<string, any[]>;
   connect: () => void;
   disconnect: () => void;
   join: (payload: Payload) => void;
   leave: (payload: Payload) => void;
   sendMessage: (roomId: string, message: string, senderId: string) => void;
-  
 }
+
+const notifyUser = async (title: string, body: string, data: any = {}) => {
+  await Notifications.scheduleNotificationAsync({
+    content: { title, body, data },
+    trigger: null,
+  });
+};
 
 export const useSocketStore = create<SocketStore>((set, get) => {
   const { updateSchedule, fetchSchedules } = useScheduleStore.getState();
-  const {fetchWallet} = useWalletStore.getState();
-  const { showModal } = useModalStore.getState();
+  const { fetchWallet } = useWalletStore.getState();
+  const { fetchBookings } = useBookingStore.getState();
 
   const listenToEvents = () => {
     if (get().hasSetupListeners) return;
@@ -70,72 +68,46 @@ export const useSocketStore = create<SocketStore>((set, get) => {
       console.warn("⚠️ Lỗi socket:", err.message);
     });
 
-    socket.on("bookingAccepted", async (bookingId: string) => {
-      await fetchWallet();
-      await fetchSchedules();
-      const schedules = useScheduleStore.getState().schedules;
-      schedules.forEach((schedule) => {
-        if (schedule._id) {
-          get().join({ scheduleId: schedule._id });
-        }
+    socket.on("bookingAccepted", async () => {
+      await Promise.all([fetchWallet(), fetchSchedules(), fetchBookings()]);
+      useScheduleStore.getState().schedules.forEach((s) => {
+        if (s._id) get().join({ scheduleId: s._id });
       });
-      showModal(
-        "Chấp thuận đơn đặt lịch",
-        "Đơn đặt lịch của bạn đã tìm thấy người chăm sóc!",
-        {
-          type: "popup",
-          autoHideDuration: 3000,
-        }
+
+      await notifyUser(
+        "Đặt lịch thành công!",
+        "Đơn đặt lịch của bạn đã được nhân viên y tế tiếp nhận! Lịch chăm sóc sẽ được cập nhật!"
       );
     });
 
-    socket.on("scheduleStatusUpdated", (data: any) => {
-      console.log("🚨 Lịch hẹn đã được cập nhật:", data);
-      const { scheduleId, newStatus } = data;
-      const message = getStatusLabel(newStatus);
+    socket.on("scheduleStatusUpdated", async ({ scheduleId, newStatus }) => {
       updateSchedule({ scheduleId, newStatus });
-      showModal("Cập nhật trạng thái lịch", message, {
-        type: "popup",
-        autoHideDuration: 2000,
-      });
+      await notifyUser(
+        "Cập nhật trạng thái chăm sóc",
+        getStatusLabel(newStatus)
+      );
     });
-    socket.on("refundWallet", async (data) => {
-      log("Nhận thông báo hủy tuên")
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "💰 Ví đã được hoàn tiền",
-          body: data.message,
-          data: data, // có thể truyền thêm dữ liệu
-        },
-        trigger: null, // Phát ngay lập tức
+
+    socket.on("refundWallet", async ({ message, bookingId, refundAmount }) => {
+      log("Nhận thông báo hủy tiền");
+      await notifyUser("💰 Ví đã được hoàn tiền", message, {
+        bookingId: bookingId ?? "",
+        refundAmount: refundAmount ?? 0,
       });
       fetchWallet();
     });
-    socket.on("BookingSuccessed", async(data) =>{
-      log("Nhận thông báo đặt lịch thành công")
-      const {title, message} = data;
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: title,
-          body: message,
-          data: data,
-        },
-        trigger: null,
+
+    socket.on("newBookingCreated", async (data) => {
+      log("Nhận thông báo đặt lịch thành công");
+      await notifyUser(data.title, data.message, {
+        bookingId: data.bookingId ?? "",
       });
-      fetchWallet();
-    })
+      await Promise.all([fetchWallet(), fetchBookings()]);
+    });
 
-    socket.on("receive-message", (data: {
-      id: string;
-      roomId: string;
-      senderId: string;
-      message: string;
-      timestamp: string;
-    }) => {
-      const { id, roomId, message, timestamp } = data;
-      const addMessage = useChatStore.getState().addMessage;
-
-      addMessage({
+    socket.on("receive-message", (data) => {
+      const { id, roomId, message, timestamp, senderId } = data;
+      useChatStore.getState().addMessage({
         id,
         text: message,
         time: timestamp,
@@ -147,12 +119,10 @@ export const useSocketStore = create<SocketStore>((set, get) => {
     set({ hasSetupListeners: true });
   };
 
-
   return {
     socket,
     isConnected: false,
     hasSetupListeners: false,
-    messages: {},
 
     connect: () => {
       listenToEvents();
@@ -163,9 +133,7 @@ export const useSocketStore = create<SocketStore>((set, get) => {
     },
 
     disconnect: () => {
-      if (socket.connected) {
-        socket.disconnect();
-      }
+      if (socket.connected) socket.disconnect();
     },
 
     join: ({ userId, role, scheduleId }: Payload) => {
@@ -183,10 +151,8 @@ export const useSocketStore = create<SocketStore>((set, get) => {
     sendMessage: (roomId: string, message: string, senderId: string) => {
       const id = uuidv4();
       socket.emit("send-message", { id, roomId, senderId, message });
-
-      const addMessage = useChatStore.getState().addMessage;
-      addMessage({
-        id, // tạm id khi gửi (có thể sửa lại)
+      useChatStore.getState().addMessage({
+        id,
         text: message,
         time: new Date().toISOString(),
         isReceived: false,

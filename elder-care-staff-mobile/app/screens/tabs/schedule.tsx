@@ -7,11 +7,11 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import * as Animatable from "react-native-animatable";
 import ScheduleItem from "../../../components/ScheduleItem";
 import useScheduleStore from "@/stores/scheduleStore";
 import { Schedule } from "@/types/Schedule";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 type Day = {
   day: string;
@@ -131,10 +131,16 @@ export default function ScheduleScreen() {
   };
 
   return (
-    <View
-      style={styles.container}
-    >
-      <Text style={styles.headerTitle}>Lịch Làm Việc</Text>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={33} color="#000" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Dịch vụ</Text>
+        <TouchableOpacity activeOpacity={0.7}>
+          <Ionicons name="person-circle-outline" size={33} color="#000" />
+        </TouchableOpacity>
+      </View>
 
       {selectedDay && (
         <DaySelector
@@ -151,10 +157,10 @@ export default function ScheduleScreen() {
           data={filteredSchedules}
           keyExtractor={(item) => item._id}
           renderItem={({ item, index }) => (
-              <ScheduleItem
-                schedule={item}
-                onPress={() => handleSelectJob(item)}
-              />
+            <ScheduleItem
+              schedule={item}
+              onPress={() => handleSelectJob(item)}
+            />
           )}
           initialNumToRender={5}
           ListEmptyComponent={
@@ -172,14 +178,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F8F9FA",
-    padding: 20,
+    paddingHorizontal: 20,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    backgroundColor: "#fff",
+    marginBottom: 5
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 10,
-    color: "#black",
+    color: "#000",
   },
   emptyText: {
     textAlign: "center",

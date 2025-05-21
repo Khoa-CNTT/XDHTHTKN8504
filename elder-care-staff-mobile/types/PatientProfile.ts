@@ -1,11 +1,12 @@
 // src/types/PatientProfile.ts
-export type HealthCondition = {
+export type Condition = {
+  _id: string;
   name: string;
   description: string;
 };
 
 export type HealthInfo = {
-  condition: HealthCondition[];
+  condition: Condition[];
   height?: number;
   weight?: number;
   typeBlood: string;

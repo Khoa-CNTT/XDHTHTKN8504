@@ -77,14 +77,6 @@ const MyBookings = () => {
     useState<BookingStatus>("accepted");
 
   useEffect(() => {
-    const load = async () => {
-      await fetchBookings();
-      filterByStatus(selectedStatus);
-    };
-    load();
-  }, []);
-
-  useEffect(() => {
     filterByStatus(selectedStatus);
   }, [selectedStatus]);
 

@@ -354,7 +354,7 @@ const bookingController = {
       }
 
       io.to("staff_admin").emit("newBookingCreated", populatedBooking);
-      io.to("newBooking.createdBy").emit("BookingSuccessed", {
+      io.to(userId.toString()).emit("newBookingCreated", {
         title: "☑️Đặt lịch thành công",
         message:
           "Bạn đã đặt lịch thành công, chúng tôi sẽ thông báo cho bạn khi có nhân viên y tế chấp nhận!",
@@ -1080,6 +1080,37 @@ const bookingController = {
       return res.status(500).json({
         error,
       });
+    }
+  },
+  getBookingForParticipant: async (req, res) => {
+    try {
+      const userId = req.user._id;
+      if (!userId) {
+        return res.status(400).json({ message: "Thiếu userId" });
+      }
+
+      const now = new Date();
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const firstDayOfNextMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        1
+      );
+
+      const bookings = await Booking.find({
+        "participants.userId": userId,
+        createdAt: { $gte: firstDayOfMonth, $lt: firstDayOfNextMonth }, // lọc tháng hiện tại
+      }).populate("serviceId profileId");
+
+      return res.status(200).json({
+        message: "Lấy booking thành công!",
+        data: bookings,
+      });
+    } catch (error) {
+      console.error("Lỗi khi lấy booking:", error);
+      return res
+        .status(500)
+        .json({ message: "Lỗi server", error: error.message });
     }
   },
 };

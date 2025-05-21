@@ -8,7 +8,7 @@ const canStartSchedule = (start: Date): boolean => {
   const nowUtc = new Date();
   const now = toUtcPlus7(nowUtc);
 
-  const allowedStartTime = subMinutes(start, 5);
+  const allowedStartTime = subMinutes(start, 120)
   return now >= allowedStartTime;
 };
 

@@ -74,7 +74,7 @@ const BookingModal = () => {
               style={styles.acceptButton}
               onPress={handleAccept}
             >
-              <Text style={styles.buttonText}>Chấp nhận</Text>
+              <Text style={styles.buttonText}>Tiếp nhận chăm sóc</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.rejectButton}

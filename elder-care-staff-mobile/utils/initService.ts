@@ -1,15 +1,15 @@
 import useCompletedBookingStore from "@/stores/completedBookingStore";
 import useScheduleStore from "@/stores/scheduleStore";
 import { useSocketStore } from "@/stores/socketStore";
+import useBookingStore from "@/stores/BookingStore";
+import { log } from "./logger";
 
 const initService = async () => {
-  const currentDate = new Date();
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth() + 1;
+
  
   try { 
     await Promise.all([
-      useCompletedBookingStore.getState().fetchCompletedBookings(year, month),
+      useBookingStore.getState().fetchBookingsForParticipant(),
       useScheduleStore.getState().fetchSchedules(),
       useScheduleStore.getState().getNearestSchedule(),
       // useUserStore.getState().fetchUserInfo(),

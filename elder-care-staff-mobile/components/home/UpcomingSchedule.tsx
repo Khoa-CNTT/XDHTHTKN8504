@@ -24,7 +24,17 @@ const UpcomingSchedule = () => {
   if (!nearestSchedule) {
     return (
       <View style={styles.upcomingRideContainer}>
-        <Text style={styles.upcomingRideTitle}>Không có lịch sắp tới</Text>
+        <View style={styles.rideDetailsCard}>
+          <View style={styles.emptyCardContent}>
+            <Ionicons
+              name="calendar-outline"
+              size={48}
+              color="#ccc"
+              style={{ marginBottom: 10 }}
+            />
+            <Text style={styles.emptyText}>Không có lịch sắp tới</Text>
+          </View>
+        </View>
       </View>
     );
   }
@@ -36,21 +46,7 @@ const UpcomingSchedule = () => {
         formatTime(schedule.timeSlots[0].end, 'time')
       }`
     : "Chưa rõ thời gian";
-    if (!nearestSchedule) {
-      return (
-        <View style={[styles.upcomingRideContainer, styles.emptyContainer]}>
-          <Ionicons
-            name="calendar-outline"
-            size={48}
-            color="#ccc"
-            style={{ marginBottom: 10 }}
-          />
-          <Text style={styles.emptyText}>
-            Hiện chưa có lịch làm việc sắp tới
-          </Text>
-        </View>
-      );
-    }
+    
 
   return (
     <View style={styles.upcomingRideContainer}>
@@ -165,6 +161,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#999",
     textAlign: "center",
+  },
+  emptyCardContent: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 30,
   },
 });
 
