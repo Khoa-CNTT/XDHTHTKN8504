@@ -16,15 +16,14 @@ export default function MessageInput() {
             message: msg
         });
 
-        socket.emit('new_message', {
+        socket.emit('send_message', {
             chatId: selectedChat._id,
             senderId: user._id,
             message: msg
         });
         setMsg('');
     };
-
-
+ 
     return (
         <div className="p-4 border-t flex gap-2">
             <input

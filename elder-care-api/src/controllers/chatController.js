@@ -85,7 +85,7 @@ const chatController = {
     },
 
     // Tạo cuộc trò chuyện mới
-    createNewChat: async (req, res) => { 
+    createNewChat: async (req, res) => {
         try {
             const { targetUserId, chatType, title } = req.body;
             const initiatorId = req.user._id;
@@ -186,6 +186,10 @@ const chatController = {
                 timestamp: new Date(),
                 isRead: false
             };
+
+            console.log('newMessage:', newMessage);
+            console.log('newMessage._id instanceof mongoose.Types.ObjectId:', newMessage._id instanceof mongoose.Types.ObjectId);
+
 
             chat.messages.push(newMessage);
             chat.metadata.lastActivity = new Date();
