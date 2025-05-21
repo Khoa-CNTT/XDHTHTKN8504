@@ -17,6 +17,7 @@ import { formatTime } from "../utils/dateHelper";
 import { useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import type { RootStackParamList } from "../navigation/navigation";
+import { log } from "../utils/logger";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -102,6 +103,8 @@ const MyBookings = () => {
     ]);
   };
 
+
+
   return (
     <View style={styles.container}>
       <Tabs selected={selectedStatus} onChange={onTabChange} />
@@ -133,8 +136,8 @@ const MyBookings = () => {
               <View style={styles.cardRow}>
                 <Image
                   source={
-                    b.participants[0]?.userId.avatar
-                      ? { uri: b.participants[0].userId.avatar }
+                    b.participants[0]?.userId
+                      ? { uri: b.participants[0].userId }
                       : require("../asset/img/unknownAvatar.png")
                   }
                   style={styles.avatar}
@@ -193,10 +196,19 @@ const MyBookings = () => {
                     ]}
                     disabled={b.participants.length === 0}
                     onPress={() =>
-                      navigation.navigate("DoctorDetails", {
-                        participantId: b.participants[0]?.userId._id,
-                      })
-                    }
+                    {
+                     const participantId = b.participants[0]?.userId;
+
+                        if (participantId) {
+                          navigation.navigate("DoctorDetails", {
+                            participantId,
+                          });
+                        } else {
+                          console.warn("Không có participantId để điều hướng.");
+                          console.log(b);
+                          
+                        }
+                      }}
                   >
                     <Text style={styles.buttonText}>Xem nhân viên</Text>
                   </TouchableOpacity>
