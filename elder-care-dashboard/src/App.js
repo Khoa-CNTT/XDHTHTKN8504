@@ -35,7 +35,7 @@ import ForgotPassword from "./screens/ForgotPassword";
 import Register from "./screens/Register";
 import Chat from "./screens/Chats/Chat";
 import Booking from "./screens/Booking";
-import previewBooking from "./screens/previewBooking";
+import PreviewBooking from "./screens/previewBooking";
 import RequireAuth from "./components/RequireAuth";
 import Review from "./screens/Review";
 function App() {
@@ -92,8 +92,8 @@ function App() {
                   <Route path="/appointments" element={<Appointments />} />
                   <Route path="/bookings" element={<Booking />} />
                   <Route
-                    path="/bookings/preview/:_id"
-                    element={<previewBooking />} 
+                    path="/bookings/preview1/:_id"
+                    element={<PreviewBooking />}
                   />
                   <Route path="/review" element={<Review />} />
                   <Route path="/chat" element={<Chat />} />
