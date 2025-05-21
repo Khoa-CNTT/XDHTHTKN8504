@@ -72,7 +72,7 @@ const reviewController = {
         try {
             const { staffId } = req.params;
 
-            const reviews = await Review.find({ staffId });
+            const reviews = await Review.find({ staffId }).populate('reviewer');
 
             return res.status(200).json({
                 message: "Đã lấy được tất cả đánh giá của nhân viên",

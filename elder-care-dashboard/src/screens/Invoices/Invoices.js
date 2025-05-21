@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import * as XLSX from "xlsx"; 
 import { fetchInvoice } from "../../store/invoiceSlice";
 import { useDispatch, useSelector } from "react-redux";
+import Loading from "../../components/Loading";
 
 function Invoices() {
   const { data, loading, error } = useSelector((state) => state.invoice);
@@ -19,7 +20,7 @@ function Invoices() {
     dispatch(fetchInvoice());
   }, [dispatch]);
 
-  console.log("ddas", data);
+  if(loading) return <Loading />
 
   // 🔹 Chuyển chuỗi sang ArrayBuffer
   const s2ab = (s) => {
