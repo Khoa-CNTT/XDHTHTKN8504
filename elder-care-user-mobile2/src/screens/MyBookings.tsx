@@ -18,6 +18,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import type { RootStackParamList } from "../navigation/navigation";
 import { log } from "../utils/logger";
+import useAuthStore from "../stores/authStore"; // Import useAuthStore
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -73,6 +74,7 @@ const Tabs = ({
 const MyBookings = () => {
   const navigation = useNavigation<NavigationProp>();
   const { fetchBookings, filteredBookings, filterByStatus } = useBookingStore();
+  const { token } = useAuthStore(); // Get the authentication token from the store
 
   const [selectedStatus, setSelectedStatus] =
     useState<BookingStatus>("accepted");
@@ -103,7 +105,16 @@ const MyBookings = () => {
     ]);
   };
 
-
+  // New handler for "Đặt lịch mới" button
+  const handleBookNewService = () => {
+    if (token) {
+      // If user is logged in (token exists), navigate to BookAService
+      navigation.navigate("BookAService");
+    } else {
+      // If user is not logged in, navigate to LoginScreen
+      navigation.navigate("Login");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -124,7 +135,7 @@ const MyBookings = () => {
           </Text>
           <TouchableOpacity
             style={styles.emptyButton}
-            onPress={() => navigation.navigate("BookAService")}
+            onPress={handleBookNewService} // Use the new handler here
           >
             <Text style={styles.emptyButtonText}>Đặt lịch mới</Text>
           </TouchableOpacity>
@@ -195,20 +206,18 @@ const MyBookings = () => {
                       b.participants.length === 0 && { opacity: 0.5 },
                     ]}
                     disabled={b.participants.length === 0}
-                    onPress={() =>
-                    {
-                     const participantId = b.participants[0]?.userId;
+                    onPress={() => {
+                      const participantId = b.participants[0]?.userId;
 
-                        if (participantId) {
-                          navigation.navigate("DoctorDetails", {
-                            participantId,
-                          });
-                        } else {
-                          console.warn("Không có participantId để điều hướng.");
-                          console.log(b);
-                          
-                        }
-                      }}
+                      if (participantId) {
+                        navigation.navigate("DoctorDetails", {
+                          participantId,
+                        });
+                      } else {
+                        console.warn("Không có participantId để điều hướng.");
+                        console.log(b);
+                      }
+                    }}
                   >
                     <Text style={styles.buttonText}>Xem nhân viên</Text>
                   </TouchableOpacity>
