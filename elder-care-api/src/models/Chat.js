@@ -6,7 +6,7 @@ const chatSchema = new Schema(
     participants: { type: [Schema.Types.ObjectId], ref: "User", required: true },
     chatType: {
       type: String,
-      enum: ['admin-doctor', 'admin-nurse', 'admin-family', 'doctor-nurse', 'doctor-family', 'nurse-family'],
+      enum: ['admin-staff', 'admin-family', 'doctor-nurse', 'staff-family'],
       required: true
     },
 

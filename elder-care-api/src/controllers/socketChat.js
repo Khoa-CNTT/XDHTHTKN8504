@@ -98,19 +98,21 @@ const socketController = (io) => {
 
                 // Xác định chatType dựa trên vai trò nếu không được cung cấp
                 if (!chatType) {
-                    const roles = [initiator.role, target.role].sort();
-                    if (roles.includes('admin') && roles.includes('doctor')) {
-                        chatType = 'admin-doctor';
-                    } else if (roles.includes('admin') && roles.includes('nurse')) {
-                        chatType = 'admin-nurse';
+                    const roles = [initiator.role, target.role];
+                    if (
+                        roles.includes('admin') &&
+                        (roles.includes('nurse') || roles.includes('doctor'))
+                    ) {
+                        chatType = 'admin-staff';
                     } else if (roles.includes('admin') && roles.includes('family_member')) {
                         chatType = 'admin-family';
+                    } else if (
+                        (roles.includes('doctor') || roles.includes('nurse')) &&
+                        roles.includes('family_member')
+                    ) {
+                        chatType = 'staff-family';
                     } else if (roles.includes('doctor') && roles.includes('nurse')) {
                         chatType = 'doctor-nurse';
-                    } else if (roles.includes('doctor') && roles.includes('family_member')) {
-                        chatType = 'doctor-family';
-                    } else if (roles.includes('nurse') && roles.includes('family_member')) {
-                        chatType = 'nurse-family';
                     }
                 }
 
