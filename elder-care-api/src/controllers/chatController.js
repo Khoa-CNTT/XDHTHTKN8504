@@ -65,7 +65,7 @@ const chatController = {
             // Phân trang và sắp xếp tin nhắn (mới nhất lên trên)
             const skip = (page - 1) * limit;
             const messages = chat.messages
-                .sort((a, b) => a.timestamp - b.timestamp) 
+                .sort((a, b) => a.timestamp - b.timestamp)
                 .slice(skip, skip + parseInt(limit));
 
             const totalMessages = chat.messages.length;
@@ -91,6 +91,56 @@ const chatController = {
         try {
             const { targetUserId, chatType, title } = req.body;
             const initiatorId = req.user._id;
+
+            if (chatType === "admin-family" && req.user.role === "family_member") {
+                const admins = await User.find({ role: "admin" });
+
+                if (!admins || admins.length === 0) {
+                    return res.status(404).json({ success: false, message: "Không tìm thấy quản trị viên nào" });
+                }
+
+                const adminIds = admins.map(admin => admin._id.toString());
+                const participantIds = [initiatorId.toString(), ...adminIds];
+
+                // Kiểm tra đã tồn tại chat nhóm này chưa
+                const existingChat = await Chat.findOne({
+                    participants: { $all: participantIds },
+                    chatType,
+                    isActive: true
+                });
+
+                if (existingChat) {
+                    return res.status(200).json({ success: true, chat: existingChat, message: "Cuộc trò chuyện đã tồn tại" });
+                }
+
+                // Tạo mới
+                const newChat = new Chat({
+                    participants: participantIds,
+                    chatType,
+                    title: title || "Hỏi quản trị viên",
+                    isActive: true,
+                    messages: [],
+                    metadata: {
+                        lastActivity: new Date()
+                    }
+                });
+
+                await newChat.save();
+
+                // Gửi thông báo tới admin
+                adminIds.forEach(adminId => {
+                    notifyUser(adminId, "new_chat", {
+                        chatId: newChat._id,
+                        initiator: {
+                            _id: req.user._id,
+                            name: req.user.name,
+                            role: req.user.role
+                        }
+                    });
+                });
+
+                return res.status(201).json({ success: true, chat: newChat });
+            }
 
             // Kiểm tra người dùng đích tồn tại`
             const targetUser = await User.findById(targetUserId);
