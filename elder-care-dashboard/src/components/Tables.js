@@ -610,7 +610,7 @@ export function DoctorsTable({ data, functions, doctor, onEdit }) {
     </table>
   );
 }
-export function BookingTable({ data, functions, doctor }) {
+export function BookingTable({ data, functions, doctor, page = 1, limit = 10 }) {
   const statusMap = {
     pending: "Chưa nhận",
     paid: "Đã thanh toán",
@@ -618,6 +618,8 @@ export function BookingTable({ data, functions, doctor }) {
     completed: "Hoàn thành",
     cancelled: "Đã hủy",
   };
+
+  const startIndex = (page - 1) * limit;
 
   return (
     <table className="table-auto w-full">
@@ -652,7 +654,7 @@ export function BookingTable({ data, functions, doctor }) {
               key={item._id}
               className="border-b border-border hover:bg-greyed transitions"
             >
-              <td className={tdclass}>{index + 1}</td>
+              <td className={tdclass}>{startIndex + index + 1}</td>
 
               <td className={tdclass}>
                 <div className="flex gap-4 items-center">
