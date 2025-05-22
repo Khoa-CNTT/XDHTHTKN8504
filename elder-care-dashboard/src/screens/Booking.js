@@ -16,17 +16,61 @@ import { getUserIdFromToken } from "../utils/jwtHelper.js";
 import { io } from "socket.io-client";
 import * as XLSX from "xlsx"; // Import xlsx library
 import Loading from "../components/Loading.js";
+import Paginate from "../utils/pagination.js";
 const socket = io("http://localhost:5000");
 
 function Booking() {
   const [isOpen, setIsOpen] = React.useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [sortOrder, setSortOrder] = React.useState("newest");
+  const [dateFilter, setDateFilter] = React.useState({ from: "", to: "" });
+  const [filteredBookings, setFilteredBookings] = React.useState([]);
 
-  const { bookings, loading, error } = useSelector((state) => state.booking);
+
+  const { bookings, loading, error, pagination } = useSelector((state) => state.booking);
+
+  const [page, setPage] = React.useState(1);
+  const limit = 10;
+
+  React.useEffect(() => {
+    let temp = [...bookings];
+
+    // 1. Tìm kiếm theo tên khách hàng
+    if (searchTerm.trim() !== "") {
+      temp = temp.filter((b) => {
+        const fullName = `${b?.profileId?.firstName || ""} ${b?.profileId?.lastName || ""}`.toLowerCase();
+        return fullName.includes(searchTerm.toLowerCase());
+      });
+    }
+
+    // 2. Lọc theo ngày
+    if (dateFilter.from) {
+      const fromDate = new Date(dateFilter.from);
+      temp = temp.filter((b) => new Date(b.createdAt) >= fromDate);
+    }
+
+    if (dateFilter.to) {
+      const toDate = new Date(dateFilter.to);
+      temp = temp.filter((b) => new Date(b.createdAt) <= toDate);
+    }
+
+    // 3. Sắp xếp theo ngày bắt đầu
+    temp.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+
+      if (isNaN(dateA) || isNaN(dateB)) return 0;
+
+      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+    });
+
+    setFilteredBookings(temp);
+  }, [bookings, searchTerm, sortOrder, dateFilter]);
 
   useEffect(() => {
-    dispatch(fetchBookings());
+    dispatch(fetchBookings({ page, limit }));
 
     const user = getUserIdFromToken();
     // console.log("user", user);
@@ -38,19 +82,23 @@ function Booking() {
     }
     socket.on("newBookingCreated", (newBooking) => {
       console.log("📥 Booking mới! Gọi lại fetchBookings");
-      dispatch(fetchBookings());
+      dispatch(fetchBookings({ page, limit }));
     });
 
     // Cleanup khi component unmount
     return () => {
       socket.off("newBookingCreated");
     };
-  }, [dispatch]);
+  }, [dispatch, page]);
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
 
   if (loading) return <Loading />;
   if (error) return <p>Lỗi: {error}</p>;
 
-  // console.log("bookings", bookings);
+  console.log("bookings", bookings);
 
   const onCloseModal = () => {
     setIsOpen(false);
@@ -65,9 +113,8 @@ function Booking() {
     const ws = XLSX.utils.json_to_sheet(
       bookings.map((booking, index) => ({
         "#": index + 1,
-        "Khách hàng": `${booking?.profileId?.firstName || "Ẩn"} ${
-          booking?.profileId?.lastName || ""
-        }`,
+        "Khách hàng": `${booking?.profileId?.firstName || "Ẩn"} ${booking?.profileId?.lastName || ""
+          }`,
         "Người thực hiện": booking?.participants?.[0]?.fullName || "Chưa có",
         "Ngày bắt đầu": new Date(booking?.repeatFrom).toLocaleDateString(
           "vi-VN"
@@ -150,6 +197,39 @@ function Booking() {
               placeholder='Search "daudi mburuge"'
               className="h-14 w-full text-sm text-main rounded-md bg-dry border border-border px-4"
             /> */}
+            <input
+              type="text"
+              placeholder="Tìm kiếm theo tên khách hàng..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="h-14 text-sm text-main rounded-md bg-dry border border-border px-4"
+            />
+
+            {/* Sắp xếp */}
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="h-14 w-full text-xs text-main rounded-md bg-dry border border-border px-4 flex items-center justify-between"
+            >
+              <option value="newest">Mới nhất</option>
+              <option value="oldest">Cũ nhất</option>
+            </select>
+
+            {/* Lọc ngày từ */}
+            <input
+              type="date"
+              value={dateFilter.from}
+              onChange={(e) => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
+              className="text-xs px-4 h-14 border border-border text-main font-normal rounded-lg focus:border focus:border-subMain"
+            />
+
+            {/* Lọc ngày đến */}
+            <input
+              type="date"
+              value={dateFilter.to}
+              onChange={(e) => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
+              className="text-xs px-4 h-14 border border-border text-main font-normal rounded-lg focus:border focus:border-subMain"
+            />
           </div>
 
           {/* export */}
@@ -157,13 +237,15 @@ function Booking() {
           <Button
             label="Export"
             Icon={MdOutlineCloudDownload}
-            onClick={handleExport} // Gọi handleExport khi nhấn
+            onClick={handleExport}
           />
         </div>
         <div className="mt-8 w-full overflow-x-scroll">
           <BookingTable
             doctor={true}
-            data={bookings}
+            data={filteredBookings}
+            page={page}
+            limit={limit}
             functions={{
               preview: previewBooking,
               onDelete: (id) => {
@@ -172,6 +254,11 @@ function Booking() {
             }}
           />
         </div>
+        <Paginate
+          page={page}
+          totalPages={pagination?.totalPages || 1}
+          onPageChange={handlePageChange}
+        />
       </div>
     </Layout>
   );
