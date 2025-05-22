@@ -1,6 +1,7 @@
 import Chat from "../models/Chat.js";
 import User from "../models/User.js";
 import { notifyUser } from "../controllers/socketChat.js";
+import mongoose from "mongoose";
 
 
 const chatController = {
@@ -100,23 +101,19 @@ const chatController = {
             // Kiểm tra xem chatType có hợp lệ dựa trên vai trò của người dùng không
             let isValidChatType = true;
 
-            if (chatType === "admin-doctor" &&
-                !([req.user.role, targetUser.role].includes("admin") && [req.user.role, targetUser.role].includes("doctor"))) {
-                isValidChatType = false;
-            } else if (chatType === "admin-nurse" &&
-                !([req.user.role, targetUser.role].includes("admin") && [req.user.role, targetUser.role].includes("nurse"))) {
+            const roles = [req.user.role, targetUser.role];
+
+            if (chatType === "admin-staff" &&
+                !(roles.includes("admin") && (roles.includes("doctor") || roles.includes("nurse")))) {
                 isValidChatType = false;
             } else if (chatType === "admin-family" &&
-                !([req.user.role, targetUser.role].includes("admin") && [req.user.role, targetUser.role].includes("family_member"))) {
+                !(roles.includes("admin") && roles.includes("family_member"))) {
+                isValidChatType = false;
+            } else if (chatType === "staff-family" &&
+                !((roles.includes("doctor") || roles.includes("nurse")) && roles.includes("family_member"))) {
                 isValidChatType = false;
             } else if (chatType === "doctor-nurse" &&
-                !([req.user.role, targetUser.role].includes("doctor") && [req.user.role, targetUser.role].includes("nurse"))) {
-                isValidChatType = false;
-            } else if (chatType === "doctor-family" &&
-                !([req.user.role, targetUser.role].includes("doctor") && [req.user.role, targetUser.role].includes("family_member"))) {
-                isValidChatType = false;
-            } else if (chatType === "nurse-family" &&
-                !([req.user.role, targetUser.role].includes("nurse") && [req.user.role, targetUser.role].includes("family_member"))) {
+                !(roles.includes("doctor") && roles.includes("nurse"))) {
                 isValidChatType = false;
             }
 
@@ -292,7 +289,7 @@ const chatController = {
     // API lấy danh sách người dùng có thể trò chuyện (dựa vào vai trò)
     getUserCanChat: async (req, res) => {
         try {
-            const { role } = req.params;
+            const role = req.params.role || null;
             const currentUserRole = req.user.role;
 
             let targetRoles = [];

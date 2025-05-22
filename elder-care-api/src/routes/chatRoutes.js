@@ -1,64 +1,31 @@
 import express from 'express';
-import auth from '../middlewares/auth.js'
-import authorizeRoles from '../middlewares/authorizeRoles.js'
+import auth from '../middlewares/auth.js';
+import authorizeRoles from '../middlewares/authorizeRoles.js';
 import chatController from '../controllers/chatController.js';
 
 const router = express.Router();
 
-// Lấy danh sách cuộc trò chuyện của người dùng hiện tại
-router.get(
-    "/my-chats", 
-    auth,
-    chatController.getMyChats
-) 
+//  Route tĩnh phải đặt trước
+router.get("/my-chats", auth, chatController.getMyChats);
 
-// Lấy chi tiết một cuộc trò chuyện
-router.get(
-    "/:chatId",
-    auth,
-    chatController.getChatDetail
-)
+router.get("/available-users/:role?", auth, chatController.getUserCanChat);
 
-// Lấy tin nhắn của một cuộc trò chuyện
-router.get(
-    "/:chatId/messages",
-    auth,
-    chatController.getMessage
-)
+//  Route tạo mới
+router.post("/", auth, chatController.createNewChat);
 
-// Tạo cuộc trò chuyện mới
-router.post(
-    "/",
-    auth,
-    chatController.createNewChat
-)
+//  Route gửi tin nhắn
+router.post("/:chatId/messages", auth, chatController.sendNewMessage);
 
-// Gửi tin nhắn mới
-router.post(
-    "/:chatId/messages",
-    auth,
-    chatController.sendNewMessage
-)
+//  Route lấy tin nhắn
+router.get("/:chatId/messages", auth, chatController.getMessage);
 
-// Đánh dấu tin nhắn đã đọc
-router.put(
-    "/:chatId/read",
-    auth,
-    chatController.isReadMessage
-)
+//  Đánh dấu tin nhắn đã đọc
+router.put("/:chatId/read", auth, chatController.isReadMessage);
 
-// Vô hiệu hóa cuộc trò chuyện (chỉ dành cho admin)
-router.put(
-    "/:chatId/deactivate",
-    auth,
-    authorizeRoles("admin"),
-    chatController.deactivateMessage
-)
+//  Vô hiệu hóa cuộc trò chuyện
+router.put("/:chatId/deactivate", auth, authorizeRoles("admin"), chatController.deactivateMessage);
 
-router.get(
-    "/available-users/:role",
-    auth,
-    chatController.getUserCanChat
-)
+//  Cuối cùng mới là lấy chi tiết chat theo `chatId`
+router.get("/:chatId", auth, chatController.getChatDetail);
 
-export default router; 
+export default router;
