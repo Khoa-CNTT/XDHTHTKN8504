@@ -61,7 +61,7 @@ const renderItem = ({ item }: { item: Profile }) => {
         )}
       </View>
       <Text style={styles.name}>
-        {item.firstName}{item.lastName}
+        {item.firstName} {item.lastName}
       </Text>
     </TouchableOpacity>
   );

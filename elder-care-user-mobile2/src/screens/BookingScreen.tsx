@@ -13,11 +13,14 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { Ionicons } from "@expo/vector-icons";
 import Footer from "../components/Footer";
 import { useServicesStore } from "../stores/serviceStore";
+import useAuthStore from "../stores/authStore"; // Import useAuthStore
 
 type RootStackParamList = {
   Home: undefined;
   ServiceScreen: { serviceId: string };
-  ProfileList: undefined;
+  ProfileList: undefined; // This likely needs to be changed to a specific profile screen
+  Login: undefined; // Add Login to your RootStackParamList
+  ProfileScreen: undefined; // Add a dedicated ProfileScreen to your RootStackParamList
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -37,10 +40,22 @@ const BookingScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const services = useServicesStore.getState().services;
   const [searchText, setSearchText] = useState("");
+  const { token } = useAuthStore(); // Get the authentication token from the store
 
   const filteredServices = services.filter((service) =>
     service.name.toLowerCase().includes(searchText.toLowerCase())
   );
+
+  // Handler for the profile icon press
+  const handleProfilePress = () => {
+    if (token) {
+      // If user is logged in, navigate to their profile screen
+      navigation.navigate("ProfileList"); // Navigate to a dedicated ProfileScreen
+    } else {
+      // If user is not logged in, navigate to LoginScreen
+      navigation.navigate("Login");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -51,7 +66,7 @@ const BookingScreen: React.FC = () => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Dịch vụ</Text>
         <TouchableOpacity
-          onPress={() => navigation.navigate("ProfileList")}
+          onPress={handleProfilePress} // Use the new handler here
           activeOpacity={0.7}
         >
           <Ionicons name="person-circle-outline" size={33} color="#000" />

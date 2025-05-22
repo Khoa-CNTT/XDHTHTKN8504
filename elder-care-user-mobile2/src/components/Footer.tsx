@@ -1,19 +1,21 @@
 import React, { useState, useCallback } from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Alert } from 'react-native'; // Import Alert
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
+import useAuthStore from "../stores/authStore"; // Import useAuthStore
 
 type RootStackParamList = {
   Home: undefined;
   MyBookings: undefined;
   Profile: undefined;
   Map: undefined;
-  Booking: undefined; // Changed from Payment to Booking
+  Booking: undefined;
   DoctorDetails: { doctor: any };
   BookAppointment: { doctor: any };
-  WorkScreen: undefined; // Added WorkScreen
+  WorkScreen: undefined;
+  Login: undefined; // Đảm bảo Login được khai báo
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -30,10 +32,13 @@ const Footer: React.FC = () => {
     Booking: 28,
     MyBookings: 28,
     Profile: 28,
-    DoctorDetails: 28,  // Added DoctorDetails
-    BookAppointment: 28,  // Added BookAppointment
-    WorkScreen: 28, // Added WorkScreen
+    DoctorDetails: 28,
+    BookAppointment: 28,
+    WorkScreen: 28,
+    Login: 28, // Thêm Login vào đây nếu cần kích thước icon mặc định
   });
+
+  const { token } = useAuthStore(); // Lấy token từ authStore
 
   const handleNavigation = useCallback((screenName: keyof RootStackParamList) => {
     if (screenName === 'DoctorDetails' || screenName === 'BookAppointment') {
@@ -43,6 +48,27 @@ const Footer: React.FC = () => {
     navigation.navigate(screenName);
     setActiveTab(screenName);
   }, [navigation]);
+
+  // Hàm xử lý khi nhấn vào tab Profile
+  const handleProfilePress = () => {
+    if (token) {
+      // Nếu người dùng đã đăng nhập, điều hướng đến màn hình Profile
+      navigation.navigate("Profile");
+    } else {
+      // Nếu người dùng chưa đăng nhập, hiển thị thông báo và điều hướng đến LoginScreen
+      Alert.alert(
+        "Yêu cầu đăng nhập",
+        "Bạn cần đăng nhập để truy cập trang cá nhân. Bạn có muốn đăng nhập ngay bây giờ không?",
+        [
+          {
+            text: "Không",
+            style: "cancel"
+          },
+          { text: "Đăng nhập", onPress: () => navigation.navigate("Login") }
+        ]
+      );
+    }
+  };
 
   const handlePressIn = useCallback((tabName: keyof RootStackParamList) => {
     setPressedTab(tabName);
@@ -139,9 +165,10 @@ const Footer: React.FC = () => {
         />
         </View>
       </TouchableOpacity>
+      {/* Nút "Settings" (Profile) đã được sửa đổi */}
       <TouchableOpacity
         style={getTabStyle('Profile')}
-        onPress={() => handleNavigation('Profile')}
+        onPress={handleProfilePress} // Gọi hàm xử lý mới
         onPressIn={() => handlePressIn('Profile')}
         onPressOut={handlePressOut}
       >
