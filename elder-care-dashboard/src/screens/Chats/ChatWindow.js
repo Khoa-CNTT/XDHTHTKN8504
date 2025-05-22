@@ -97,7 +97,7 @@ const ChatWindow = ({ chat, currentUser, onBack }) => {
         socketService.sendMessage(chat._id, currentUser._id, message);
 
         // Also dispatch to Redux for state management
-        dispatch(sendMessage({ chatId: chat._id, message }));
+        // dispatch(sendMessage({ chatId: chat._id, message }));
 
         // Stop typing indicator
         if (isTyping) {

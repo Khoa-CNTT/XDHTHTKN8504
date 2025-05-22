@@ -65,7 +65,7 @@ const chatController = {
             // Phân trang và sắp xếp tin nhắn (mới nhất lên trên)
             const skip = (page - 1) * limit;
             const messages = chat.messages
-                .sort((a, b) => b.timestamp - a.timestamp)
+                .sort((a, b) => a.timestamp - b.timestamp) 
                 .slice(skip, skip + parseInt(limit));
 
             const totalMessages = chat.messages.length;
