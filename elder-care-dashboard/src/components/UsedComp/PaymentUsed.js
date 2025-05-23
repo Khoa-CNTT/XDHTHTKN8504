@@ -1,7 +1,10 @@
 import { transactionData } from "../Datas";
 import { PaymentTable } from "../Tables";
 import { useNavigate, useParams } from "react-router-dom";
-import { fetchPaymentsByStaff, fetchSalaryByStaff } from "../../store/paymentSlice";
+import {
+  fetchPaymentsByStaff,
+  fetchSalaryByStaff,
+} from "../../store/paymentSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import Loading from "../Loading";
@@ -10,8 +13,12 @@ function PaymentsUsed({ doctor }) {
   const navigate = useNavigate();
   const { _id } = useParams();
   const dispatch = useDispatch();
-  const { data: payments, loading, error } = useSelector((state) => state.payment)
-  const { salary } = useSelector((state) => state.payment)
+  const {
+    data: payments,
+    loading,
+    error,
+  } = useSelector((state) => state.payment);
+  const { salary } = useSelector((state) => state.payment);
 
   useEffect(() => {
     if (_id) {
@@ -41,20 +48,24 @@ function PaymentsUsed({ doctor }) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {/* Tổng tiền lương */}
         <div className="bg-white p-4 rounded-lg shadow-md text-center">
-          <p className="text-gray-500 text-sm">Tổng tiền lương</p>
+          <p className="text-gray-500 text-sm">Total Salary</p>
           <p className="text-xl font-semibold text-green-600">{totalSalary}</p>
         </div>
 
         {/* Tổng đơn thanh toán */}
         <div className="bg-white p-4 rounded-lg shadow-md text-center">
-          <p className="text-gray-500 text-sm">Tổng đơn thanh toán</p>
-          <p className="text-xl font-semibold text-blue-600">{salary?.successCount} đơn</p>
+          <p className="text-gray-500 text-sm">Total Payment Orders</p>
+          <p className="text-xl font-semibold text-blue-600">
+            {salary?.successCount} Order
+          </p>
         </div>
 
         {/* Tổng đơn đang đợi */}
         <div className="bg-white p-4 rounded-lg shadow-md text-center">
-          <p className="text-gray-500 text-sm">Tổng đơn đang đợi</p>
-          <p className="text-xl font-semibold text-yellow-600">{salary?.pendingCount} đơn</p>
+          <p className="text-gray-500 text-sm">Total Pending Orders</p>
+          <p className="text-xl font-semibold text-yellow-600">
+            {salary?.pendingCount} Order
+          </p>
         </div>
       </div>
 
