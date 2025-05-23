@@ -100,7 +100,6 @@ function Dashboard() {
     revenueData
   );
 
-  // const data = [30, 40, 25, 50, 49, 21, 70, 51, 42, 60, 40, 20];
   const data = totalMonthRevenue?.revenue;
 
   return (

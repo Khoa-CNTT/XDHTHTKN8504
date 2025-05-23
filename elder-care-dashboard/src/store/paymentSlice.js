@@ -27,22 +27,23 @@ export const fetchSalaryByStaff = createAsyncThunk(
 
 export const fetchAllPayment = createAsyncThunk(
     'payments/fetchAllPayment',
-    async (_, { rejectWithValue }) => {
+    async ({ page = 1, limit = 10 } = {}, { rejectWithValue }) => {
         try {
-            const response = await axios.get('/payment/get-all');
+            // gọi API với query params page & limit
+            const response = await axios.get(`/payment/get-all?page=${page}&limit=${limit}`);
             return response.data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || err.message);
         }
     }
-)
+);
 
 export const fetchPaymentCounts = createAsyncThunk(
     'payments/fetchPaymentCounts',
     async (_, { rejectWithValue }) => {
         try {
             const response = await axios.get('/payment/count-payments');
-            console.log("count", response.data);            
+            console.log("count", response.data);
             return response.data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || err.message);
@@ -86,6 +87,12 @@ const paymentSlice = createSlice({
         allPayments: [],
         allPaymentsLoading: false,
         allPaymentsError: null,
+        pagination: {
+            totalDocs: 0,
+            totalPages: 0,
+            currentPage: 1,
+            perPage: 10,
+        },
         paymentCounts: null,
         paymentCountsLoading: false,
         paymentCountsError: null,
@@ -149,7 +156,13 @@ const paymentSlice = createSlice({
             })
             .addCase(fetchAllPayment.fulfilled, (state, action) => {
                 state.allPaymentsLoading = false;
-                state.allPayments = action.payload;
+                state.allPayments = action.payload.payments || [];
+                state.pagination = action.payload.pagination || {
+                    totalDocs: 0,
+                    totalPages: 0,
+                    currentPage: 1,
+                    perPage: 10,
+                }
             })
             .addCase(fetchAllPayment.rejected, (state, action) => {
                 state.allPaymentsLoading = false;

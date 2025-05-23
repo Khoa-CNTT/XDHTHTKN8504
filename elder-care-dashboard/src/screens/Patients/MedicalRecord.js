@@ -17,7 +17,7 @@ function MedicalRecord() {
   const navigate = useNavigate();
   const { _id } = useParams();
   const dispatch = useDispatch();
-  const { transactions, loading, error } = useSelector((state) => state.wallet)
+  const { transactions, balance, transactionCount, loading, error } = useSelector((state) => state.wallet)
 
   useEffect(() => {
     dispatch(fetchTransactions(_id))
@@ -45,13 +45,13 @@ function MedicalRecord() {
           {/* Tổng tiền lương */}
           <div className="bg-white p-4 rounded-lg shadow-md text-center">
             <p className="text-gray-500 text-sm">Tiền còn lại</p>
-            <p className="text-xl font-semibold text-green-600"></p>
+            <p className="text-xl font-semibold text-green-600">{balance.toLocaleString("vi")} đ</p>
           </div>
 
           {/* Tổng đơn thanh toán */}
           <div className="bg-white p-4 rounded-lg shadow-md text-center">
             <p className="text-gray-500 text-sm">Số giao dịch đã thực hiện</p>
-            <p className="text-xl font-semibold text-blue-600"> đơn</p>
+            <p className="text-xl font-semibold text-blue-600">{transactionCount}</p>
           </div>
         </div>
         <div className="flex-btn gap-4">
@@ -95,7 +95,7 @@ function MedicalRecord() {
                 <p className="text-xs text-main font-light">
                   <span className="font-medium">Mã giao dịch: </span>{data.transactionId} <br />
                   <span className="font-medium">Phương thức: </span>{data.type} <br />
-                  <span className="font-medium">Trạng thái: </span>{data.status === 'success' && "Hoàn thành"}<br />
+                  <span className="font-medium">Trạng thái: </span>{data.status === 'success' ? "Hoàn thành" : data.status === 'fail' ? 'Thất bại' : 'Đang chờ'}<br />
                   <span className="font-medium">Mô tả: </span>{data.description}
                 </p>
               </div>

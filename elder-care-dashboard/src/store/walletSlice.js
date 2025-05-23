@@ -6,18 +6,19 @@ export const fetchTransactions = createAsyncThunk(
     async (userId, { rejectWithValue }) => {
         try {
             const res = await axios.get(`/wallet/get-transactions/${userId}`);
-            // console.log("mmr", res.data.transactions);
-            return res.data.transactions;
+            return res.data; // chứa balance, transactionCount, transactions
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || error.message);
+            return rejectWithValue(error.response?.data?.msg || error.message);
         }
     }
-)
+);
 
 const walletSlice = createSlice({
     name: 'wallet',
     initialState: {
         transactions: [],
+        balance: 0,
+        transactionCount: 0,
         loading: false,
         error: null,
     },
@@ -30,11 +31,13 @@ const walletSlice = createSlice({
             })
             .addCase(fetchTransactions.fulfilled, (state, action) => {
                 state.loading = false;
-                state.transactions = action.payload;
+                state.transactions = action.payload.transactions;
+                state.balance = action.payload.balance;
+                state.transactionCount = action.payload.transactionCount;
             })
             .addCase(fetchTransactions.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.error.message;
+                state.error = action.payload || action.error.message;
             });
     },
 });

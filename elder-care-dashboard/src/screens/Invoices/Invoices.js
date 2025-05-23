@@ -11,16 +11,62 @@ import * as XLSX from "xlsx";
 import { fetchInvoice } from "../../store/invoiceSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Loading from "../../components/Loading";
+import Paginate from "../../utils/pagination.js";
 
 function Invoices() {
-  const { data, loading, error } = useSelector((state) => state.invoice);
+  const { data, loading, error, pagination } = useSelector((state) => state.invoice);
   const dispatch = useDispatch();
 
+  // 🔸 Tìm kiếm, lọc ngày, sắp xếp
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [sortOrder, setSortOrder] = React.useState("newest");
+  const [dateFilter, setDateFilter] = React.useState({ from: "", to: "" });
+  const [filteredData, setFilteredData] = React.useState([]);
+
+  // 🔸 Phân trang
+  const [page, setPage] = React.useState(1);
+  const limit = 10;
+
   useEffect(() => {
-    dispatch(fetchInvoice());
-  }, [dispatch]);
+    dispatch(fetchInvoice({ page, limit }));
+  }, [dispatch, page]);
+
+  useEffect(() => {
+    let temp = [...data];
+
+    if (searchTerm.trim()) {
+      temp = temp.filter((item) => {
+        const profile = item.bookingId?.profileId;
+        const fullName = `${profile?.firstName || ""} ${profile?.lastName || ""}`.toLowerCase();
+        return fullName.includes(searchTerm.toLowerCase());
+      });
+    }
+
+    if (dateFilter.from) {
+      const fromDate = new Date(dateFilter.from);
+      temp = temp.filter((item) => new Date(item.createdAt) >= fromDate);
+    }
+
+    if (dateFilter.to) {
+      const toDate = new Date(dateFilter.to);
+      temp = temp.filter((item) => new Date(item.createdAt) <= toDate);
+    }
+
+    temp.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+    });
+
+    setFilteredData(temp);
+  }, [data, searchTerm, dateFilter, sortOrder]);
+
 
   if (loading) return <Loading />;
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
 
   // 🔹 Chuyển chuỗi sang ArrayBuffer
   const s2ab = (s) => {
@@ -88,8 +134,36 @@ function Invoices() {
           <div className="md:col-span-5 grid lg:grid-cols-4 items-center gap-6">
             <input
               type="text"
-              placeholder='Tìm kiếm "tên bệnh nhân"'
-              className="h-14 w-full text-sm text-main rounded-md bg-dry border border-border px-4"
+              placeholder="Tìm kiếm theo tên khách hàng..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="h-14 text-sm text-main rounded-md bg-dry border border-border px-4"
+            />
+
+            {/* Sắp xếp */}
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="h-14 w-full text-xs text-main rounded-md bg-dry border border-border px-4 flex items-center justify-between"
+            >
+              <option value="newest">Mới nhất</option>
+              <option value="oldest">Cũ nhất</option>
+            </select>
+
+            {/* Lọc ngày từ */}
+            <input
+              type="date"
+              value={dateFilter.from}
+              onChange={(e) => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
+              className="text-xs px-4 h-14 border border-border text-main font-normal rounded-lg focus:border focus:border-subMain"
+            />
+
+            {/* Lọc ngày đến */}
+            <input
+              type="date"
+              value={dateFilter.to}
+              onChange={(e) => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
+              className="text-xs px-4 h-14 border border-border text-main font-normal rounded-lg focus:border focus:border-subMain"
             />
           </div>
 
@@ -102,8 +176,13 @@ function Invoices() {
         </div>
 
         <div className="mt-8 w-full overflow-x-scroll">
-          <InvoiceTable data={data} />
+          <InvoiceTable data={filteredData} page={page} limit={limit}/>
         </div>
+        <Paginate
+          page={page}
+          totalPages={pagination?.totalPages || 1}
+          onPageChange={handlePageChange}
+        />
       </div>
     </Layout>
   );

@@ -292,13 +292,16 @@ const authController = {
 
   getAllStaff: async (req, res) => {
     try {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+
       // Lấy danh sách bác sĩ
       const doctors = await Doctor.find()
         .populate("userId", "phone role avatar")
         .sort({ createdAt: -1 })
-        .lean(); // Chuyển sang object JS thuần
+        .lean();
 
-      // Gắn thêm type để phân biệt
       const doctorsWithType = doctors.map((doc) => ({
         ...doc,
         type: "doctor",
@@ -315,15 +318,25 @@ const authController = {
         type: "nurse",
       }));
 
-      // Gộp 2 danh sách
-      const staffList = [...doctorsWithType, ...nursesWithType];
+      // Gộp và sắp xếp theo createdAt
+      const combinedList = [...doctorsWithType, ...nursesWithType];
+      combinedList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-      // Sắp xếp chung theo createdAt mới nhất
-      staffList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      // Tổng số nhân viên
+      const totalDocs = combinedList.length;
+
+      // Phân trang
+      const paginatedList = combinedList.slice(skip, skip + limit);
 
       res.status(200).json({
         message: "Lấy danh sách nhân viên thành công",
-        data: staffList,
+        data: paginatedList,
+        pagination: {
+          totalDocs,
+          totalPages: Math.ceil(totalDocs / limit),
+          currentPage: page,
+          perPage: limit,
+        },
       });
     } catch (error) {
       console.error("Lỗi khi lấy danh sách nhân viên:", error);

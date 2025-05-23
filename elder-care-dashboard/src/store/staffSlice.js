@@ -6,12 +6,14 @@ const token = localStorage.getItem('token');
 // Thunk để fetch danh sách staff
 export const fetchStaffList = createAsyncThunk(
     'staff/fetchStaffList',
-    async (_, { rejectWithValue }) => {
+    async ({ page = 1, limit = 10 }, { rejectWithValue }) => {
         try {
-            const res = await axios.get('/auth/get-staff');
-            return res.data.data;
+            const res = await axios.get('/auth/get-staff', {
+                params: { page, limit },
+            });
+            return res.data; // giữ nguyên cả data và pagination
         } catch (error) {
-            return rejectWithValue(error.response.data);
+            return rejectWithValue(error.response?.data || error.message);
         }
     }
 );
@@ -76,6 +78,12 @@ const staffSlice = createSlice({
     name: 'staff',
     initialState: {
         staffList: [],
+        pagination: {
+            totalDocs: 0,
+            totalPages: 0,
+            currentPage: 1,
+            perPage: 10,
+        },
         selectedStaff: null,
         loading: false,
         error: null,
@@ -108,7 +116,13 @@ const staffSlice = createSlice({
             })
             .addCase(fetchStaffList.fulfilled, (state, action) => {
                 state.loading = false;
-                state.staffList = action.payload;
+                state.staffList = action.payload.data;
+                state.pagination = action.payload.pagination || {
+                    totalDocs: 0,
+                    totalPages: 0,
+                    currentPage: 1,
+                    perPage: 10,
+                };
             })
             .addCase(fetchStaffList.rejected, (state, action) => {
                 state.loading = false;

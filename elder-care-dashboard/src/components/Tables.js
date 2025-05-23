@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 const thclass = "text-start text-sm font-medium py-3 px-2 whitespace-nowrap";
 const tdclass = "text-start text-sm py-4 px-2 whitespace-nowrap";
 
-export function Transactiontable({ data, action, functions }) {
+export function Transactiontable({ data, action, functions, page = 1, limit = 10, }) {
   const DropDown1 = [
     {
       title: "Chỉnh sửa",
@@ -35,6 +35,7 @@ export function Transactiontable({ data, action, functions }) {
       },
     },
   ];
+  const startIndex = (page - 1) * limit;
   return (
     <table className="table-auto w-full">
       <thead className="bg-dry rounded-md overflow-hidden">
@@ -72,7 +73,7 @@ export function Transactiontable({ data, action, functions }) {
               key={item._id}
               className="border-b border-border hover:bg-greyed transitions"
             >
-              <td className={tdclass}>{index + 1}</td>
+              <td className={tdclass}>{startIndex + index + 1}</td>
               <td className={tdclass}>
                 <div className="flex gap-4 items-center">
                   <span className="w-12">
@@ -93,10 +94,10 @@ export function Transactiontable({ data, action, functions }) {
               <td className={tdclass}>
                 <span
                   className={`py-1 px-4 ${status === "success"
-                      ? "bg-subMain text-subMain"
-                      : status === "pending"
-                        ? "bg-orange-500 text-orange-500"
-                        : status === "fail" && "bg-red-600 text-red-600"
+                    ? "bg-subMain text-subMain"
+                    : status === "pending"
+                      ? "bg-orange-500 text-orange-500"
+                      : status === "fail" && "bg-red-600 text-red-600"
                     } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {status === "success"
@@ -128,21 +129,21 @@ export function Transactiontable({ data, action, functions }) {
 }
 
 // invoice table
-export function InvoiceTable({ data }) {
+export function InvoiceTable({ data, page = 1, limit = 10 }) {
   const navigate = useNavigate();
   const DropDown1 = [
-    {
-      title: "Chỉnh sửa",
-      icon: FiEdit,
-      onClick: (item) => {
-        navigate(`/invoices/edit/${item.id}`);
-      },
-    },
+    // {
+    //   title: "Chỉnh sửa",
+    //   icon: FiEdit,
+    //   onClick: (item) => {
+    //     navigate(`/invoices/edit/${item._id}`);
+    //   },
+    // },
     {
       title: "Xem",
       icon: FiEye,
       onClick: (item) => {
-        navigate(`/invoices/preview/${item.id}`);
+        navigate(`/invoices/preview/${item._id}`);
       },
     },
     {
@@ -153,10 +154,12 @@ export function InvoiceTable({ data }) {
       },
     },
   ];
+  const startIndex = (page - 1) * limit;
   return (
     <table className="table-auto w-full">
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
+          <th className={thclass}>#</th>
           <th className={thclass}>Invoice Code</th>
           <th className={thclass}>Customers</th>
           <th className={thclass}>Creation Date</th>
@@ -168,7 +171,7 @@ export function InvoiceTable({ data }) {
         </tr>
       </thead>
       <tbody>
-        {data.map((item) => {
+        {data.map((item, index) => {
           const invoiceCode = item?.invoiceId;
           const avatarUrl = item?.bookingId?.profileId?.avartar;
           const firstName = item?.bookingId?.profileId?.firstName;
@@ -185,6 +188,7 @@ export function InvoiceTable({ data }) {
               key={item._id}
               className="border-b border-border hover:bg-greyed transitions"
             >
+              <td className={tdclass}>{startIndex + index + 1}</td>
               <td className={tdclass}>#{invoiceCode}</td>
               <td className={tdclass}>
                 <div className="flex gap-4 items-center">
@@ -267,8 +271,8 @@ export function MedicineTable({ data, onEdit }) {
             <td className={tdclass}>
               <span
                 className={`text-xs font-medium ${item?.status === "Out of stock"
-                    ? "text-red-600"
-                    : "text-green-600"
+                  ? "text-red-600"
+                  : "text-green-600"
                   }`}
               >
                 {item?.status === "Out of stock" ? "Hết hàng" : "Còn hàng"}
@@ -460,8 +464,8 @@ export function PatientTable({ data, functions, used, page = 1, limit = 10 }) {
               <td className={tdclasse}>
                 <span
                   className={`py-1 px-4 ${gender === "Male"
-                      ? "bg-subMain text-subMain"
-                      : "bg-orange-500 text-orange-500"
+                    ? "bg-subMain text-subMain"
+                    : "bg-orange-500 text-orange-500"
                     } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {gender === "Male" ? "Nam" : "Nữ"}
@@ -509,7 +513,7 @@ export function PatientTable({ data, functions, used, page = 1, limit = 10 }) {
 }
 
 // doctor table
-export function DoctorsTable({ data, functions, doctor, onEdit }) {
+export function DoctorsTable({ data, functions, doctor, onEdit, page = 1, limit = 10, }) {
   return (
     <table className="table-auto w-full">
       <thead className="bg-dry rounded-md overflow-hidden">
@@ -682,15 +686,15 @@ export function BookingTable({
               <td className={tdclass}>
                 <span
                   className={`py-1 px-4 ${item.status === "completed"
-                      ? "bg-green-500 text-green-500"
-                      : item.status === "accepted"
-                        ? "bg-orange-500 text-orange-500"
-                        : item.status === "pending"
-                          ? "bg-red-600 text-red-600"
-                          : item.status === "paid"
-                            ? "bg-green-500 text-green-500"
-                            : item.status === "cancelled" &&
-                            "bg-gray-500 text-gray-500"
+                    ? "bg-green-500 text-green-500"
+                    : item.status === "accepted"
+                      ? "bg-orange-500 text-orange-500"
+                      : item.status === "pending"
+                        ? "bg-red-600 text-red-600"
+                        : item.status === "paid"
+                          ? "bg-green-500 text-green-500"
+                          : item.status === "cancelled" &&
+                          "bg-gray-500 text-gray-500"
                     } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {statusText}
@@ -770,22 +774,22 @@ export function AppointmentTable({ data, functions, doctor }) {
               <td className={tdclass}>
                 <span
                   className={`py-1 px-4 ${item.status === "scheduled"
-                      ? "bg-subMain text-subMain"
-                      : item.status === "waiting_for_nurse"
-                        ? "bg-orange-500 text-orange-500"
-                        : item.status === "waiting_for_client"
+                    ? "bg-subMain text-subMain"
+                    : item.status === "waiting_for_nurse"
+                      ? "bg-orange-500 text-orange-500"
+                      : item.status === "waiting_for_client"
+                        ? "bg-subMain text-subMain"
+                        : item.status === "on_the_way"
                           ? "bg-subMain text-subMain"
-                          : item.status === "on_the_way"
+                          : item.status === "check_in"
                             ? "bg-subMain text-subMain"
-                            : item.status === "check_in"
+                            : item.status === "in_progress"
                               ? "bg-subMain text-subMain"
-                              : item.status === "in_progress"
+                              : item.status === "check_out"
                                 ? "bg-subMain text-subMain"
-                                : item.status === "check_out"
+                                : item.status === "completed"
                                   ? "bg-subMain text-subMain"
-                                  : item.status === "completed"
-                                    ? "bg-subMain text-subMain"
-                                    : item.status === "canceled" && "bg-red-600 text-red-600"
+                                  : item.status === "canceled" && "bg-red-600 text-red-600"
                     } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {item.status === "scheduled"
@@ -899,15 +903,15 @@ export function BookingTable1({ data = [], functions, doctor }) {
               <td className={tdclass}>
                 <span
                   className={`py-1 px-4 ${item.status === "completed"
-                      ? "bg-green-500 text-green-500"
-                      : item.status === "accepted"
-                        ? "bg-orange-500 text-orange-500"
-                        : item.status === "pending"
-                          ? "bg-red-600 text-red-600"
-                          : item.status === "paid"
-                            ? "bg-green-500 text-green-500"
-                            : item.status === "cancelled" &&
-                            "bg-gray-500 text-gray-500"
+                    ? "bg-green-500 text-green-500"
+                    : item.status === "accepted"
+                      ? "bg-orange-500 text-orange-500"
+                      : item.status === "pending"
+                        ? "bg-red-600 text-red-600"
+                        : item.status === "paid"
+                          ? "bg-green-500 text-green-500"
+                          : item.status === "cancelled" &&
+                          "bg-gray-500 text-gray-500"
                     } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {statusText}
@@ -978,10 +982,10 @@ export function PaymentTable({ data, functions, doctor }) {
               <td className={tdclass}>
                 <span
                   className={`py-1 px-4 ${status === "success"
-                      ? "bg-subMain text-subMain"
-                      : status === "Pending"
-                        ? "bg-orange-500 text-orange-500"
-                        : status === "Cancel" && "bg-red-600 text-red-600"
+                    ? "bg-subMain text-subMain"
+                    : status === "Pending"
+                      ? "bg-orange-500 text-orange-500"
+                      : status === "Cancel" && "bg-red-600 text-red-600"
                     } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {status === "success"
@@ -1021,43 +1025,67 @@ export function InvoiceUsedTable({ data, functions }) {
     <table className="table-auto w-full">
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
-          <th className={thclass}>Mã Hóa Đơn</th>
-          <th className={thclass}>Ngày Tạo</th>
-          <th className={thclass}>Ngày Đến Hạn</th>
-          <th className={thclass}>Số Tiền</th>
-          <th className={thclass}>Hành Động</th>
+          <th className={thclass}>#</th>
+          <th className={thclass}>Invoice Code</th>
+          <th className={thclass}>Customers</th>
+          <th className={thclass}>Creation Date</th>
+          <th className={thclass}>Due Date</th>
+          <th className={thclass}>
+            Amount <span className="text-xs font-light">(VND)</span>
+          </th>
         </tr>
       </thead>
       <tbody>
-        {data.map((item) => (
-          <tr
-            key={item.id}
-            className="border-b border-border hover:bg-greyed transitions"
-          >
-            <td className={tdclass}>
-              <p className="text-xs">#{item.id}</p>
-            </td>
-            <td className={tdclass}>
-              <p className="text-xs">{item.createdDate}</p>
-            </td>
-            <td className={tdclass}>
-              <p className="text-xs">{item.dueDate}</p>
-            </td>
+        {data.map((item, index) => {
+          const invoiceCode = item?.invoiceId;
+          const avatarUrl = item?.bookingId?.profileId?.avartar;
+          const firstName = item?.bookingId?.profileId?.firstName;
+          const lastName = item?.bookingId?.profileId?.lastName;
+          const phone = item?.bookingId?.profileId?.phone;
+          const createdDate = new Date(item?.createdAt).toLocaleDateString(
+            "vi-VN"
+          );
+          const dueDate = new Date(item?.dueDate).toLocaleDateString("vi-VN");
+          const totalAmount = item?.totalAmount.toLocaleString("vi");
+          return (
+            <tr
+              key={item._id}
+              className="border-b border-border hover:bg-greyed transitions"
+            >
+              <td className={tdclass}>{index + 1}</td>
+              <td className={tdclass}>#{invoiceCode}</td>
+              <td className={tdclass}>
+                <div className="flex gap-4 items-center">
+                  <span className="w-12">
+                    <img
+                      src={avatarUrl}
+                      alt={lastName}
+                      className="w-full h-12 rounded-full object-cover border border-border"
+                    />
+                  </span>
+                  <div>
+                    <h4 className="text-sm font-medium">
+                      {firstName} {lastName}
+                    </h4>
+                    <p className="text-xs mt-1 text-textGray">{phone}</p>
+                  </div>
+                </div>
+              </td>
+              <td className={tdclass}>{createdDate}</td>
+              <td className={tdclass}>{dueDate}</td>
+              <td className={`${tdclass} font-semibold`}>{totalAmount}</td>
 
-            <td className={tdclass}>
-              <p className="text-xs font-semibold">{`$${item.total}`}</p>
-            </td>
-
-            <td className={tdclass}>
-              <button
-                onClick={() => functions.preview(item.id)}
-                className="text-sm flex-colo bg-white text-subMain border rounded-md w-10 h-10"
-              >
-                <FiEye />
-              </button>
-            </td>
-          </tr>
-        ))}
+              <td className={tdclass}>
+                <button
+                  onClick={() => functions.preview(item.id)}
+                  className="text-sm flex-colo bg-white text-subMain border rounded-md w-10 h-10"
+                >
+                  <FiEye />
+                </button>
+              </td>
+            </tr>
+          )
+        })}
       </tbody>
     </table>
   );

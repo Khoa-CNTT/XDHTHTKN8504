@@ -22,7 +22,7 @@ router.post("/pay", auth, walletController.makePayment);
 
 router.get(
     '/get-transactions/:userId',
-    walletController.getTransactions
+    walletController.getTransactionsByAdmin
 )
 
 export default router

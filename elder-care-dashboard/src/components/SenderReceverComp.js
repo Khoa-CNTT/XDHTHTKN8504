@@ -17,14 +17,18 @@ function SenderReceverComp({ item, functions, button }) {
       <div className="border border-border rounded-xl p-5">
         <div className="flex-btn gap-4">
           <h1 className="text-md font-semibold">To:</h1>
-          {button && (
+          {item.participants && (
+            <p className="text-xs font-light">{item.participants}</p>
+          )}
+
+          {/* {button && (
             <button
               onClick={() => functions.openModal()}
               className="bg-dry text-subMain flex-rows gap-2 rounded-lg border border-border py-2 px-4 text-sm"
             >
               <BiPlus /> Add
             </button>
-          )}
+          )} */}
         </div>
         <div className="flex flex-col gap-2 mt-4">
           <h6 className="text-xs font-medium">{item?.title}</h6>

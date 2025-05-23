@@ -28,7 +28,6 @@ function Booking() {
   const [dateFilter, setDateFilter] = React.useState({ from: "", to: "" });
   const [filteredBookings, setFilteredBookings] = React.useState([]);
 
-
   const { bookings, loading, error, pagination } = useSelector((state) => state.booking);
 
   const [page, setPage] = React.useState(1);
