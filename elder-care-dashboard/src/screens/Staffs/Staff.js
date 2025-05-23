@@ -18,6 +18,7 @@ import { io } from "socket.io-client";
 import * as XLSX from "xlsx"; // Import xlsx library
 import Loading from "../../components/Loading.js";
 import AddEditStaffModal from "../../components/Modals/AddEditStaffModal";
+import Paginate from "../../utils/pagination.js";
 const socket = io("http://localhost:5000");
 
 function Staffs() {
@@ -28,11 +29,54 @@ function Staffs() {
   const dispatch = useDispatch();
   const [showModal1, setShowModal1] = React.useState(false);
   const [showModal2, setShowModal2] = React.useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState("newest");
+  const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
+  const [filteredStaffs, setFilteredStaffs] = useState([]);
 
   const handleOpenModal1 = () => setShowModal1(true);
   const handleCloseModal2 = () => setShowModal2(false);
   const [selectedId, setSelectedId] = useState(null);
-  const { staffList, loading, error } = useSelector((state) => state.staff);
+  const { staffList, loading, error, pagination } = useSelector((state) => state.staff);
+
+  const [page, setPage] = React.useState(1);
+  const limit = 10;
+
+  useEffect(() => {
+    let temp = [...staffList];
+
+    // Tìm kiếm theo tên
+    if (searchTerm.trim() !== "") {
+      temp = temp.filter((staff) => {
+        const fullName = `${staff.firstName || ""} ${staff.lastName || ""}`.toLowerCase();
+        return fullName.includes(searchTerm.toLowerCase());
+      });
+    }
+
+    // Lọc theo ngày tạo
+    if (dateFilter.from) {
+      const fromDate = new Date(dateFilter.from);
+      temp = temp.filter((staff) => new Date(staff.createdAt) >= fromDate);
+    }
+
+    if (dateFilter.to) {
+      const toDate = new Date(dateFilter.to);
+      temp = temp.filter((staff) => new Date(staff.createdAt) <= toDate);
+    }
+
+    // Sắp xếp
+    temp.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+    });
+
+    setFilteredStaffs(temp);
+  }, [staffList, searchTerm, sortOrder, dateFilter]);
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
 
   const handleSuccessFromModal1 = (idFromModal1) => {
     setSelectedId(idFromModal1); // lưu id
@@ -48,7 +92,7 @@ function Staffs() {
     setData(datas);
   };
   useEffect(() => {
-    dispatch(fetchStaffList());
+    dispatch(fetchStaffList({ page, limit }));
 
     const user = getUserIdFromToken();
 
@@ -66,7 +110,7 @@ function Staffs() {
     return () => {
       socket.off("newStaffCreated");
     };
-  }, [dispatch]);
+  }, [dispatch, page]);
 
   useEffect(() => {
     if (staffList.length > 0) {
@@ -101,8 +145,8 @@ function Staffs() {
           item.type === "doctor"
             ? "Bác sĩ"
             : item.type === "nurse"
-            ? "Điều dưỡng"
-            : "Không xác định",
+              ? "Điều dưỡng"
+              : "Không xác định",
         Email: item.email || "Không rõ",
       }))
     );
@@ -184,8 +228,36 @@ function Staffs() {
           <div className="md:col-span-5 grid lg:grid-cols-4 items-center gap-6">
             <input
               type="text"
-              placeholder='Search "daudi mburuge"'
-              className="h-14 w-full text-sm text-main rounded-md bg-dry border border-border px-4"
+              placeholder="Tìm kiếm theo tên khách hàng..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="h-14 text-sm text-main rounded-md bg-dry border border-border px-4"
+            />
+
+            {/* Sắp xếp */}
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="h-14 w-full text-xs text-main rounded-md bg-dry border border-border px-4 flex items-center justify-between"
+            >
+              <option value="newest">Mới nhất</option>
+              <option value="oldest">Cũ nhất</option>
+            </select>
+
+            {/* Lọc ngày từ */}
+            <input
+              type="date"
+              value={dateFilter.from}
+              onChange={(e) => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
+              className="text-xs px-4 h-14 border border-border text-main font-normal rounded-lg focus:border focus:border-subMain"
+            />
+
+            {/* Lọc ngày đến */}
+            <input
+              type="date"
+              value={dateFilter.to}
+              onChange={(e) => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
+              className="text-xs px-4 h-14 border border-border text-main font-normal rounded-lg focus:border focus:border-subMain"
             />
           </div>
 
@@ -200,8 +272,10 @@ function Staffs() {
         <div className="mt-8 w-full overflow-x-scroll">
           <DoctorsTable
             doctor={true}
-            data={staffList}
+            data={filteredStaffs}
             onEdit={onEdit}
+            page={page}
+            limit={limit}
             functions={{
               preview: previewStaff,
               onDelete: (id) => {
@@ -210,6 +284,11 @@ function Staffs() {
             }}
           />
         </div>
+        <Paginate
+          page={page}
+          totalPages={pagination?.totalPages || 1}
+          onPageChange={handlePageChange}
+        />
       </div>
     </Layout>
   );

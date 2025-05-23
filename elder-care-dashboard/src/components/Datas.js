@@ -73,7 +73,7 @@ export const MenuDatas = [
   //   icon: HiOutlineUsers,
   // },
   {
-    title: "StaffS",
+    title: "Staffs",
     path: "/staffs",
     icon: RiUserHeartLine,
   },

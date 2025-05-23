@@ -6,6 +6,7 @@ import Doctor from '../models/Doctor.js'
 import Nurse from '../models/Nurse.js'
 import User from '../models/User.js'
 import mongoose from 'mongoose';
+import paginate from "../utils/pagination.js";
 import Profile from '../models/Profile.js'
 
 const paymentController = {
@@ -324,16 +325,37 @@ const paymentController = {
 
     getAllPayment: async (req, res) => {
         try {
+            // Lấy page và limit từ query, mặc định page=1, limit=10
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+            const skip = (page - 1) * limit;
+
+            // Đếm tổng số Payment
+            const total = await Payments.countDocuments();
+
+            // Lấy dữ liệu có phân trang và populate
             const payments = await Payments.find({})
                 .populate({
                     path: "bookingId",
                     populate: {
                         path: "profileId",
-                        model: "Profile"
-                    }
+                        model: "Profile",
+                    },
                 })
-                .sort({ createdAt: -1 });
-            return res.status(200).json(payments);
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
+
+            // Trả về dữ liệu cùng thông tin phân trang
+            return res.status(200).json({
+                payments,
+                pagination: {
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit),
+                },
+            });
         } catch (error) {
             console.error("Lỗi khi lấy tất cả Payment:", error);
             return res.status(500).json({

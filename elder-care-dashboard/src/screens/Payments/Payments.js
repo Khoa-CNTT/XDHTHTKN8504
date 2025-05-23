@@ -18,40 +18,80 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { format } from "date-fns";
 import Loading from "../../components/Loading";
+import Paginate from "../../utils/pagination.js";
 
 function Payments() {
   const [status, setStatus] = useState(sortsDatas.status[0]);
   const [method, setMethod] = useState(sortsDatas.method[0]);
-  const [dateRange, setDateRange] = useState([new Date(), new Date()]);
-  const [startDate, endDate] = dateRange;
+
+  // Search & filter states
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [sortOrder, setSortOrder] = React.useState("newest");
+  const [dateFilter, setDateFilter] = React.useState({ from: "", to: "" });
+  const [filteredData, setFilteredData] = React.useState([]);
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const limit = 10;
+
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const {
     allPayments: payments,
     paymentCounts,
     loading,
     error,
+    pagination
   } = useSelector((state) => state.payment);
-  const dispatch = useDispatch();
-
-  const sorts = [
-    {
-      id: 2,
-      selected: status,
-      setSelected: setStatus,
-      datas: sortsDatas.status,
-    },
-    {
-      id: 3,
-      selected: method,
-      setSelected: setMethod,
-      datas: sortsDatas.method,
-    },
-  ];
 
   useEffect(() => {
-    dispatch(fetchAllPayment());
+    dispatch(fetchAllPayment({ page, limit }));
     dispatch(fetchPaymentCounts());
-  }, [dispatch]);
+  }, [dispatch, page]);
+
+  useEffect(() => {
+    let temp = [...payments]; // Thay vì data, dùng payments
+
+    // Tìm kiếm theo tên trong bookingId.profileId.firstName + lastName
+    if (searchTerm.trim() !== "") {
+      temp = temp.filter((item) => {
+        const profile = item.bookingId?.profileId;
+        const fullName = `${profile?.firstName || ""} ${profile?.lastName || ""}`.toLowerCase();
+        return fullName.includes(searchTerm.toLowerCase());
+      });
+    }
+
+    // Lọc theo ngày trong item.createdAt
+    if (dateFilter.from) {
+      const fromDate = new Date(dateFilter.from);
+      temp = temp.filter((item) => {
+        const created = new Date(item.createdAt);
+        return created >= fromDate;
+      });
+    }
+
+    if (dateFilter.to) {
+      const toDate = new Date(dateFilter.to);
+      temp = temp.filter((item) => {
+        const created = new Date(item.createdAt);
+        return created <= toDate;
+      });
+    }
+
+    // Sắp xếp theo createdAt
+    temp.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+    });
+
+    setFilteredData(temp);
+  }, [payments, searchTerm, dateFilter, sortOrder]);
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
 
   if (loading) return <Loading />;
   if (error) return <p>Lỗi: {error}</p>;
@@ -162,8 +202,8 @@ function Payments() {
                 {box.title === "Today Payments"
                   ? "today"
                   : box.title === "Monthly Payments"
-                  ? "this month"
-                  : "this year"}
+                    ? "this month"
+                    : "this year"}
               </p>
             </div>
             <div
@@ -184,28 +224,57 @@ function Payments() {
         className="bg-white my-8 rounded-xl border-[1px] border-border p-5"
       >
         <div className="grid lg:grid-cols-5 grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-2">
-          <input
-            type="text"
-            placeholder='Search "Customers"'
-            className="h-14 text-sm text-main rounded-md bg-dry border border-border px-4"
-          />
-          {sorts.map((item) => (
-            <Select
-              key={item.id}
-              selectedPerson={item.selected}
-              setSelectedPerson={item.setSelected}
-              datas={item.datas}
+          <div className="md:col-span-5 grid lg:grid-cols-4 items-center gap-6">
+            <input
+              type="text"
+              placeholder="Tìm kiếm theo tên khách hàng..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="h-14 text-sm text-main rounded-md bg-dry border border-border px-4"
             />
-          ))}
+
+            {/* Sắp xếp */}
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="h-14 w-full text-xs text-main rounded-md bg-dry border border-border px-4 flex items-center justify-between"
+            >
+              <option value="newest">Mới nhất</option>
+              <option value="oldest">Cũ nhất</option>
+            </select>
+
+            {/* Lọc ngày từ */}
+            <input
+              type="date"
+              value={dateFilter.from}
+              onChange={(e) => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
+              className="text-xs px-4 h-14 border border-border text-main font-normal rounded-lg focus:border focus:border-subMain"
+            />
+
+            {/* Lọc ngày đến */}
+            <input
+              type="date"
+              value={dateFilter.to}
+              onChange={(e) => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
+              className="text-xs px-4 h-14 border border-border text-main font-normal rounded-lg focus:border focus:border-subMain"
+            />
+          </div>
         </div>
 
         {/* Table */}
         <div className="mt-8 w-full overflow-x-scroll">
           <Transactiontable
-            data={payments}
+            data={filteredData}
+            page={page}
+            limit={limit}
             functions={{ preview: previewPayment, edit: editPayment }}
           />
         </div>
+        <Paginate
+          page={page}
+          totalPages={pagination?.totalPages || 1}
+          onPageChange={handlePageChange}
+        />
       </div>
     </Layout>
   );
