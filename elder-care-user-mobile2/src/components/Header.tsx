@@ -3,19 +3,25 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../navigation/StackNavigator';
+// import { RootStackParamList } from '../navigation/StackNavigator';
 
-type HeaderScreenNavigationProp = StackNavigationProp<
-  RootStackParamList,
-  "Notifications"
->;
+// type HeaderScreenNavigationProp = StackNavigationProp<
+//   RootStackParamList,
+//   "Notifications"
+// >;
+type RootStackParamList = {
+  Notifications: undefined;
+};
+type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 interface HeaderProps {
   onMessagePress?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ onMessagePress }) => {
-  const navigation = useNavigation<HeaderScreenNavigationProp>();
+  // const navigation = useNavigation<HeaderScreenNavigationProp>();
+    const navigation = useNavigation<NavigationProp>();
+  
   const notificationCount = 0;
 
   const handleNotificationPress = () => {

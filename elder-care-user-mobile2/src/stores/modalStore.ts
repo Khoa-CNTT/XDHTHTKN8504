@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { Vibration } from "react-native";
 import { playNotificationSound } from "../utils/soundService";
-import { sendLocalNotification } from "../utils/notificationService";
+// import { sendLocalNotification } from "../utils/notificationService";
 
 interface ModalState {
   visible: boolean;
@@ -42,10 +42,10 @@ export const useModalStore = create<ModalState>((set) => ({
     await playNotificationSound(type);
 
     // 3. Gửi local notification của hệ thống
-    await sendLocalNotification(
-      title,
-      message,
-    );
+    // await sendLocalNotification(
+    //   title,
+    //   message,
+    // );
 
     // 4. Hiển thị modal
     set({
