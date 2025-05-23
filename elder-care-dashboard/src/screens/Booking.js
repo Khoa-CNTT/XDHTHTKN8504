@@ -96,7 +96,7 @@ function Booking() {
   };
 
   if (loading) return <Loading />;
-  if (error) return <p>Lỗi: {error}</p>;
+  if (error) return <p>Lỗi: {error.message}</p>;
 
   console.log("bookings", bookings);
 
