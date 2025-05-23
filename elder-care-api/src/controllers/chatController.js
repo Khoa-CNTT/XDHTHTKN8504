@@ -91,10 +91,25 @@ const chatController = {
         try {
             const { targetUserId, chatType, title } = req.body;
             const initiatorId = req.user._id;
+            const initiatorRole = req.user.role;
 
-            if (chatType === "admin-family" && req.user.role === "family_member") {
+            // Xử lý chat nhóm cho admin-family và admin-staff
+            const groupChatTypes = ["admin-family", "admin-staff"];
+
+            if (groupChatTypes.includes(chatType)) {
+                // Kiểm tra điều kiện roles tương ứng
+                if (
+                    (chatType === "admin-family" && initiatorRole !== "family_member") ||
+                    (chatType === "admin-staff" && !(initiatorRole === "doctor" || initiatorRole === "nurse"))
+                ) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Vai trò người dùng không phù hợp để tạo nhóm chat này"
+                    });
+                }
+
+                // Lấy danh sách admin
                 const admins = await User.find({ role: "admin" });
-
                 if (!admins || admins.length === 0) {
                     return res.status(404).json({ success: false, message: "Không tìm thấy quản trị viên nào" });
                 }
@@ -102,7 +117,7 @@ const chatController = {
                 const adminIds = admins.map(admin => admin._id.toString());
                 const participantIds = [initiatorId.toString(), ...adminIds];
 
-                // Kiểm tra đã tồn tại chat nhóm này chưa
+                // Kiểm tra chat nhóm đã tồn tại chưa
                 const existingChat = await Chat.findOne({
                     participants: { $all: participantIds },
                     chatType,
@@ -113,21 +128,19 @@ const chatController = {
                     return res.status(200).json({ success: true, chat: existingChat, message: "Cuộc trò chuyện đã tồn tại" });
                 }
 
-                // Tạo mới
+                // Tạo chat mới
                 const newChat = new Chat({
                     participants: participantIds,
                     chatType,
-                    title: title || "Hỏi quản trị viên",
+                    title: title || (chatType === "admin-family" ? "Hỏi quản trị viên" : "Trao đổi với quản trị viên"),
                     isActive: true,
                     messages: [],
-                    metadata: {
-                        lastActivity: new Date()
-                    }
+                    metadata: { lastActivity: new Date() }
                 });
 
                 await newChat.save();
 
-                // Gửi thông báo tới admin
+                // Gửi thông báo cho admin
                 adminIds.forEach(adminId => {
                     notifyUser(adminId, "new_chat", {
                         chatId: newChat._id,
@@ -142,16 +155,14 @@ const chatController = {
                 return res.status(201).json({ success: true, chat: newChat });
             }
 
-            // Kiểm tra người dùng đích tồn tại`
+            // Xử lý chat 1-1 các loại còn lại
             const targetUser = await User.findById(targetUserId);
             if (!targetUser) {
                 return res.status(404).json({ success: false, message: "Không tìm thấy người dùng đích" });
             }
 
-            // Kiểm tra xem chatType có hợp lệ dựa trên vai trò của người dùng không
             let isValidChatType = true;
-
-            const roles = [req.user.role, targetUser.role];
+            const roles = [initiatorRole, targetUser.role];
 
             if (chatType === "admin-staff" &&
                 !(roles.includes("admin") && (roles.includes("doctor") || roles.includes("nurse")))) {
@@ -171,7 +182,7 @@ const chatController = {
                 return res.status(400).json({ success: false, message: "Loại cuộc trò chuyện không hợp lệ cho vai trò người dùng" });
             }
 
-            // Kiểm tra xem đã có cuộc trò chuyện giữa hai người dùng chưa
+            // Kiểm tra chat 1-1 đã tồn tại chưa
             const existingChat = await Chat.findOne({
                 participants: { $all: [initiatorId, targetUserId] },
                 isActive: true
@@ -181,7 +192,7 @@ const chatController = {
                 return res.status(200).json({ success: true, chat: existingChat, message: "Cuộc trò chuyện đã tồn tại" });
             }
 
-            // Tạo cuộc trò chuyện mới
+            // Tạo chat mới 1-1
             const newChat = new Chat({
                 participants: [initiatorId, targetUserId],
                 chatType,
@@ -192,7 +203,6 @@ const chatController = {
 
             await newChat.save();
 
-            // Thông báo cho người dùng đích
             notifyUser(targetUserId, "new_chat", {
                 chatId: newChat._id,
                 initiator: {
@@ -203,6 +213,7 @@ const chatController = {
             });
 
             return res.status(201).json({ success: true, chat: newChat });
+
         } catch (error) {
             console.error("Error creating chat:", error);
             return res.status(500).json({ success: false, message: "Không thể tạo cuộc trò chuyện mới" });

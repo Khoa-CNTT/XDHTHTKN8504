@@ -3,6 +3,7 @@ import { Vibration } from "react-native";
 import { playNotificationSound } from "../utils/soundService";
 
 
+
 interface ModalState {
   visible: boolean;
   title?: string;

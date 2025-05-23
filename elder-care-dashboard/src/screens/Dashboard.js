@@ -22,22 +22,33 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { countUsers } from "../api/auth.js";
 import { getPatients } from "../api/bookings.js";
-import { io } from 'socket.io-client'
+import { io } from "socket.io-client";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllPayment } from "../store/paymentSlice.js";
 import { countBookingsLast12Months } from "../store/dashboardSlice.js";
 import { countStaffInLast12Months } from "../store/staffSlice.js";
-import { countTotalAmountMonth, countTotalMonthRevenue } from "../store/paymentSlice.js";
+import {
+  countTotalAmountMonth,
+  countTotalMonthRevenue,
+} from "../store/paymentSlice.js";
 
-const socket = io('http://localhost:5000/');
+const socket = io("http://localhost:5000/");
 
 function Dashboard() {
   const [userCount, setUserCount] = useState([]);
   const [patients, setPatients] = useState([]);
-  const { allPayments: payments, loading, error } = useSelector((state) => state.payment)
-  const { bookingsLast12Months: bookings } = useSelector((state) => state.dashboard)
-  const { staffCount } = useSelector((state) => state.staff)
-  const { totalAmountMonth, totalMonthRevenue } = useSelector((state) => state.payment)
+  const {
+    allPayments: payments,
+    loading,
+    error,
+  } = useSelector((state) => state.payment);
+  const { bookingsLast12Months: bookings } = useSelector(
+    (state) => state.dashboard
+  );
+  const { staffCount } = useSelector((state) => state.staff);
+  const { totalAmountMonth, totalMonthRevenue } = useSelector(
+    (state) => state.payment
+  );
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -62,7 +73,7 @@ function Dashboard() {
       } catch (error) {
         console.error("Error fetching patients:", error);
       }
-    }
+    };
     fetchPatients();
   }, []);
 
@@ -72,8 +83,7 @@ function Dashboard() {
     dispatch(countStaffInLast12Months());
     dispatch(countTotalAmountMonth());
     dispatch(countTotalMonthRevenue());
-  }, [dispatch])
-
+  }, [dispatch]);
 
   // console.log("bk", bookings.counts);
   // console.log("st", staffCount?.data);
@@ -83,7 +93,12 @@ function Dashboard() {
   const appointmentsData = bookings?.counts;
   const revenueData = totalAmountMonth?.totals;
   const staffsData = staffCount?.data;
-  const dashboardCards = getDashboardCards(userCount, appointmentsData, staffsData, revenueData);
+  const dashboardCards = getDashboardCards(
+    userCount,
+    appointmentsData,
+    staffsData,
+    revenueData
+  );
 
   // const data = [30, 40, 25, 50, 49, 21, 70, 51, 42, 60, 40, 20];
   const data = totalMonthRevenue?.revenue;
@@ -91,9 +106,11 @@ function Dashboard() {
   return (
     <Layout>
       {/* {messger} */}
-      <button className="w-16 animate-bounce h-16 border border-border z-50 bg-subMain text-white rounded-full flex-colo fixed bottom-8 right-12 button-fb">
-        <FaFacebookMessenger className="text-2xl" />
-      </button>
+      <Link to="/chat">
+        <button className="w-16 animate-bounce h-16 border border-border z-50 bg-subMain text-white rounded-full flex-colo fixed bottom-8 right-12 button-fb">
+          <FaFacebookMessenger className="text-2xl" />
+        </button>
+      </Link>
 
       {/* boxes */}
       <div className="w-full grid xl:grid-cols-4 gap-6 lg:grid-cols-3 sm:grid-cols-2 grid-cols-1">
@@ -118,9 +135,7 @@ function Dashboard() {
               <div className="flex flex-col gap-4 col-span-3">
                 <h4 className="text-md font-medium">
                   {card.value}
-                  {
-                    card.id === 4 ? "" : "+"
-                  }
+                  {card.id === 4 ? "" : "+"}
                 </h4>
                 <p className={`text-sm flex gap-2 ${card.color[1]}`}>
                   {card.percent > 50 && <BsArrowUpRight />}
@@ -156,19 +171,16 @@ function Dashboard() {
           <div className="mt-6 bg-white rounded-xl border-[1px] border-border p-5">
             <div className="flex-btn gap-2">
               <h2 className="text-sm font-medium">Recent Transaction</h2>
-              <p className="flex gap-4 text-sm items-center">
+              {/* <p className="flex gap-4 text-sm items-center">
                 Today{" "}
                 <span className="py-1 px-2 bg-subMain text-white text-xs rounded-xl">
                   27000$
                 </span>
-              </p>
+              </p> */}
             </div>
             {/* table */}
             <div className="mt-4 overflow-x-scroll">
-              <Transactiontable
-                data={payments.slice(0, 5)}
-                action={false}
-              />
+              <Transactiontable data={payments.slice(0, 5)} action={false} />
             </div>
           </div>
         </div>
@@ -196,8 +208,12 @@ function Dashboard() {
                     className="w-10 h-10 rounded-md object-cover"
                   /> */}
                   <div className="flex flex-col gap-1">
-                    <h3 className="text-xs font-medium">{member.firstName} {member.lastName}</h3>
-                    <p className="text-xs text-gray-400">{member.bookedByPhone}</p>
+                    <h3 className="text-xs font-medium">
+                      {member.firstName} {member.lastName}
+                    </h3>
+                    <p className="text-xs text-gray-400">
+                      {member.bookedByPhone}
+                    </p>
                   </div>
                 </div>
                 <p className="text-xs text-textGray">2:00 PM</p>
