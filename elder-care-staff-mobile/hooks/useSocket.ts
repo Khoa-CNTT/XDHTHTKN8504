@@ -32,8 +32,8 @@ export const registerSocketListeners = (set: any, get: any) => {
   socket.on("bookingAccepted", async (bookingId: string) => {
     await playNotificationSound();
     showModal(
-      "Cập nhật trạng thái làm việc",
-      "Khách hàng đã sẵn sàng, di chuyển tới thôi nào!",
+      "✅ Lịch hẹn đã được xác nhận",
+      "Bạn đã được chỉ định chăm sóc cho [Tên khách hàng] vào [ngày] lúc [giờ]. Nhấn để xem lịch làm việc.",
       {
         type: "popup",
         autoHideDuration: 3000,
@@ -77,22 +77,16 @@ export const registerSocketListeners = (set: any, get: any) => {
     async (payload: { chatId: string; message: ChatMessage }) => {
       try {
         const { chatId, message } = payload;
+        const messageText = message.message;
 
         console.log("📩 Nhận được tin nhắn mới từ socket", message);
        
         await playNotificationSound();
 
         // Gửi thông báo đẩy
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: "Tin nhắn mới",
-            body: `Bạn nhận được tin nhắn: "${message.message.replace(
-              /["]/g,
-              "'"
-            )}"`,
-            sound: "default",
-          },
-          trigger: null,
+        showModal("Tin nhắn mới", messageText, {
+          type: "popup",
+          autoHideDuration: 3000,
         });
       } catch (error) {
         log("❌ Lỗi xử lý tin nhắn mới:", error);
