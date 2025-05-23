@@ -21,7 +21,7 @@ interface Props {
   onApply: (profile: Profile | undefined) => void;
 }
 type RootStackParamList = {
-  AddCareRecipient: undefined;
+  AddProfileScreen: undefined;
 };
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -88,7 +88,7 @@ const renderItem = ({ item }: { item: Profile }) => {
           <TouchableOpacity
             onPress={() => {
               onClose();
-              navigation.navigate("AddCareRecipient");
+              navigation.navigate("AddProfileScreen");
             }}
           >
             <Text style={styles.addText}>Thêm Người Được Chăm Sóc</Text>
