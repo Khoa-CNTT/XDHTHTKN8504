@@ -113,7 +113,7 @@ const chatSlice = createSlice({
             if (!state.messages[chatId]) {
                 state.messages[chatId] = [];
             }
-            state.messages[chatId].unshift(message);
+            state.messages[chatId].push(message);
 
             // Update last activity in chat list
             const chat = state.chats.find(c => c._id === chatId);
@@ -236,11 +236,11 @@ const chatSlice = createSlice({
 
             // Send message
             .addCase(sendMessage.fulfilled, (state, action) => {
-                const { chatId, message } = action.payload;
-                if (!state.messages[chatId]) {
-                    state.messages[chatId] = [];
-                }
-                state.messages[chatId].unshift(message);
+                // const { chatId, message } = action.payload;
+                // if (!state.messages[chatId]) {
+                //     state.messages[chatId] = [];
+                // }
+                // state.messages[chatId].push(message);
             })
 
             // Mark messages as read

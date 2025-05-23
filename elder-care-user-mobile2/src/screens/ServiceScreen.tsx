@@ -7,9 +7,11 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { usePackageStore } from '../stores/PackageService';
 import { Package } from "../types/PackageService";
+import useAuthStore from "../stores/authStore";
 
 type RootStackParamList = {
     BookAService: undefined;
+    Login: undefined;
 };
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -101,6 +103,18 @@ const ServiceScreen: React.FC = () => {
     const { getPackageByServiceId, fetchPackages } = usePackageStore();
     const packagesFromStore = getPackageByServiceId(serviceId);
     const [expandedPackageId, setExpandedPackageId] = useState<string | null>(null);
+    const { token } = useAuthStore(); 
+
+    // Handler for the profile icon press
+  const handleBookAService = () => {
+    if (token) {
+      // If user is logged in, navigate to their profile screen
+      navigation.navigate("BookAService"); // Navigate to a dedicated ProfileScreen
+    } else {
+      // If user is not logged in, navigate to LoginScreen
+      navigation.navigate("Login");
+    }
+  };
 
     // Sửa avatar lấy từ imgUrl nếu có, nếu không lấy theo role
     const service = {
@@ -218,7 +232,7 @@ const ServiceScreen: React.FC = () => {
             {/* Appointment Button */}
             <TouchableOpacity
                 style={styles.appointmentButton}
-                onPress={() => navigation.navigate("BookAService")}
+                onPress={handleBookAService}
             >
                 <Text style={styles.appointmentButtonText}>Đặt lịch hẹn</Text>
             </TouchableOpacity>

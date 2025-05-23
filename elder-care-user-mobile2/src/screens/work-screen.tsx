@@ -1,4 +1,5 @@
 import React from "react";
+
 import {
   View,
   StyleSheet,
@@ -7,6 +8,7 @@ import {
   TouchableOpacity,
   FlatList,
 } from "react-native";
+
 import useScheduleStore from "../stores/scheduleStore";
 import ScheduleItem from "../components/ScheduleItem";
 import Footer from "../components/Footer";
@@ -15,11 +17,27 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../navigation/navigation";
 import { Ionicons } from "@expo/vector-icons";
 
+import useAuthStore from "../stores/authStore"; // Import useAuthStore
+
+
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 const WorkScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const Schedules = useScheduleStore((state) => state.schedules);
+
+  const { token } = useAuthStore(); // Get the authentication token from the store
+
+  const handleBookNewService = () => {
+    if (token) {
+      // If user is logged in (token exists), navigate to BookAService
+      navigation.navigate("BookAService");
+    } else {
+      // If user is not logged in, navigate to LoginScreen
+      navigation.navigate("Login");
+    }
+  };
+
 
   return (
     <View style={styles.container}>
@@ -32,7 +50,7 @@ const WorkScreen: React.FC = () => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Lịch chăm sóc hôm nay</Text>
         <TouchableOpacity activeOpacity={0.7}>
-          <Ionicons name="person-circle-outline" size={33} color="#000" />
+          {/* <Ionicons name="person-circle-outline" size={33} color="#000" /> */}
         </TouchableOpacity>
       </View>
 
@@ -63,15 +81,12 @@ const WorkScreen: React.FC = () => {
           </Text>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => {
-              navigation.navigate("BookAService");
-            }}
+            onPress={handleBookNewService} // Use the new handler
           >
             <Text style={styles.backButtonText}>Đặt lịch mới</Text>
           </TouchableOpacity>
         </View>
       )}
-
       <Footer />
     </View>
   );

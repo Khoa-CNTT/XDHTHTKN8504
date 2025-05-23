@@ -16,8 +16,11 @@ import React, { useRef, useMemo } from "react";
  type OnboardingScreenNavigationProp = StackNavigationProp<
   {
    Login: undefined;
+   Home: undefined;
   },
-  "Login"
+
+  "Login",
+  "Home"
  >;
 
  const slides = [
@@ -61,7 +64,7 @@ import React, { useRef, useMemo } from "react";
         style={styles.button}
         onPress={() =>
          index === slides.length - 1
-          ? navigation.navigate("Login")
+          ? navigation.navigate("Home")
           : swiperRef.current?.scrollBy(1)
         }
        >
@@ -79,7 +82,8 @@ import React, { useRef, useMemo } from "react";
         ))}
        </View>
 
-       <Text style={styles.skipText} onPress={() => navigation.navigate("Login")}>
+       {/* <Text style={styles.skipText} onPress={() => navigation.navigate("Login")}> */}
+       <Text style={styles.skipText} onPress={() => navigation.navigate("Home")}>
         Bỏ qua
        </Text>
       </View>

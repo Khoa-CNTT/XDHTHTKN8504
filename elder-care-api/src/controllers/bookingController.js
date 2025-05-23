@@ -11,6 +11,7 @@ import Payments from "../models/Payment.js";
 import Packages from "../models/Package.js";
 import Wallet from "../models/Wallet.js";
 import Invoice from "../models/Invoice.js"
+import paginate from "../utils/pagination.js";
 
 const bookingController = {
     // create new booking
@@ -115,6 +116,9 @@ const bookingController = {
                 status: "pending"
             });
             await newPayment.save();
+
+            newBooking.paymentId = newPayment._id;
+            await newBooking.save();
 
             io.to(userId).emit("newPaymentCreated");
 
@@ -247,6 +251,9 @@ const bookingController = {
             });
 
             await newPayment.save();
+
+            newBooking.paymentId = newPayment._id;
+            await newBooking.save();
 
             const transactionId = "PAY_" + new Date().getTime();
 
@@ -393,6 +400,13 @@ const bookingController = {
 
                 currentDate.add(repeatInterval, "days");
             }
+
+            // Lưu tất cả schedule và lấy _id
+            const savedSchedules = await Promise.all(schedules.map((s) => s.save()));
+            const scheduleIds = savedSchedules.map((s) => s._id);
+
+            // Thêm scheduleIds vào booking
+            booking.scheduleIds = booking.scheduleIds ? booking.scheduleIds.concat(scheduleIds) : scheduleIds;
 
             // Cập nhật thông tin booking
             booking.status = "accepted";
@@ -689,24 +703,32 @@ const bookingController = {
 
     getAllBookings: async (req, res) => {
         try {
-            await Booking.find()
-                .populate("profileId")
-                .populate("serviceId")
-                .then((bookings) => {
-                    return res.status(200).json({
-                        message: "Lấy tất cả booking thành công!",
-                        bookings,
-                    });
-                })
-                .catch((error) => {
-                    console.error("Lỗi khi lấy tất cả booking:", error);
-                    return res
-                        .status(500)
-                        .json({ message: "Lỗi server", error: error.message });
-                });
+            const page = req.query.page || 1;
+            const limit = 10;
+            const sort = { createdAt: -1 }; // mới nhất lên đầu
+            const filter = {}; // bạn có thể thêm điều kiện lọc từ req.query
+
+            const result = await paginate(Booking, filter, {
+                page,
+                limit,
+                sort,
+                populate: ['profileId', 'serviceId'],
+            });
+
+            return res.status(200).json({
+                message: "Lấy booking thành công",
+                bookings: result.docs,
+                pagination: {
+                    totalDocs: result.totalDocs,
+                    totalPages: result.totalPages,
+                    currentPage: result.currentPage,
+                    perPage: result.perPage,
+                },
+            });
         } catch (error) {
+            console.error("Lỗi khi lấy booking:", error);
             return res.status(500).json({
-                message: "Internal server error",
+                message: "Lỗi server",
                 error: error.message,
             });
         }
@@ -1003,7 +1025,8 @@ const bookingController = {
             const booking = await Booking.findById(bookingId)
                 .populate('profileId')
                 .populate('serviceId')
-                .populate('participants.userId', 'firstName lastName role');
+                .populate('participants.userId', 'firstName lastName role')
+                .populate('paymentId')
 
             if (!booking) {
                 return res.status(404).json({ message: "Không tìm thấy booking" });
