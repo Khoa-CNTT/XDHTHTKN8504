@@ -1,46 +1,64 @@
-import React, { useState } from "react";
-import { View, StyleSheet, Text,Alert } from "react-native";
+import React, { useMemo } from "react";
+import { View, StyleSheet, Text, Alert } from "react-native";
 import HomeHeader from "../../../components/home/HomeHeader";
 import AvailabilitySwitch from "../../../components/home/AvailabilitySwitch";
 import IncomeCard from "../../../components/home/IncomeCard";
-import useCompletedBookingStore from "@/stores/completedBookingStore";
-import updateAvailability from "../../../api/updateAvailability";
 import useAuthStore from "@/stores/authStore";
+import useBookingStore from "@/stores/BookingStore";
+import useScheduleStore from "@/stores/scheduleStore";
+import updateAvailability from "../../../api/updateAvailability";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import UpcomingSchedule from "@/components/home/UpcomingSchedule";
-import useScheduleStore from "@/stores/scheduleStore";
-import useBookingStore from "@/stores/BookingStore";
+
 const Home = () => {
   const extraInfo = useAuthStore((state) => state.extraInfo);
   const setExtraInfo = useAuthStore((state) => state.setExtraInfo);
 
   const isAvailable = extraInfo?.isAvailable ?? false;
 
-  const completedBookings = useCompletedBookingStore(
-    (state) => state.completedBookings
+  const participantBookings = useBookingStore(
+    (state) => state.participantBookings
   );
-  const totalSalary = completedBookings.reduce(
-    (total, booking) => total + booking.salary,
-    0
+  const allSchedules = useScheduleStore((state) => state.schedules);
+
+  const completedBookings = useMemo(
+    () => participantBookings.filter((s) => s.status === "completed"),
+    [participantBookings]
   );
-  const activeSchedules = useScheduleStore(
-    (state) =>
-      state.schedules.filter(
+
+  const acceptedBooking = useMemo(
+    () =>
+      participantBookings.filter(
+        (s) => s.status !== "cancelled" && s.status !== "completed"
+      ).length,
+    [participantBookings]
+  );
+
+  const canceledBooking = useMemo(
+    () => participantBookings.filter((s) => s.status === "cancelled").length,
+    [participantBookings]
+  );
+
+  const totalSalary = useMemo(
+    () =>
+      completedBookings.reduce(
+        (total, booking) => total + (booking.totalDiscount || 0),
+        0
+      ),
+    [completedBookings]
+  );
+
+  const activeSchedules = useMemo(
+    () =>
+      allSchedules.filter(
         (s) => s.status !== "canceled" && s.status !== "completed"
-      ).length
+      ).length,
+    [allSchedules]
   );
-  const acceptedBooking = useBookingStore(
-    (state) =>
-      state.participantBookings.filter(
-        (s) => s.status === "accepted" || s.status === "completed"
-      ).length
-  );
-  const canceledBooking = useBookingStore(
-    (state) =>
-      state.participantBookings.filter((s) => s.status === "cancelled").length
-  );
+
   const handleToggleAvailability = async (newValue: boolean) => {
     const isTurningOn = !isAvailable && newValue;
+    const isTurningOff = isAvailable && !newValue;
 
     const confirmAndUpdate = async () => {
       try {
@@ -67,7 +85,6 @@ const Home = () => {
             text: "Hủy",
             style: "cancel",
             onPress: () => {
-              // Nếu hủy, rollback trạng thái
               if (extraInfo) {
                 setExtraInfo({ ...extraInfo, isAvailable: !newValue });
               }
@@ -92,7 +109,6 @@ const Home = () => {
           },
           { text: "Đồng ý", onPress: confirmAndUpdate },
         ]
-
       );
     }
   };
@@ -105,7 +121,6 @@ const Home = () => {
         setIsAvailable={handleToggleAvailability}
       />
       <View style={styles.infoContainer}>
-        {/* Thu nhập */}
         <IncomeCard
           value={totalSalary}
           label="Thu nhập hiện tại"
@@ -148,9 +163,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f7f7f7",
   },
-  divider: {
-    marginVertical: 10,
-  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "bold",
@@ -168,56 +180,3 @@ const styles = StyleSheet.create({
 });
 
 export default Home;
-
-
-// =======
-//   const handleToggleAvailability = async (newValue: boolean) => {
-//     const isTurningOn = !isAvailable && newValue; // Chuyển từ tắt sang bật
-//     const isTurningOff = isAvailable && !newValue; // Chuyển từ bật sang tắt
-
-//     if (isTurningOn) {
-//       // Khi bật trạng thái, yêu cầu người dùng xác nhận
-//       showModal(
-//         "Xác nhận sẵn sàng đơn đặt lịch",
-//         "Bạn sẽ nhận được thông báo khi có đơn đặt lịch mới!",
-//         {
-//           type: "dialog", // Loại modal là dialog
-//           onConfirm: async () => {
-//             try {
-//               await updateAvailability(newValue); // Gọi API để bật trạng thái
-//               if (extraInfo) {
-//                 const updatedExtraInfo = {
-//                   ...extraInfo,
-//                   isAvailable: newValue,
-//                 };
-//                 await setExtraInfo(updatedExtraInfo); // Cập nhật trạng thái mới
-//               }
-//             } catch (error) {
-//               console.error("Không thể cập nhật trạng thái:", error);
-//             }
-//           },
-//         }
-//       );
-//     } else if (isTurningOff) {
-//       // Khi tắt trạng thái, yêu cầu người dùng xác nhận
-//       showModal(
-//         "Xác nhận tắt trạng thái sẵn sàng",
-//         "Bạn sẽ không nhận được thông báo đơn đặt lịch mới cho tới khi bật lại.",
-//         {
-//           type: "dialog", // Loại modal là dialog
-//           onConfirm: async () => {
-//             try {
-//               await updateAvailability(newValue); // Gọi API để tắt trạng thái
-//               if (extraInfo) {
-//                 const updatedExtraInfo = {
-//                   ...extraInfo,
-//                   isAvailable: newValue,
-//                 };
-//                 await setExtraInfo(updatedExtraInfo); // Cập nhật trạng thái mới
-//               }
-//             } catch (error) {
-//               console.error("Không thể cập nhật trạng thái:", error);
-//             }
-//           },
-//         }
-// >>>>>>> main

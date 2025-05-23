@@ -73,12 +73,15 @@ const Tabs = ({
 
 const MyBookings = () => {
   const navigation = useNavigation<NavigationProp>();
-  const { fetchBookings, filteredBookings, filterByStatus } = useBookingStore();
+
+  const { filteredBookings, filterByStatus } = useBookingStore();
+  
   const { token } = useAuthStore(); // Get the authentication token from the store
+
 
   const [selectedStatus, setSelectedStatus] =
     useState<BookingStatus>("accepted");
-
+  
   useEffect(() => {
     filterByStatus(selectedStatus);
   }, [selectedStatus]);
@@ -94,7 +97,6 @@ const MyBookings = () => {
         onPress: async () => {
           try {
             await cancelBooking(id);
-            await fetchBookings();
             filterByStatus(selectedStatus);
             Alert.alert("Thành công", "Lịch hẹn đã được hủy.");
           } catch {
@@ -119,7 +121,6 @@ const MyBookings = () => {
   return (
     <View style={styles.container}>
       <Tabs selected={selectedStatus} onChange={onTabChange} />
-
       {filteredBookings.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Image
@@ -143,12 +144,13 @@ const MyBookings = () => {
       ) : (
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {filteredBookings.map((b) => (
+            
             <View key={b._id} style={styles.card}>
               <View style={styles.cardRow}>
                 <Image
                   source={
-                    b.participants[0]?.userId
-                      ? { uri: b.participants[0].userId }
+                    b.participants[0]?.userId.avatar
+                      ? { uri: b.participants[0]?.userId.avatar }
                       : require("../asset/img/unknownAvatar.png")
                   }
                   style={styles.avatar}
@@ -206,8 +208,11 @@ const MyBookings = () => {
                       b.participants.length === 0 && { opacity: 0.5 },
                     ]}
                     disabled={b.participants.length === 0}
-                    onPress={() => {
-                      const participantId = b.participants[0]?.userId;
+
+                    onPress={() =>
+                    {
+                     const participantId = b.participants[0]?.userId._id;
+
 
                       if (participantId) {
                         navigation.navigate("DoctorDetails", {

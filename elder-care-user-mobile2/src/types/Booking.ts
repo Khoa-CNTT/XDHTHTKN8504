@@ -9,7 +9,7 @@ export type PopulatedUser = {
 };
 
 export type Participant = {
-  userId: string; // user đã được populate
+  userId: PopulatedUser; // user đã được populate
   role: "doctor" | "nurse";
   fullName: string;
   acceptedAt: Date;

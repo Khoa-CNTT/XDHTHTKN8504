@@ -281,7 +281,7 @@ const bookingController = {
             }
 
             io.to("staff_admin").emit("newBookingCreated", populatedBooking);
-            io.to("newBooking.createdBy").emit("BookingSuccessed", {
+            io.to(userId.toString()).emit("BookingSuccessed", {
                 title: "☑️Đặt lịch thành công",
                 message: "Bạn đã đặt lịch thành công, chúng tôi sẽ thông báo cho bạn khi có nhân viên y tế chấp nhận!",
             });
@@ -629,7 +629,11 @@ const bookingController = {
 
             const bookings = await Booking.find({ createdBy: user._id })
                 .populate("serviceId")
-                .populate("profileId");
+                .populate("profileId")
+                .populate({
+                  path: "participants.userId", // Đây là key quan trọng
+                  select: "avatar", // Chọn các field bạn muốn
+                });
 
             if (!bookings || bookings.length === 0) {
                 return res.status(404).json({ message: "Không tìm thấy booking nào" });
@@ -833,6 +837,14 @@ const bookingController = {
                 balance: wallet.balance,
                 transactions: wallet.transactions,
             });
+            if (booking.participants?.length > 0) {
+              booking.participants.forEach((participant) => {
+                io.to(participant.userId.toString()).emit("bookingCancelled", {
+                  message: `Booking #${booking._id} đã bị hủy.`,
+                  bookingId: booking._id,
+                });
+              });
+            }
 
             return res.status(200).json({
                 message: "Hủy lịch hẹn thành công và cập nhật ví hoàn tiền.",

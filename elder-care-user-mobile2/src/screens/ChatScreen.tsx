@@ -23,7 +23,8 @@ import { getChatDetail, sendNewChatMessage } from "../api/chatService";
 import { ChatMessage } from "../types/Chat";
 import { formatTime } from "../utils/dateHelper";
 import { useRoute } from "@react-navigation/native";
-
+import socket from "../utils/socket";
+import { log } from "../utils/logger";
 
 const Header = ({ onBack, onCall, avatar, name }: any) => (
   <View style={styles.headerContainer}>
@@ -140,7 +141,15 @@ const ChatScreen = () => {
 
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // Load message khi chatId thay đổi
+  useEffect(() => {
+    const listener = async (payload: any) => {
+      log("tin nhắn mới từ màn hình tin nhắn");
+
+      const chatDetail = await getChatDetail(chatId);
+      setMessages(chatDetail.messages || []);
+    };
+    socket.on("new_message", listener);
+  }, []);
   useEffect(() => {
     if (!chatId) return;
 

@@ -1,8 +1,9 @@
+import { Profile } from "./profile";
 export interface Review {
   _id: string;
   scheduleId: string; // id dạng string (ObjectId thường được serialize thành string)
   bookingId: string;
-  reviewer: string;
+  reviewer: Profile;
   staffId: string;
   rating: number; // 1 đến 5
   comment?: string;
