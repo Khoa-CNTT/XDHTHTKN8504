@@ -110,20 +110,26 @@ const chatSlice = createSlice({
 
         addMessage: (state, action) => {
             const { chatId, message } = action.payload;
+
+            // Thêm vào messages riêng của chat
             if (!state.messages[chatId]) {
                 state.messages[chatId] = [];
             }
             state.messages[chatId].push(message);
 
-            // Update last activity in chat list
+            // Cập nhật metadata và tin nhắn cuối cùng trong danh sách chats
             const chat = state.chats.find(c => c._id === chatId);
             if (chat) {
                 chat.metadata.lastActivity = message.timestamp;
-                // Move chat to top
+
+                // ✅ Cập nhật tin nhắn cuối cùng trong chat để hiển thị ở sidebar
+                chat.messages = [message];
+
+                // ✅ Đưa chat này lên đầu danh sách
                 state.chats = [chat, ...state.chats.filter(c => c._id !== chatId)];
             }
 
-            // Update unread count if message is not from current user
+            // Nếu người dùng không đang mở chat này => tăng số tin chưa đọc
             if (state.currentChat?._id !== chatId) {
                 state.unreadCounts[chatId] = (state.unreadCounts[chatId] || 0) + 1;
             }

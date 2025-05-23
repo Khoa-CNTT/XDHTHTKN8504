@@ -36,7 +36,7 @@ const updateBookingStatus = async (bookingId) => {
       console.log("✅ Booking đã cập nhật:", updatedBooking);
 
       // Phát tới người tạo booking
-      io.to(updatedBooking.createdBy._id.toString()).emit("completedBooking", {
+      io.to(updatedBooking.createdBy.toString()).emit("completedBooking", {
         message: "Hoàn thành đơn đặt lịch!",
         bookingId: updatedBooking._id,
       });
@@ -44,7 +44,7 @@ const updateBookingStatus = async (bookingId) => {
       // Phát tới các participant nếu có
       if (updatedBooking.participants?.length > 0) {
         updatedBooking.participants.forEach((participant) => {
-          io.to(participant.userId._id.toString()).emit("completedBooking", {
+          io.to(participant.userId.toString()).emit("completedBooking", {
             message: `Booking #${updatedBooking._id} đã hoàn thành.`,
             bookingId: updatedBooking._id,
           });

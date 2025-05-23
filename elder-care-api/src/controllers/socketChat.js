@@ -1,7 +1,6 @@
 import { Server as SocketIO } from "socket.io";
 import User from "../models/User.js";
 import Chat from "../models/Chat.js";
-import { v4 as uuidv4 } from "uuid";
 
 // Maps để theo dõi các kết nối
 const userSocketMap = new Map(); // userId => socketId
@@ -45,6 +44,7 @@ const socketController = (io) => {
                 // Lưu thông tin người dùng
                 userSocketMap.set(userId, socket.id);
                 userRoleMap.set(userId, user.role);
+                socket.userId = userId; // Lưu userId vào socket instance
 
                 // Người dùng tham gia vào room cá nhân của họ
                 socket.join(userId);
@@ -75,6 +75,9 @@ const socketController = (io) => {
 
                 // Gửi danh sách chat cho người dùng
                 socket.emit("available_chats", userChats);
+
+                // Thông báo user online cho những người khác
+                socket.broadcast.emit("user_online", { userId });
 
             } catch (error) {
                 console.error("Authentication error:", error);
@@ -116,13 +119,32 @@ const socketController = (io) => {
                     }
                 }
 
+                // Kiểm tra chat đã tồn tại chưa
+                const existingChat = await Chat.findOne({
+                    participants: { $all: [initiatorId, targetId] },
+                    isActive: true
+                });
+
+                if (existingChat) {
+                    // Tham gia vào room nếu chưa join
+                    socket.join(`chat_${existingChat._id}`);
+                    const targetSocketId = userSocketMap.get(targetId);
+                    if (targetSocketId) {
+                        io.sockets.sockets.get(targetSocketId)?.join(`chat_${existingChat._id}`);
+                    }
+
+                    socket.emit("chat_initialized", existingChat);
+                    return;
+                }
+
                 // Tạo chat mới
                 const newChat = new Chat({
                     participants: [initiatorId, targetId],
                     chatType,
                     title: title || `Chat between ${initiator.name} and ${target.name}`,
                     isActive: true,
-                    messages: []
+                    messages: [],
+                    metadata: { lastActivity: new Date() }
                 });
 
                 await newChat.save();
@@ -156,9 +178,38 @@ const socketController = (io) => {
             }
         });
 
+        // Join chat room
+        socket.on("join_chat", async ({ chatId }) => {
+            try {
+                if (!socket.userId) {
+                    socket.emit("chat_error", "User not authenticated");
+                    return;
+                }
+
+                const hasAccess = await checkChatAccess(socket.userId, chatId);
+                if (hasAccess) {
+                    socket.join(`chat_${chatId}`);
+                    console.log(`✅ User ${socket.userId} joined chat room: chat_${chatId}`);
+                } else {
+                    socket.emit("chat_error", "Access denied to this chat");
+                }
+            } catch (error) {
+                console.error("Error joining chat:", error);
+                socket.emit("chat_error", "Failed to join chat");
+            }
+        });
+
+        // Leave chat room
+        socket.on("leave_chat", ({ chatId }) => {
+            socket.leave(`chat_${chatId}`);
+            console.log(`User ${socket.userId} left chat room: chat_${chatId}`);
+        });
+
         // Gửi tin nhắn
         socket.on("send_message", async ({ chatId, senderId, message }) => {
             try {
+                console.log(`📨 [Socket] Sending message to chat ${chatId} from ${senderId}`);
+
                 // Kiểm tra quyền truy cập
                 const hasAccess = await checkChatAccess(senderId, chatId);
                 if (!hasAccess) {
@@ -166,16 +217,14 @@ const socketController = (io) => {
                     return;
                 }
 
-                // const messageId = uuidv4();
                 const timestamp = new Date();
 
-                // Lưu tin nhắn vào database
+                // Lưu tin nhắn vào database và lấy chat updated
                 const chat = await Chat.findByIdAndUpdate(
                     chatId,
                     {
                         $push: {
                             messages: {
-                                // _id: messageId,
                                 senderId,
                                 message,
                                 timestamp,
@@ -192,17 +241,26 @@ const socketController = (io) => {
                     return;
                 }
 
-                // Phát tin nhắn đến room chat
+                // Lấy message vừa được tạo (message cuối cùng với MongoDB _id)
+                const newMessage = chat.messages[chat.messages.length - 1];
+
+                console.log(`📤 [Socket] Broadcasting message to chat_${chatId}:`, {
+                    messageId: newMessage._id.toString(),
+                    senderId,
+                    message: message.substring(0, 50) + '...'
+                });
+
+                // Phát tin nhắn đến room chat với đầy đủ thông tin
                 io.to(`chat_${chatId}`).emit("receive_message", {
                     chatId,
-                    // messageId,
+                    messageId: newMessage._id.toString(), // ✅ MongoDB ObjectId as string
                     senderId,
                     message,
                     timestamp,
                     isRead: false
                 });
 
-                console.log(`Message sent in chat ${chatId} by ${senderId}`);
+                console.log(`✅ Message sent successfully in chat ${chatId} by ${senderId}`);
 
             } catch (error) {
                 console.error("Error sending message:", error);
@@ -213,6 +271,8 @@ const socketController = (io) => {
         // Đánh dấu tin nhắn đã đọc
         socket.on("mark_as_read", async ({ chatId, userId, messageIds }) => {
             try {
+                console.log(`👀 [Socket] Marking messages as read in chat ${chatId} by ${userId}`);
+
                 // Cập nhật trạng thái đã đọc trong database
                 const chat = await Chat.findById(chatId);
                 if (!chat) {
@@ -225,26 +285,45 @@ const socketController = (io) => {
                     if (messageIds.includes(msg._id.toString()) &&
                         msg.senderId.toString() !== userId) {
                         updated = true;
-                        return { ...msg, isRead: true };
+                        return { ...msg.toObject(), isRead: true };
                     }
                     return msg;
                 });
 
                 if (updated) {
                     await chat.save();
-                }
 
-                // Thông báo cho những người khác trong cuộc trò chuyện
-                socket.to(`chat_${chatId}`).emit("messages_read", {
-                    chatId,
-                    messageIds,
-                    readBy: userId
-                });
+                    // Thông báo cho những người khác trong cuộc trò chuyện
+                    socket.to(`chat_${chatId}`).emit("messages_read", {
+                        chatId,
+                        messageIds,
+                        readBy: userId
+                    });
+
+                    console.log(`✅ Messages marked as read in chat ${chatId}`);
+                }
 
             } catch (error) {
                 console.error("Error marking messages as read:", error);
                 socket.emit("read_error", "Failed to mark messages as read");
             }
+        });
+
+        // Typing indicators
+        socket.on("typing_start", ({ chatId, userId }) => {
+            socket.to(`chat_${chatId}`).emit("user_typing", {
+                chatId,
+                userId,
+                isTyping: true
+            });
+        });
+
+        socket.on("typing_stop", ({ chatId, userId }) => {
+            socket.to(`chat_${chatId}`).emit("user_typing", {
+                chatId,
+                userId,
+                isTyping: false
+            });
         });
 
         // Khi người dùng ngắt kết nối
@@ -263,11 +342,16 @@ const socketController = (io) => {
 
             if (disconnectedUserId) {
                 // Thông báo cho các người dùng khác về việc ngắt kết nối
-                io.emit("user_disconnected", { userId: disconnectedUserId });
+                socket.broadcast.emit("user_disconnected", { userId: disconnectedUserId });
                 console.log(`🔌 User ${disconnectedUserId} disconnected`);
             }
 
             console.log("A user disconnected: ", socket.id);
+        });
+
+        // Error handling
+        socket.on("error", (error) => {
+            console.error("Socket error for user", socket.userId, ":", error);
         });
     });
 
@@ -279,6 +363,7 @@ const socketController = (io) => {
 // Chức năng gửi thông báo cho một vai trò cụ thể
 export const notifyRole = (role, event, data) => {
     if (ioInstance) {
+        console.log(`🔔 [Server] Notifying role ${role} with event: ${event}`);
         ioInstance.to(`role_${role}`).emit(event, data);
     }
 };
@@ -286,7 +371,7 @@ export const notifyRole = (role, event, data) => {
 // Chức năng gửi thông báo đến một người dùng cụ thể
 export const notifyUser = (userId, event, data) => {
     if (ioInstance) {
-        console.log(`🔔 [Server emit] Event "${event}" to user ${userId}`, data);
+        console.log(`🔔 [Server] Notifying user ${userId} with event: ${event}`, data);
         ioInstance.to(userId).emit(event, data);
     }
 };
@@ -306,6 +391,16 @@ export const getOnlineUsersByRole = (role) => {
 // Kiểm tra người dùng có online không
 export const isUserOnline = (userId) => {
     return userSocketMap.has(userId);
+};
+
+// Get all connected users
+export const getConnectedUsers = () => {
+    return Array.from(userSocketMap.keys());
+};
+
+// Get socket ID by user ID
+export const getSocketIdByUserId = (userId) => {
+    return userSocketMap.get(userId);
 };
 
 console.log("✅ WebSocket server đang chạy!");

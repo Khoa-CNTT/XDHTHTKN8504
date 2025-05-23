@@ -143,7 +143,7 @@ const bookingController = {
             if (targetRole === "nurse" || targetRole === "doctor") {
                 io.to(`staff_${targetRole}`).emit("newBookingSignal", populatedBooking);
             }
-
+            
             io.to("staff_admin").emit("newBookingCreated", populatedBooking);
 
             return res.status(201).json({
@@ -152,7 +152,6 @@ const bookingController = {
                 wallet,
                 payment: newPayment,
             });
-
         } catch (error) {
             console.error("Lỗi khi tạo booking:", error);
             return res.status(500).json({
