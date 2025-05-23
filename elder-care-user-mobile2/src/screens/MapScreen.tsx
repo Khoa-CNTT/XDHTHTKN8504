@@ -127,7 +127,7 @@ const MapScreen: React.FC = () => {
             onStartChat={() =>
               handleStartChat({
                 targetUserId: nearestSchedule.staffId,
-                chatType: "doctor-family",
+                chatType: "staff-family",
                 title: nearestSchedule.serviceName,
               })
             }

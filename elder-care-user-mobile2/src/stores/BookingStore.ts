@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { Booking } from "../types/Booking";
 import { BookingStatus } from "../types/BookingStatus";
 import { getBookings } from "../api/BookingService";
+import { log } from "../utils/logger";
 
 interface BookingState {
     bookings: Booking[];
@@ -29,8 +30,11 @@ export const useBookingStore = create<BookingState>((set, get) => ({
 
     try {
       const bookings = await getBookings();
+      bookings.map((s) =>
+        log("avartar: ", s.avartar)
+      ) 
       set({ bookings, loading: false });
-      get().filterByStatus(get().selectedStatus); // Lọc ngay sau khi fetch
+      get().filterByStatus(get().selectedStatus); 
     } catch (err: any) {
       set({
         error: err?.message || "Lỗi khi tải danh sách lịch đặt.",

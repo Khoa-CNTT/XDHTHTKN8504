@@ -25,7 +25,7 @@ export type RootStackParamList = {
   ProfileList: undefined;
   EditCareRecipient: { profileId: string };
   WorkScreen: undefined;
-  ServiceScreen: undefined;
+  ServiceScreen: { serviceId: string };
   Seach: undefined;
 
   Chat: {

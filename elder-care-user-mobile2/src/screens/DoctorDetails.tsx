@@ -7,13 +7,14 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { getReviewsByStaffId } from "../api/ReviewService";
-import { getStaffDetail } from "../api/StaffAPI"; // Import your StaffService
+import { getStaffDetail } from "../api/StaffAPI";
 import { Review } from "../types/Review";
-import { Staff } from "../types/Staff"; // Import Staff type if you have one
+import { Staff } from "../types/Staff";
 import { log } from "../utils/logger";
 
 const DoctorDetails: React.FC = () => {
@@ -21,19 +22,16 @@ const DoctorDetails: React.FC = () => {
   const navigation = useNavigation();
   const { participantId } = route.params as { participantId: string };
   const [isLoading, setIsLoading] = useState(true);
-
-
- 
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [staffDetail, setStaffDetail] = useState<Staff>(null)
+  const [staffDetail, setStaffDetail] = useState<Staff>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setIsLoading(true); // Bắt đầu loading
+        setIsLoading(true);
         if (participantId) {
           const staffDetail = await getStaffDetail(participantId);
-          log(staffDetail)
+          log(staffDetail);
           setStaffDetail(staffDetail);
 
           const fetchedReviews = await getReviewsByStaffId(participantId);
@@ -43,37 +41,48 @@ const DoctorDetails: React.FC = () => {
         console.error("Lỗi khi tải dữ liệu:", error);
         Alert.alert("Lỗi", "Không thể tải thông tin. Vui lòng thử lại.");
       } finally {
-        setIsLoading(false); // Kết thúc loading
+        setIsLoading(false);
       }
     };
 
     fetchData();
   }, [participantId]);
-  
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#28a745" />
         <Text style={styles.loadingText}>Đang tải dữ liệu...</Text>
       </View>
     );
   }
 
   const handleGoBack = () => navigation.goBack();
- 
+
+  const averageRating = reviews.length
+    ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
+    : 0;
 
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={{ paddingBottom: 32 }}
+      showsVerticalScrollIndicator={false}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleGoBack} activeOpacity={0.7}>
-          <Ionicons name="arrow-back" size={26} color="#2E3A59" />
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={33} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Thông tin nhân viên y tế</Text>
-        <View style={{ width: 26 }} />
+        <Text style={styles.headerTitle}>Thông tin nhân viên</Text>
+        <TouchableOpacity activeOpacity={0.7}>
+          <Ionicons name="person-circle-outline" size={33} color="#000" />
+        </TouchableOpacity>
       </View>
 
+      {/* Profile */}
       <View style={styles.doctorProfile}>
         <Image
           source={
@@ -83,27 +92,55 @@ const DoctorDetails: React.FC = () => {
           }
           style={styles.doctorImage}
         />
-        <Text
-          style={styles.doctorName}
-        >{`${staffDetail.firstName} ${staffDetail.lastName}`}</Text>
-        <Text style={styles.specialty}>{staffDetail.specialization}</Text>
-        <Text style={styles.clinic}>{staffDetail.email}</Text>
+        <Text style={styles.doctorName}>
+          {`${staffDetail.firstName} ${staffDetail.lastName}`}
+        </Text>
+        <Text style={styles.specialty}>{staffDetail.specialization? staffDetail.specialization : "Nhân viên y tế"}</Text>
+        <Text style={styles.email}>{staffDetail.email}</Text>
       </View>
 
+      {/* Stats */}
       <View style={styles.statsContainer}>
-        
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{"50+"}</Text>
+          <Text style={styles.statLabel}>Khách hàng</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{`${staffDetail.experience}+`}</Text>
+          <Text style={styles.statLabel}>Kinh nghiệm</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{reviews.length}</Text>
+          <Text style={styles.statLabel}>Đánh giá</Text>
+        </View>
+
+        <View style={styles.statItem}>
+          <View style={{ flex: 1, flexDirection: "row" }}>
+            <Text style={styles.statValue}>{averageRating}</Text>
+            <Ionicons
+              size={16}
+              color="#11fc09"
+              style={{ marginHorizontal: 2 }}
+            />
+          </View>
+          <Text style={styles.statLabel}>Trung bình</Text>
+        </View>
       </View>
 
+      {/* Introduction */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Giới thiệu</Text>
         <Text style={styles.aboutText}>
-          {`${staffDetail.firstName} ${staffDetail.lastName}`} là một{" "}
-          {staffDetail.userId.role === "doctor" ? "bác sĩ" : "y tá"} tận tâm, giàu
-          kinh nghiệm làm việc tại phòng khám.
-          <Text style={styles.viewMore}> xem thêm</Text>
+          {`${staffDetail.firstName} ${staffDetail.lastName}`} là{" "}
+          {staffDetail.userId.role === "doctor" ? "bác sĩ" : "y tá"} rất tận tâm
+          và luôn đặt sự chăm sóc tận tình lên hàng đầu. Với nhiều năm kinh
+          nghiệm làm việc tại phòng khám,{" "}
+          {staffDetail.userId.role === "doctor" ? "bác sĩ" : "y tá"} sẽ đồng
+          hành cùng bạn để mang lại sức khỏe tốt nhất.
         </Text>
       </View>
 
+      {/* Reviews */}
       <View style={styles.section}>
         <View style={styles.reviewHeader}>
           <Text style={styles.sectionTitle}>Đánh giá</Text>
@@ -120,15 +157,17 @@ const DoctorDetails: React.FC = () => {
             <View key={review._id} style={styles.reviewItem}>
               <Image
                 source={
-                  review.staffId
-                    ? { uri: review.staffId }
-                    : require("../asset/img/hinh1.png")
+                  review.reviewer?.avartar
+                    ? { uri: review.reviewer?.avartar }
+                    : require("../asset/img/use.jpg")
                 }
                 style={styles.reviewerImage}
               />
               <View style={styles.reviewContent}>
                 <Text style={styles.reviewerName}>
-                  {review.staffId || "Người dùng ẩn danh"}
+                  {review.reviewer
+                    ? `${review.reviewer.firstName} ${review.reviewer.lastName}`
+                    : "Người dùng ẩn danh"}
                 </Text>
                 <View style={styles.ratingStars}>
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -136,7 +175,7 @@ const DoctorDetails: React.FC = () => {
                       key={star}
                       name={star <= review.rating ? "star" : "star-outline"}
                       size={18}
-                      color="#FFD700"
+                      color="#ffd700"
                       style={styles.star}
                     />
                   ))}
@@ -150,12 +189,13 @@ const DoctorDetails: React.FC = () => {
         )}
       </View>
 
+      {/* Back button */}
       <TouchableOpacity
-        style={styles.bookButton}
+        style={styles.backButton}
         onPress={handleGoBack}
         activeOpacity={0.8}
       >
-        <Text style={styles.bookButtonText}>Quay lại</Text>
+        <Text style={styles.backButtonText}>Quay lại</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -164,7 +204,7 @@ const DoctorDetails: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#F0F5F1", // nền nhẹ nhàng xanh nhạt
   },
   header: {
     flexDirection: "row",
@@ -172,99 +212,99 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingTop: 50,
-    paddingBottom: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
     backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
+    marginBottom: 20,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: "700",
-    color: "#2E3A59",
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 10,
+    color: "#000",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#F0F5F1",
   },
   loadingText: {
     fontSize: 18,
-    color: "#6B7280",
+    color: "#28a745",
+    marginTop: 12,
   },
   doctorProfile: {
     alignItems: "center",
     paddingVertical: 30,
     backgroundColor: "#fff",
     marginHorizontal: 16,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
+    borderRadius: 20,
+    shadowColor: "#28a745",
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 5,
+    shadowRadius: 15,
+    elevation: 6,
   },
   doctorImage: {
-    width: 110,
-    height: 110,
+    width: 120,
+    height: 120,
     borderRadius: 60,
     marginBottom: 20,
     borderWidth: 3,
-    borderColor: "#2E3A59",
+    borderColor: "#28a745",
   },
   doctorName: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "700",
     color: "#2E3A59",
     marginBottom: 6,
   },
   specialty: {
     fontSize: 16,
-    color: "#6B7280",
+    color: "#4C5C4C",
+    fontStyle: "italic",
     marginBottom: 4,
   },
-  clinic: {
+  email: {
     fontSize: 15,
     color: "#6B7280",
-  },
-  participantIdText: {
-    fontSize: 14,
-    color: "#888",
-    marginTop: 8,
   },
   statsContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "#EFF3F6",
+    backgroundColor: "#DFF2DF",
     marginHorizontal: 20,
     paddingVertical: 24,
     borderRadius: 16,
     marginTop: 24,
     marginBottom: 32,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowColor: "#28a745",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
   },
   statItem: {
     alignItems: "center",
     flex: 1,
   },
   statValue: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "700",
-    color: "#2E3A59",
+    color: "#28a745",
     marginBottom: 6,
   },
   statLabel: {
     fontSize: 14,
-    color: "#9CA3AF",
+    color: "#52734D",
+  },
+  ratingStars: {
+    flexDirection: "row",
+    marginBottom: 6,
+  
   },
   section: {
     paddingHorizontal: 20,
@@ -273,17 +313,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#2E3A59",
+    color: "#28a745",
     marginBottom: 16,
   },
   aboutText: {
-    fontSize: 15,
-    lineHeight: 24,
-    color: "#6B7280",
-  },
-  viewMore: {
-    color: "#2563EB",
-    fontWeight: "600",
+    fontSize: 16,
+    lineHeight: 26,
+    color: "#4C5C4C",
   },
   reviewHeader: {
     flexDirection: "row",
@@ -293,70 +329,69 @@ const styles = StyleSheet.create({
   },
   seeAll: {
     fontSize: 15,
-    color: "#2563EB",
+    color: "#28a745",
     fontWeight: "600",
   },
   reviewItem: {
     flexDirection: "row",
     backgroundColor: "#fff",
     padding: 16,
-    borderRadius: 14,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    elevation: 2,
-    marginBottom: 12,
+    borderRadius: 16,
+    shadowColor: "#28a745",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 15,
+    elevation: 4,
+    marginBottom: 14,
   },
   reviewerImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 16,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    marginRight: 18,
+    borderWidth: 1,
+    borderColor: "#28a745",
   },
   reviewContent: {
     flex: 1,
   },
   reviewerName: {
-    fontSize: 17,
-    fontWeight: "600",
+    fontWeight: "700",
+    fontSize: 16,
     color: "#2E3A59",
     marginBottom: 6,
   },
-  ratingStars: {
-    flexDirection: "row",
-    marginBottom: 10,
-  },
-  star: {
-    marginRight: 6,
-  },
   reviewText: {
     fontSize: 15,
-    color: "#6B7280",
-    lineHeight: 22,
+    color: "#4C5C4C",
+    marginTop: 6,
+  },
+  star: {
+    marginRight: 4,
   },
   noReviewsText: {
-    textAlign: "center",
     fontSize: 16,
-    color: "#6B7280",
-    marginTop: 20,
+    fontStyle: "italic",
+    color: "#7E9E79",
+    textAlign: "center",
+    paddingVertical: 24,
   },
-  bookButton: {
+  backButton: {
     backgroundColor: "#28a745",
-    marginHorizontal: 20,
-    paddingVertical: 18,
-    borderRadius: 14,
+    marginHorizontal: 60,
+    paddingVertical: 14,
+    borderRadius: 30,
     alignItems: "center",
-    shadowColor: "#2563EB",
-    shadowOffset: { width: 0, height: 10 },
+    shadowColor: "#28a745",
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
-    shadowRadius: 20,
+    shadowRadius: 15,
     elevation: 5,
   },
-  bookButtonText: {
+  backButtonText: {
     color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
+    fontSize: 17,
+    fontWeight: "600",
   },
 });
 

@@ -7,11 +7,11 @@ import moment2 from "moment-timezone";
 import Service from "../models/Service.js";
 import Doctor from "../models/Doctor.js";
 import Nurse from "../models/Nurse.js";
-import User from "../models/User.js";
 import { getIO } from "../config/socketConfig.js";
 import dayjs from "dayjs";
 
 const updateBookingStatus = async (bookingId) => {
+  const io = getIO();
   try {
     if (!bookingId) {
       console.warn("⚠️ bookingId không tồn tại");
@@ -31,8 +31,26 @@ const updateBookingStatus = async (bookingId) => {
         bookingId,
         { status: "completed" },
         { new: true }
-      );
+      ).populate("createdBy participants.userId"); // Đảm bảo populate đúng
+
       console.log("✅ Booking đã cập nhật:", updatedBooking);
+
+      // Phát tới người tạo booking
+      io.to(updatedBooking.createdBy._id.toString()).emit("completedBooking", {
+        message: "Hoàn thành đơn đặt lịch!",
+        bookingId: updatedBooking._id,
+      });
+
+      // Phát tới các participant nếu có
+      if (updatedBooking.participants?.length > 0) {
+        updatedBooking.participants.forEach((participant) => {
+          io.to(participant.userId._id.toString()).emit("completedBooking", {
+            message: `Booking #${updatedBooking._id} đã hoàn thành.`,
+            bookingId: updatedBooking._id,
+          });
+        });
+      }
+
       return updatedBooking;
     }
 

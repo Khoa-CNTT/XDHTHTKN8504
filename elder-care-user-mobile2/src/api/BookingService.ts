@@ -82,6 +82,7 @@ export const getBookings = async (): Promise<Booking[]> => {
         },
       }
     );
+    log(response.data.message)
     return response.data.data;
   } catch (error) {
     log("Error fetching schedules:", error);
