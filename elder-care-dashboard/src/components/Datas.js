@@ -1134,15 +1134,15 @@ export const doctorTab = [
     title: "Invoices",
     icon: RiFileList3Line,
   },
-  // {
-  //   id: 6,
-  //   title: "Access Control",
-  //   icon: TbLockAccess,
-  // },
   {
-    id: 7,
+    id: 6,
     title: "Change Password",
     icon: RiLockPasswordLine,
+  },
+   {
+    id: 7,
+    title: "Review",
+    icon: TbLockAccess,
   },
 ];
 

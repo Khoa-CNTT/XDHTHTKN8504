@@ -2,6 +2,8 @@ import Review from "../models/Review.js";
 import Schedule from "../models/Schedule.js";
 import Booking from "../models/Booking.js";
 import User from "../models/User.js";
+import Doctor from '../models/Doctor.js'
+import Nurse from '../models/Nurse.js'
 import mongoose from "mongoose";
 
 const reviewController = {
@@ -31,7 +33,7 @@ const reviewController = {
 
             const profileId = booking.profileId;
             console.log(profileId);
-            
+
 
             const existingReview = await Review.findOne({
                 scheduleId,
@@ -86,7 +88,39 @@ const reviewController = {
                 error: error.message,
             });
         }
-    }
+    },
+
+    getReviewForStaffId: async (req, res) => {
+        try {
+            const { staffId } = req.params;
+
+            // Tìm doctor hoặc nurse theo staffId
+            let staff = await Doctor.findById(staffId);
+            if (!staff) {
+                staff = await Nurse.findById(staffId);
+            }
+            if (!staff) {
+                return res.status(404).json({ message: "Không tìm thấy nhân viên với id này." });
+            }
+
+            // Lấy userId của staff
+            const userId = staff.userId;
+
+            // Lấy các review có staffId là userId của staff
+            const reviews = await Review.find({ staffId: userId }).populate('reviewer');
+
+            return res.status(200).json({
+                message: "Lấy danh sách đánh giá thành công!",
+                reviews
+            });
+        } catch (error) {
+            console.error('Lỗi khi lấy đánh giá cho staff:', error);
+            return res.status(500).json({
+                message: "Lỗi khi lấy đánh giá cho staff",
+                error: error.message,
+            });
+        }
+    },
 };
 
 export default reviewController;
