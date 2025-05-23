@@ -78,11 +78,11 @@ export const MenuDatas = [
     icon: RiUserHeartLine,
   },
 
-  {
-    title: "Appointments",
-    path: "/appointments",
-    icon: FaRegCalendarAlt,
-  },
+  // {
+  //   title: "Appointments",
+  //   path: "/appointments",
+  //   icon: FaRegCalendarAlt,
+  // },
   {
     title: "Payments",
     path: "/payments",
@@ -98,11 +98,11 @@ export const MenuDatas = [
     path: "/services",
     icon: MdOutlineInventory2,
   },
-  {
-    title: "Review",
-    path: "/review",
-    icon: MdOutlineInventory2,
-  },
+  // {
+  //   title: "Review",
+  //   path: "/review",
+  //   icon: MdOutlineInventory2,
+  // },
   // {
   //   title: "Medicine",
   //   path: "/medicine",
