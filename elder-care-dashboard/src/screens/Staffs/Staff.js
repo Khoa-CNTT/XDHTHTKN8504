@@ -171,7 +171,7 @@ function Staffs() {
         <BiPlus className="text-2xl" />
       </button>
 
-      <h1 className="text-xl font-semibold">Nhân viên</h1>
+      <h1 className="text-xl font-semibold">Staffs</h1>
       <div
         data-aos="fade-up"
         data-aos-duration="1000"
