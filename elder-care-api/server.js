@@ -26,10 +26,24 @@ import ChatRouter from "./src/routes/chatRoutes.js"
 import InvoiceRouter from "./src/routes/invoiceRoutes.js"
 import './src/jobs/bookingMonitor.js';  
 import http from "http";
+import agenda from "./src/utils/agenda.js"
+import autoCancelBooking from "./src/jobs/BookingCanceled.js";
+import remindBookingPending from "./src/jobs/remindBookingPending.js";
+
+
 
 const app = express();
 const server = http.createServer(app);
 
+
+
+autoCancelBooking(agenda);
+remindBookingPending(agenda);
+
+(async () => {
+  await agenda.start();
+  console.log("✅ Agenda sẵn sàng");
+})();
 // Cấu hình socket.io
 configureSocket(server);
 
