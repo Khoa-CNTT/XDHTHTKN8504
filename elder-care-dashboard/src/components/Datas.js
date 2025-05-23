@@ -108,11 +108,11 @@ export const MenuDatas = [
   //   path: "/medicine",
   //   icon: RiMedicineBottleLine,
   // },
-  // {
-  //   title: "Campaigns",
-  //   path: "/campaigns",
-  //   icon: MdOutlineCampaign,
-  // },
+  {
+    title: "Packages",
+    path: "/packages",
+    icon: MdOutlineCampaign,
+  },
   {
     title: "Chat",
     path: "/chat",

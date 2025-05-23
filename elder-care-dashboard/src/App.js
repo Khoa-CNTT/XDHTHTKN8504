@@ -38,6 +38,8 @@ import Booking from "./screens/Booking";
 import PreviewBooking from "./screens/previewBooking";
 import RequireAuth from "./components/RequireAuth";
 import Review from "./screens/Review";
+import Packages from "./screens/Packages";
+
 function App() {
   Aos.init();
 
@@ -98,6 +100,7 @@ function App() {
                   <Route path="/review" element={<Review />} />
                   <Route path="/chat" element={<Chat />} />
                   <Route path="/services" element={<Services />} />
+                  <Route path="/packages" element={<Packages />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>

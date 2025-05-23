@@ -10,6 +10,7 @@ import dashboardReducer from '../store/dashboardSlice.js'
 import invoiceReducer from "../store/invoiceSlice.js"
 import chatReducer from "../store/chatSlice.js"
 import reviewReducer from "../store/reviewSlice.js"
+import packageReducer from "../store/packageSlice.js"
 
 export const store = configureStore({
     reducer: {
@@ -24,5 +25,6 @@ export const store = configureStore({
         invoice: invoiceReducer,
         chat: chatReducer,
         review: reviewReducer,
+        package: packageReducer,
     }
 })

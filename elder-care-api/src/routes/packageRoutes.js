@@ -9,6 +9,22 @@ router.post('/create', packageController.createPackage);
 router.get('/get-package/:serviceId', packageController.getPackagesForService)
 
 router.get('/get-all-package', packageController.getAllPackages)
+
+router.get(
+    '/get-all',
+    packageController.getAllPackagesByAdmin
+)
+
+router.put(
+    '/:id',
+    packageController.updatePackage
+)
+
+router.delete(
+    '/:id',
+    packageController.deletePackage
+)
+
 router.delete('/delete-all', packageController.deleteAllPackages);
 
 export default router;

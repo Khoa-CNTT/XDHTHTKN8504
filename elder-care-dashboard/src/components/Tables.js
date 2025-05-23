@@ -65,7 +65,7 @@ export function Transactiontable({ data, action, functions, page = 1, limit = 10
             : "Null";
           const status = item.status;
           const totalAmount = item.amount
-            ? `${item.amount.toLocaleString("vi")} VND`
+            ? `${item.amount.toLocaleString("vi")}`
             : "Null";
 
           return (
@@ -97,14 +97,14 @@ export function Transactiontable({ data, action, functions, page = 1, limit = 10
                     ? "bg-subMain text-subMain"
                     : status === "pending"
                       ? "bg-orange-500 text-orange-500"
-                      : status === "fail" && "bg-red-600 text-red-600"
+                      : status === "failed" && "bg-red-600 text-red-600"
                     } bg-opacity-10 text-xs rounded-xl`}
                 >
                   {status === "success"
                     ? "Đã thanh toán"
                     : status === "pending"
                       ? "Đang chờ xử lý"
-                      : status === "fail" && "Đã hủy"}
+                      : status === "failed" && "Đã hủy"}
                 </span>
               </td>
               <td className={`${tdclass} font-semibold`}>{totalAmount}</td>
@@ -371,6 +371,89 @@ export function ServiceTable({ data, onEdit, onDelete }) {
     </table>
   );
 }
+
+export function PackageTable({ data, onEdit, onDelete }) {
+  const thclass = "text-left text-sm py-3 px-2 text-main font-semibold";
+  const tdclass = "text-sm py-4 px-2 text-left";
+
+  return (
+    <table className="table-auto w-full">
+      <thead className="bg-dry rounded-md overflow-hidden">
+        <tr>
+          <th className={thclass}>Service</th>
+          <th className={thclass}>Package Name</th>
+          <th className={thclass}>Creation Date</th>
+          <th className={thclass}>
+            Price <span className="text-xs font-light">(VNĐ)</span>
+          </th>
+          <th className={thclass}>Status</th>
+          <th className={thclass}>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((item) => {
+          const serviceName = item?.serviceId?.name || "Không rõ";
+          const packageName = item?.name || "Không rõ";
+          const serviceDate = item?.createdAt
+            ? new Date(item.createdAt).toLocaleDateString("vi-VN")
+            : "Không rõ";
+          const servicePrice = item.price
+            ? `${item.price.toLocaleString("vi")} VND`
+            : "Null";
+          const isActive = item?.serviceId?.isActive;
+          const serviceStatus = isActive ? "Đã duyệt" : "Chưa duyệt";
+          const statusColor = isActive ? "text-green-600" : "text-red-600";
+          const imageUrl = item?.serviceId?.imgUrl || "https://placehold.co/400";
+
+          return (
+            <tr
+              key={item._id}
+              className="border-b border-border hover:bg-greyed transitions"
+            >
+              <td className={tdclass}>
+                <div className="flex gap-4 items-center">
+                  <span className="w-12">
+                    <img
+                      src={imageUrl}
+                      alt={serviceName}
+                      className="w-full h-12 rounded-full object-cover border border-border"
+                    />
+                  </span>
+                  <h4 className="text-sm font-medium">{serviceName}</h4>
+                </div>
+              </td>
+              <td className={tdclass}>{packageName}</td>
+              <td className={tdclass}>{serviceDate}</td>
+              <td className={`${tdclass} font-semibold`}>{servicePrice}</td>
+              <td className={tdclass}>
+                <span className={`text-xs font-medium ${statusColor}`}>
+                  {serviceStatus}
+                </span>
+              </td>
+              <td className={tdclass}>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onEdit(item)}
+                    className="px-3 py-1 bg-blue-100 text-blue-600 rounded-md text-sm hover:bg-blue-200 transition"
+                  >
+                    Update
+                  </button>
+                  <button
+                    onClick={() => onDelete(item._id)}
+                    className="px-3 py-1 bg-red-100 text-red-600 rounded-md text-sm hover:bg-red-200 transition"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
 
 // patient table
 export function PatientTable({ data, functions, used, page = 1, limit = 10 }) {

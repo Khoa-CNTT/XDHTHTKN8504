@@ -73,16 +73,69 @@ const packageController = {
             return res.status(500).json({ success: false, message: "Server error" });
         }
     },
+
+    getAllPackagesByAdmin: async (req, res) => {
+        try {
+            const packages = await Packages.find({}).populate('serviceId').select("-__v");
+
+            return res.status(200).json({
+                success: true,
+                packages,
+            })
+        } catch (error) {
+            console.error("Error in getAllPackages:", error);
+            return res.status(500).json({ success: false, message: "Server error" });
+        }
+    },
+
+    updatePackage: async (req, res) => {
+        try {
+            const packageId = req.params.id;
+            const updateData = req.body;
+
+            const updatedPackage = await Packages.findByIdAndUpdate(packageId, updateData, {
+                new: true,
+            });
+
+            if (!updatedPackage) {
+                return res.status(404).json({ message: 'Package not found' });
+            }
+
+            res.status(200).json({
+                message: 'Package updated successfully',
+                data: updatedPackage,
+            });
+        } catch (error) {
+            res.status(500).json({ message: 'Server error', error: error.message });
+        }
+    },
+
+    deletePackage: async (req, res) => {
+        try {
+            const packageId = req.params.id;
+
+            const deleted = await Packages.findByIdAndDelete(packageId);
+
+            if (!deleted) {
+                return res.status(404).json({ message: 'Package not found' });
+            }
+
+            res.status(200).json({ message: 'Package deleted successfully' });
+        } catch (error) {
+            res.status(500).json({ message: 'Server error', error: error.message });
+        }
+    },
+
     deleteAllPackages: async (req, res) => {
         try {
-          const result = await Packages.deleteMany({});
-          res.status(200).json({
-            message: "All packages have been deleted",
-            deletedCount: result.deletedCount, // Trả về số lượng package đã bị xóa
-          });
+            const result = await Packages.deleteMany({});
+            res.status(200).json({
+                message: "All packages have been deleted",
+                deletedCount: result.deletedCount, // Trả về số lượng package đã bị xóa
+            });
         } catch (error) {
-          console.error("Error deleting packages:", error);
-          res.status(500).json({ message: "Failed to delete packages", error });
+            console.error("Error deleting packages:", error);
+            res.status(500).json({ message: "Failed to delete packages", error });
         }
     }
 }
