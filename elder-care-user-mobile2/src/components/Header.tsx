@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+
 import { RootStackParamList } from '../navigation/navigation';
 import { log } from '../utils/logger';
 import { createNewChat } from '../api/chatService';
@@ -15,6 +16,7 @@ type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 const Header: React.FC = ({ }) => {
   const navigation = useNavigation<NavigationProp>();
+
   const notificationCount = 0;
 
   const handleNotificationPress = () => {
