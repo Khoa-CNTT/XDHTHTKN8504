@@ -1,10 +1,7 @@
 export type ChatType =
-  | "admin-doctor"
-  | "admin-nurse"
-  | "admin-family"
-  | "doctor-nurse"
-  | "doctor-family"
-  | "nurse-family";
+| "admin-staff"
+| "admin-family"
+| "staff-family";
 
 export interface ChatMessage {
   _id: string;

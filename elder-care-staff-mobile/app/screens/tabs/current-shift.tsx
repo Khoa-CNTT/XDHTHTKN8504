@@ -255,7 +255,7 @@ const ShiftWorkScreen = () => {
             onPress={() => {
               handleStartChat({
                 targetUserId: nearestSchedule.customerId,
-                chatType: "doctor-family",
+                chatType: "staff-family",
                 title: nearestSchedule.serviceName
               })
             }}

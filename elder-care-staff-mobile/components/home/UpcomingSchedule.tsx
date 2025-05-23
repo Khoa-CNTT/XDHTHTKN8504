@@ -1,21 +1,16 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { View, Text, Image, StyleSheet, ActivityIndicator } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { isToday } from "date-fns";
 import useScheduleStore from "../../stores/scheduleStore";
 import { formatTime } from "@/utils/dateHelper";
 
 const UpcomingSchedule = () => {
-  const { nearestSchedule, getNearestSchedule, loading, error } =
-    useScheduleStore();
-
-  useEffect(() => {
-    getNearestSchedule();
-  }, []);
+  const { nearestSchedule, loading } = useScheduleStore();
 
   if (loading) {
     return (
       <View style={styles.upcomingRideContainer}>
-        <Text style={styles.upcomingRideTitle}>Đang tải lịch sắp tới...</Text>
         <ActivityIndicator size="small" color="#28a745" />
       </View>
     );
@@ -42,11 +37,17 @@ const UpcomingSchedule = () => {
   const { avatar, serviceName, customerAddress, phoneNumber, schedule } =
     nearestSchedule;
   const timeSlotText = schedule.timeSlots?.[0]
-    ? `${formatTime(schedule.timeSlots[0].start, 'time')} - ${
-        formatTime(schedule.timeSlots[0].end, 'time')
-      }`
+    ? `${formatTime(schedule.timeSlots[0].start, "time")} - ${formatTime(
+        schedule.timeSlots[0].end,
+        "datetime"
+      )}`
     : "Chưa rõ thời gian";
-    
+
+  const isTodaySchedule = schedule?.timeSlots?.[0]
+    ? isToday(new Date(schedule.timeSlots[0].start))
+    : false;
+
+  const statusColor = isTodaySchedule ? "#28a745" : "#ffc107"; // xanh lá hoặc vàng
 
   return (
     <View style={styles.upcomingRideContainer}>
@@ -61,8 +62,12 @@ const UpcomingSchedule = () => {
             style={styles.riderAvatar}
           />
           <Text style={styles.riderName}>{schedule.patientName}</Text>
-          <View style={styles.rideIdContainer}>
-            <Text style={styles.rideId}>{schedule._id.slice(-4)}</Text>
+          <View
+            style={[styles.rideIdContainer, { backgroundColor: statusColor }]}
+          >  
+            <Text style={[styles.rideId, { color: "#ffffff" }]}>
+              {schedule._id.slice(-4)}
+            </Text>
           </View>
         </View>
 
@@ -95,12 +100,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginBottom: 15,
   },
-  upcomingRideTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 10,
-  },
   rideDetailsCard: {
     backgroundColor: "#fff",
     borderRadius: 10,
@@ -124,20 +123,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   rideIdContainer: {
-    backgroundColor: "#d4edda",
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 5,
     paddingHorizontal: 8,
     borderRadius: 5,
   },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 6,
+  },
   rideId: {
-    color: "#155724",
     fontWeight: "bold",
     fontSize: 14,
-  },
-  rideTime: {
-    fontSize: 14,
-    color: "#777",
-    marginBottom: 5,
   },
   addressContainer: {
     flexDirection: "row",
@@ -149,13 +149,6 @@ const styles = StyleSheet.create({
     color: "#555",
     fontSize: 14,
     flexShrink: 1,
-  },
-  emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 40,
-    backgroundColor: "#f9f9f9",
-    borderRadius: 10,
   },
   emptyText: {
     fontSize: 16,
