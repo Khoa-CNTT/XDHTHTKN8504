@@ -40,13 +40,13 @@ export function Transactiontable({ data, action, functions }) {
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
           <th className={thclass}>#</th>
-          <th className={thclass}>Khách hàng</th>
-          <th className={thclass}>Ngày</th>
-          <th className={thclass}>Trạng thái</th>
+          <th className={thclass}>Customers</th>
+          <th className={thclass}>Date</th>
+          <th className={thclass}>Status</th>
           <th className={thclass}>
             Số tiền <span className="text-xs font-light">(VND)</span>
           </th>
-          <th className={thclass}>Phương thức</th>
+          <th className={thclass}>Method</th>
           {action && <th className={thclass}>Thao tác</th>}
         </tr>
       </thead>
@@ -157,14 +157,14 @@ export function InvoiceTable({ data }) {
     <table className="table-auto w-full">
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
-          <th className={thclass}>Mã hóa đơn</th>
-          <th className={thclass}>khách hàng</th>
-          <th className={thclass}>Ngày tạo</th>
-          <th className={thclass}>Ngày đến hạn</th>
+          <th className={thclass}>Invoice Code</th>
+          <th className={thclass}>Customers</th>
+          <th className={thclass}>Creation Date</th>
+          <th className={thclass}>Due Date</th>
           <th className={thclass}>
-            Số tiền <span className="text-xs font-light">(VND)</span>
+            Amount <span className="text-xs font-light">(VND)</span>
           </th>
-          <th className={thclass}>Thao tác</th>
+          <th className={thclass}>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -174,8 +174,10 @@ export function InvoiceTable({ data }) {
           const firstName = item?.bookingId?.profileId?.firstName;
           const lastName = item?.bookingId?.profileId?.lastName;
           const phone = item?.bookingId?.profileId?.phone;
-          const createdDate = new Date(item?.createdAt).toLocaleDateString('vi-VN');
-          const dueDate = new Date(item?.dueDate).toLocaleDateString('vi-VN');
+          const createdDate = new Date(item?.createdAt).toLocaleDateString(
+            "vi-VN"
+          );
+          const dueDate = new Date(item?.dueDate).toLocaleDateString("vi-VN");
           const totalAmount = item?.totalAmount.toLocaleString("vi");
 
           return (
@@ -194,10 +196,10 @@ export function InvoiceTable({ data }) {
                     />
                   </span>
                   <div>
-                    <h4 className="text-sm font-medium">{firstName} {lastName}</h4>
-                    <p className="text-xs mt-1 text-textGray">
-                      {phone}
-                    </p>
+                    <h4 className="text-sm font-medium">
+                      {firstName} {lastName}
+                    </h4>
+                    <p className="text-xs mt-1 text-textGray">{phone}</p>
                   </div>
                 </div>
               </td>
@@ -212,7 +214,7 @@ export function InvoiceTable({ data }) {
                 </MenuSelect>
               </td>
             </tr>
-          )
+          );
         })}
       </tbody>
     </table>
@@ -294,13 +296,13 @@ export function ServiceTable({ data, onEdit, onDelete }) {
     <table className="table-auto w-full">
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
-          <th className={thclass}>Tên dịch vụ</th>
-          <th className={thclass}>Ngày tạo</th>
+          <th className={thclass}>Name Service</th>
+          <th className={thclass}>Creation Date</th>
           <th className={thclass}>
-            Giá <span className="text-xs font-light">(Tsh)</span>
+            Price <span className="text-xs font-light">(VNĐ)</span>
           </th>
-          <th className={thclass}>Trạng thái</th>
-          <th className={thclass}>Hành động</th>
+          <th className={thclass}>Status</th>
+          <th className={thclass}>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -377,16 +379,16 @@ export function PatientTable({ data, functions, used, page = 1, limit = 10 }) {
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
           <th className={thclasse}>#</th>
-          <th className={thclasse}>khách hàng</th>
-          <th className={thclasse}>Ngày Tạo</th>
-          <th className={thclasse}>Giới Tính</th>
+          <th className={thclasse}>Customers</th>
+          <th className={thclasse}>Creation Date</th>
+          <th className={thclasse}>Gender</th>
           {!used && (
             <>
-              <th className={thclasse}>Nhóm Máu</th>
-              <th className={thclasse}>Tuổi</th>
+              <th className={thclasse}>Blood Type</th>
+              <th className={thclasse}>Age</th>
             </>
           )}
-          <th className={thclasse}>Hành Động</th>
+          <th className={thclasse}>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -405,7 +407,6 @@ export function PatientTable({ data, functions, used, page = 1, limit = 10 }) {
           const gender = item?.profiles[0]?.sex === "Male" ? "Nam" : "Nữ";
           const bloodType = item?.profiles[0]?.healthInfo[0]?.typeBlood;
           // const bloodType = "";
-
 
           function calculateAge(birthDateString) {
             const today = new Date();
@@ -514,13 +515,13 @@ export function DoctorsTable({ data, functions, doctor, onEdit }) {
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
           <th className={thclass}>#</th>
-          <th className={thclass}>Họ và tên</th>
-          <th className={thclass}>Ngày Tạo</th>
-          <th className={thclass}>Điện Thoại</th>
-          <th className={thclass}>Chức Danh</th>
+          <th className={thclass}>Name</th>
+          <th className={thclass}>Creation Date</th>
+          <th className={thclass}>Phone</th>
+          <th className={thclass}>Job Title</th>
           <th className={thclass}>Email</th>
-          <th className={thclass}>Xem lương</th>
-          <th className={thclass}>Hành Động</th>
+          <th className={thclass}>View Salary</th>
+          <th className={thclass}>Status</th>
         </tr>
       </thead>
       <tbody>
@@ -608,7 +609,13 @@ export function DoctorsTable({ data, functions, doctor, onEdit }) {
     </table>
   );
 }
-export function BookingTable({ data, functions, doctor, page = 1, limit = 10 }) {
+export function BookingTable({
+  data,
+  functions,
+  doctor,
+  page = 1,
+  limit = 10,
+}) {
   const statusMap = {
     pending: "Chưa nhận",
     paid: "Đã thanh toán",
@@ -624,13 +631,13 @@ export function BookingTable({ data, functions, doctor, page = 1, limit = 10 }) 
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
           <th className={thclass}>#</th>
-          <th className={thclass}>Khách hàng</th>
-          <th className={thclass}>Người thực hiện</th>
-          <th className={thclass}>Ngày bắt đầu</th>
-          <th className={thclass}>Ngày kết thúc</th>
-          <th className={thclass}>Dịch vụ</th>
-          <th className={thclass}>Trạng thái</th>
-          <th className={thclass}>Hành Động</th>
+          <th className={thclass}>Customers</th>
+          <th className={thclass}>Staffs</th>
+          <th className={thclass}>Start Date</th>
+          <th className={thclass}>End Date</th>
+          <th className={thclass}>Service</th>
+          <th className={thclass}>Status</th>
+          <th className={thclass}>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -712,12 +719,12 @@ export function AppointmentTable({ data, functions, doctor }) {
     <table className="table-auto w-full">
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
-          <th className={thclass}>Ngày</th>
-          <th className={thclass}>Khách hàng</th>
-          <th className={thclass}>Trạng thái</th>
-          <th className={thclass}>Thời gian</th>
-          <th className={thclass}>Dịch vụ</th>
-          <th className={thclass}>Hành động</th>
+          <th className={thclass}>Date</th>
+          <th className={thclass}>Customers</th>
+          <th className={thclass}>Status</th>
+          <th className={thclass}>Time</th>
+          <th className={thclass}>Service</th>
+          {/* <th className={thclass}>Hành động</th> */}
         </tr>
       </thead>
       <tbody>
@@ -812,14 +819,14 @@ export function AppointmentTable({ data, functions, doctor }) {
                   {serviceName}
                 </p>
               </td>
-              <td className={tdclass}>
+              {/* <td className={tdclass}>
                 <button
                   onClick={() => functions.preview(item)}
                   className="text-sm flex-colo bg-white text-subMain border rounded-md w-10 h-10"
                 >
                   <FiEye />
                 </button>
-              </td>
+              </td> */}
             </tr>
           );
         })}
@@ -932,12 +939,12 @@ export function PaymentTable({ data, functions, doctor }) {
     <table className="table-auto w-full">
       <thead className="bg-dry rounded-md overflow-hidden">
         <tr>
-          <th className={thclass}>Ngày</th>
-          <th className={thclass}>{doctor ? "khách hàng" : "Điều dưỡng"}</th>
-          <th className={thclass}>Trạng thái</th>
-          <th className={thclass}>Số tiền</th>
-          <th className={thclass}>Phương thức</th>
-          <th className={thclass}>Hành động</th>
+          <th className={thclass}>Date</th>
+          <th className={thclass}>{doctor ? "Customer" : "Điều dưỡng"}</th>
+          <th className={thclass}>Status</th>
+          <th className={thclass}>Amount</th>
+          <th className={thclass}>Method</th>
+          {/* <th className={thclass}>Hành động</th> */}
         </tr>
       </thead>
       <tbody>
@@ -992,14 +999,14 @@ export function PaymentTable({ data, functions, doctor }) {
                   {item.method === "Wallet" ? "Ví điện tử" : item.method}
                 </p>
               </td>
-              <td className={tdclass}>
+              {/* <td className={tdclass}>
                 <button
                   onClick={() => functions.preview(item._id)}
                   className="text-sm flex-colo bg-white text-subMain border rounded-md w-10 h-10"
                 >
                   <FiEye />
                 </button>
-              </td>
+              </td> */}
             </tr>
           );
         })}

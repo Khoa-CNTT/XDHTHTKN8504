@@ -194,9 +194,9 @@ function Patients() {
         <div className="md:col-span-5 grid lg:grid-cols-4 items-center gap-6 mb-6">
           <input
             type="text"
-            placeholder="Tìm kiếm theo tên khách hàng..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder='Search customer'
             className="h-14 text-sm text-main rounded-md bg-dry border border-border px-4"
           />
 

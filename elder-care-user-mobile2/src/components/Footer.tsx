@@ -52,7 +52,28 @@ const Footer: React.FC = () => {
         setActiveTab(screenName);
     }, [navigation]);
 
-    const handleProfilePress = () => {
+    const handleProfilePress1 = () => {
+        if (token) {
+            navigation.navigate("WorkScreen");
+        } else {
+            setAlertVisible(true); // Show custom alert
+        }
+    };
+    const handleProfilePress2 = () => {
+        if (token) {
+            navigation.navigate("Booking");
+        } else {
+            setAlertVisible(true); // Show custom alert
+        }
+    };
+    const handleProfilePress3 = () => {
+        if (token) {
+            navigation.navigate("MyBookings");
+        } else {
+            setAlertVisible(true); // Show custom alert
+        }
+    };
+    const handleProfilePress4 = () => {
         if (token) {
             navigation.navigate("Profile");
         } else {
@@ -117,7 +138,8 @@ const Footer: React.FC = () => {
             </TouchableOpacity>
             <TouchableOpacity
                 style={getTabStyle('Map')}
-                onPress={() => handleNavigation('WorkScreen')}
+                // onPress={() => handleNavigation('WorkScreen')}
+                onPress={handleProfilePress1}
                 onPressIn={() => handlePressIn('Map')}
                 onPressOut={handlePressOut}
             >
@@ -125,7 +147,8 @@ const Footer: React.FC = () => {
             </TouchableOpacity>
             <TouchableOpacity
                 style={getTabStyle('Booking')}
-                onPress={() => handleNavigation('Booking')}
+                // onPress={() => handleNavigation('Booking')}
+                onPress={handleProfilePress2}
                 onPressIn={() => handlePressIn('Booking')}
                 onPressOut={handlePressOut}
             >
@@ -133,15 +156,17 @@ const Footer: React.FC = () => {
             </TouchableOpacity>
             <TouchableOpacity
                 style={getTabStyle('MyBookings')}
-                onPress={() => handleNavigation('MyBookings')}
+                onPress={handleProfilePress3}
+                // onPress={() => handleNavigation('MyBookings')}
                 onPressIn={() => handlePressIn('MyBookings')}
                 onPressOut={handlePressOut}
             >
                 <Ionicons name="calendar" size={getIconSize('MyBookings')} color={getIconColor('MyBookings')} />
+                
             </TouchableOpacity>
             <TouchableOpacity
                 style={getTabStyle('Profile')}
-                onPress={handleProfilePress}
+                onPress={handleProfilePress4}
                 onPressIn={() => handlePressIn('Profile')}
                 onPressOut={handlePressOut}
             >
@@ -286,7 +311,8 @@ const customAlertStyles = StyleSheet.create({
         color: "white",
         fontWeight: "bold",
         textAlign: "center",
-        fontSize: 17, 
+    
+        fontSize: 17, // Slightly larger font for button text
     }
 });
 

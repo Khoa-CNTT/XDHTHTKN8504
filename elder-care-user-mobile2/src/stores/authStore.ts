@@ -6,8 +6,8 @@ import loginApi from "../api/authAPI";
 import type User from "../types/auth";
 
 interface AuthState {
-  checkLoginStatus: any;
-  isLoggedIn: any;
+  // checkLoginStatus: any;
+  // isLoggedIn: any;
   user: User | null;
   token: string | null;
   loading: boolean;
