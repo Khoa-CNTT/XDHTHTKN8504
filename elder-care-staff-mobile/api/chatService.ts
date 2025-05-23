@@ -19,7 +19,7 @@ export const getChatDetail = async (chatId: string): Promise<Chat> => {
     );
     return response.data.chat;
   } catch (error: any) {
-    console.error("Lỗi lấy chi tiết chat:", error?.response?.data || error);
+    log("Lỗi lấy chi tiết chat:", error?.response?.data || error);
     throw new Error(
       error?.response?.data?.message || "Không thể lấy chi tiết chat"
     );
@@ -27,7 +27,7 @@ export const getChatDetail = async (chatId: string): Promise<Chat> => {
 };
 
 interface CreateChatPayload {
-  targetUserId: string;
+  targetUserId?: string;
   chatType: Chat["chatType"];
   title?: string;
 }

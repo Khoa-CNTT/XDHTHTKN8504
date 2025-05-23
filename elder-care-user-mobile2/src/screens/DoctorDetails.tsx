@@ -95,7 +95,11 @@ const DoctorDetails: React.FC = () => {
         <Text style={styles.doctorName}>
           {`${staffDetail.firstName} ${staffDetail.lastName}`}
         </Text>
-        <Text style={styles.specialty}>{staffDetail.specialization? staffDetail.specialization : "Nhân viên y tế"}</Text>
+        <Text style={styles.specialty}>
+          {staffDetail.specialization
+            ? staffDetail.specialization
+            : "Nhân viên y tế"}
+        </Text>
         <Text style={styles.email}>{staffDetail.email}</Text>
       </View>
 
@@ -106,7 +110,9 @@ const DoctorDetails: React.FC = () => {
           <Text style={styles.statLabel}>Khách hàng</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>{`${staffDetail.experience}+`}</Text>
+          <Text style={styles.statValue}>
+            {`${staffDetail.experience ?? 1}+`}
+          </Text>
           <Text style={styles.statLabel}>Kinh nghiệm</Text>
         </View>
         <View style={styles.statItem}>

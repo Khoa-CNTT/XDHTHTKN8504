@@ -30,8 +30,8 @@ export type RootStackParamList = {
 
   Chat: {
     chatId: string;
-    staffName: string,
-    staffPhone: string,
+    staffName: string;
+    staffPhone: string;
     avatar: string;
   };
   ReviewScreen: undefined;
@@ -41,6 +41,7 @@ export type RootStackParamList = {
   TransferGuideScreen: undefined;
   BookAService: undefined;
   ServiceScreenTest: undefined;
+
 
   AddProfileScreen: undefined;
 };

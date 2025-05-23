@@ -30,9 +30,6 @@ export const useBookingStore = create<BookingState>((set, get) => ({
 
     try {
       const bookings = await getBookings();
-      bookings.map((s) =>
-        log("avartar: ", s.avartar)
-      ) 
       set({ bookings, loading: false });
       get().filterByStatus(get().selectedStatus); 
     } catch (err: any) {
