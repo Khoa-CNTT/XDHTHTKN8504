@@ -3,41 +3,68 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-// import { RootStackParamList } from '../navigation/StackNavigator';
 
-// type HeaderScreenNavigationProp = StackNavigationProp<
-//   RootStackParamList,
-//   "Notifications"
-// >;
-type RootStackParamList = {
-  Notifications: undefined;
-};
+import { RootStackParamList } from '../navigation/navigation';
+import { log } from '../utils/logger';
+import { createNewChat } from '../api/chatService';
+import { ChatType } from '../types/Chat';
+
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
-interface HeaderProps {
-  onMessagePress?: () => void;
-}
 
-const Header: React.FC<HeaderProps> = ({ onMessagePress }) => {
-  // const navigation = useNavigation<HeaderScreenNavigationProp>();
-    const navigation = useNavigation<NavigationProp>();
-  
+
+
+const Header: React.FC = ({ }) => {
+  const navigation = useNavigation<NavigationProp>();
+
   const notificationCount = 0;
 
   const handleNotificationPress = () => {
-    navigation.navigate('Notifications');
+    navigation.navigate("Notifications");
+  };
+  const handleStartChat = async ({
+      targetUserId,
+      chatType,
+      title,
+    }: {
+      targetUserId: string;
+      chatType: ChatType;
+      title?: string;
+    }) => {
+      try {
+        log(targetUserId);
+        const chat = await createNewChat({
+          targetUserId,
+          chatType,
+          title,
+        });
+  
+        if (chat && chat._id) {
+          navigation.navigate("Chat", {
+            chatId: chat._id,
+            staffName: "Quản trị viên",
+            staffPhone: "0857484128",
+            avatar: "",
+          });
+        }
+      } catch (error) {
+        console.error("Không thể tạo cuộc trò chuyện:", error);
+      }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.titleContainer}>
         <Text style={styles.title}>
-          <Text style={{ color: '#37B44E' }}>Elder</Text>
-          <Text style={{ color: '#BBBFBC' }}>Care</Text>
+          <Text style={{ color: "#37B44E" }}>Elder</Text>
+          <Text style={{ color: "#BBBFBC" }}>Care</Text>
         </Text>
       </View>
       <View style={styles.iconsContainer}>
-        <TouchableOpacity onPress={handleNotificationPress} style={styles.iconContainer}>
+        <TouchableOpacity
+          onPress={handleNotificationPress}
+          style={styles.iconContainer}
+        >
           <Ionicons name="notifications-outline" size={26} color="#333" />
           {notificationCount > 0 && (
             <View style={styles.notificationBadge}>
@@ -45,7 +72,16 @@ const Header: React.FC<HeaderProps> = ({ onMessagePress }) => {
             </View>
           )}
         </TouchableOpacity>
-        <TouchableOpacity onPress={onMessagePress} style={styles.iconContainer}>
+        <TouchableOpacity
+          style={styles.iconContainer}
+          onPress={() => {
+            handleStartChat({
+              targetUserId: "",
+              chatType: "admin-family",
+              title: "Chăm sóc khách hàng",
+            });
+          }}
+        >
           <Ionicons name="chatbubble-outline" size={26} color="#333" />
         </TouchableOpacity>
       </View>

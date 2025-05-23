@@ -25,7 +25,12 @@ function Payments() {
   const [dateRange, setDateRange] = useState([new Date(), new Date()]);
   const [startDate, endDate] = dateRange;
   const navigate = useNavigate();
-  const { allPayments: payments, paymentCounts, loading, error } = useSelector((state) => state.payment)
+  const {
+    allPayments: payments,
+    paymentCounts,
+    loading,
+    error,
+  } = useSelector((state) => state.payment);
   const dispatch = useDispatch();
 
   const sorts = [
@@ -42,11 +47,11 @@ function Payments() {
       datas: sortsDatas.method,
     },
   ];
-  
+
   useEffect(() => {
     dispatch(fetchAllPayment());
     dispatch(fetchPaymentCounts());
-  }, [dispatch])
+  }, [dispatch]);
 
   if (loading) return <Loading />;
   if (error) return <p>Lỗi: {error}</p>;
@@ -84,7 +89,7 @@ function Payments() {
   };
 
   // console.log("pay", payments);
-  console.log("count", paymentCounts); 
+  console.log("count", paymentCounts);
 
   // 🔹 Chuyển chuỗi sang ArrayBuffer
   const s2ab = (s) => {
@@ -139,7 +144,7 @@ function Payments() {
         <MdOutlineCloudDownload className="text-2xl" />
       </button>
 
-      <h1 className="text-xl font-semibold">Thanh toán</h1>
+      <h1 className="text-xl font-semibold">Payments</h1>
 
       {/* Boxes */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
@@ -157,8 +162,8 @@ function Payments() {
                 {box.title === "Today Payments"
                   ? "today"
                   : box.title === "Monthly Payments"
-                    ? "this month"
-                    : "this year"}
+                  ? "this month"
+                  : "this year"}
               </p>
             </div>
             <div

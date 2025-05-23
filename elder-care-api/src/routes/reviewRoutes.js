@@ -17,4 +17,9 @@ router.get(
     reviewController.getReview
 )
 
+router.get(
+    '/get-review-staff/:staffId',
+    reviewController.getReviewForStaffId
+)
+
 export default router;

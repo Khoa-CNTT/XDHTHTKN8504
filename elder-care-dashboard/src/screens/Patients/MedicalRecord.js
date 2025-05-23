@@ -53,12 +53,6 @@ function MedicalRecord() {
             <p className="text-gray-500 text-sm">Số giao dịch đã thực hiện</p>
             <p className="text-xl font-semibold text-blue-600"> đơn</p>
           </div>
-
-          {/* Tổng đơn đang đợi */}
-          {/* <div className="bg-white p-4 rounded-lg shadow-md text-center">
-            <p className="text-gray-500 text-sm">Tổng đơn đang đợi</p>
-            <p className="text-xl font-semibold text-yellow-600"> đơn</p>
-          </div> */}
         </div>
         <div className="flex-btn gap-4">
           <h1 className="text-sm font-medium sm:block hidden">
@@ -108,7 +102,7 @@ function MedicalRecord() {
               {/* price */}
               <div className="col-span-12 md:col-span-2">
                 <p className="text-xs text-subMain font-semibold">
-                  <span className="font-light text-main">(Tsh)</span>{" "}
+                  <span className="font-light text-main">(Vnd)</span>{" "}
                   {data?.amount}
                 </p>
               </div>

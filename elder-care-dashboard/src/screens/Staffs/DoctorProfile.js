@@ -15,6 +15,7 @@ import { useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchStaffById } from "../../store/staffSlice";
 import Loading from "../../components/Loading";
+import ReviewUsed from "../../components/UsedComp/ReviewUsed";
 
 function DoctorProfile() {
   const location = useLocation();
@@ -42,10 +43,10 @@ function DoctorProfile() {
         return <PaymentsUsed doctor={true} />;
       case 5:
         return <InvoiceUsed />;
-      // case 6:
-      //   return <Access setAccess={setAccess} />;
-      case 7:
+      case 6:
         return <ChangePasswordStaffs />;
+      case 7:
+        return <ReviewUsed />;
       default:
         return;
     }
@@ -58,7 +59,7 @@ function DoctorProfile() {
   }, [dispatch, _id]);
 
   if (loading) return <Loading />;
-  if (error) return <p>Lỗi: {error}</p>;
+  if (error) return <p>Lỗi: {error.message}</p>;
 
   if (!selectedStaff) return <p>Không tìm thấy thông tin nhân viên</p>;
 
@@ -104,11 +105,10 @@ function DoctorProfile() {
                 onClick={() => setActiveTab(tab.id)}
                 key={index}
                 className={`
-                ${
-                  activeTab === tab.id
+                ${activeTab === tab.id
                     ? "bg-text text-subMain"
                     : "bg-dry text-main hover:bg-text hover:text-subMain"
-                }
+                  }
                 text-xs gap-4 flex items-center w-full p-4 rounded`}
               >
                 <tab.icon className="text-lg" /> {tab.title}

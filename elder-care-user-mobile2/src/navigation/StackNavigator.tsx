@@ -43,6 +43,8 @@ import { RootStackParamList } from "./navigation";
 import SplashScreen from '../screens/SplashScreen';
 
 
+
+
 const Stack = createStackNavigator<RootStackParamList>();
 type StackNavigatorProps = {
   initialRouteName?: keyof RootStackParamList;

@@ -73,16 +73,16 @@ export const MenuDatas = [
   //   icon: HiOutlineUsers,
   // },
   {
-    title: "Staff",
+    title: "StaffS",
     path: "/staffs",
     icon: RiUserHeartLine,
   },
 
-  {
-    title: "Appointments",
-    path: "/appointments",
-    icon: FaRegCalendarAlt,
-  },
+  // {
+  //   title: "Appointments",
+  //   path: "/appointments",
+  //   icon: FaRegCalendarAlt,
+  // },
   {
     title: "Payments",
     path: "/payments",
@@ -98,11 +98,11 @@ export const MenuDatas = [
     path: "/services",
     icon: MdOutlineInventory2,
   },
-  {
-    title: "Review",
-    path: "/review",
-    icon: MdOutlineInventory2,
-  },
+  // {
+  //   title: "Review",
+  //   path: "/review",
+  //   icon: MdOutlineInventory2,
+  // },
   // {
   //   title: "Medicine",
   //   path: "/medicine",
@@ -895,7 +895,7 @@ export const getDashboardCards = (
   return [
     {
       id: 1,
-      title: "Tổng số khách hàng",
+      title: "Total Customers",
       icon: TbUsers,
       value: customersData.reduce((a, b) => a + b, 0),
       percent: 45.06,
@@ -904,7 +904,7 @@ export const getDashboardCards = (
     },
     {
       id: 2,
-      title: "Cuộc hẹn",
+      title: "Total Appointments",
       icon: TbCalendar,
       value: appointmentsData.reduce((a, b) => a + b, 0),
       percent: 25.06,
@@ -913,7 +913,7 @@ export const getDashboardCards = (
     },
     {
       id: 3,
-      title: "Tổng số nhân viên",
+      title: "Total Employees",
       icon: TbFile,
       value: nursesData.reduce((a, b) => a + b, 0),
       percent: 65.06,
@@ -922,7 +922,7 @@ export const getDashboardCards = (
     },
     {
       id: 4,
-      title: "Tổng thu nhập",
+      title: "Total Income",
       icon: MdOutlineAttachMoney,
       value: (
         <span title={formatVNDCurrency(totalRevenue)}>
@@ -1134,15 +1134,15 @@ export const doctorTab = [
     title: "Invoices",
     icon: RiFileList3Line,
   },
-  // {
-  //   id: 6,
-  //   title: "Access Control",
-  //   icon: TbLockAccess,
-  // },
   {
-    id: 7,
+    id: 6,
     title: "Change Password",
     icon: RiLockPasswordLine,
+  },
+  {
+    id: 7,
+    title: "Review",
+    icon: TbLockAccess,
   },
 ];
 
@@ -1355,7 +1355,7 @@ export const reviewsData = {
     { stars: 4, count: 32 },
     { stars: 3, count: 5 },
     { stars: 2, count: 3 },
-    { stars: 1, count: 0 }
+    { stars: 1, count: 0 },
   ],
   reviews: [
     {
@@ -1366,9 +1366,10 @@ export const reviewsData = {
       totalReviews: 14,
       rating: 5,
       date: "24-10-2022",
-      comment: "My first and only mala ordered on Etsy, and I'm beyond delighted! I requested a custom mala based on two stones I was called to invite together in this kind of creation. The fun and genuine joy I invite together in this kind of creation.",
+      comment:
+        "My first and only mala ordered on Etsy, and I'm beyond delighted! I requested a custom mala based on two stones I was called to invite together in this kind of creation. The fun and genuine joy I invite together in this kind of creation.",
       postscript: "The fun and genuine joy.",
-      liked: true
+      liked: true,
     },
     {
       id: 2,
@@ -1378,9 +1379,10 @@ export const reviewsData = {
       totalReviews: 14,
       rating: 3,
       date: "24-10-2022",
-      comment: "My first and only mala ordered on Etsy, and I'm beyond delighted! I requested a custom mala based on two stones I was called to invite together in this kind of creation. The fun and genuine joy I invite together in this kind of creation.",
+      comment:
+        "My first and only mala ordered on Etsy, and I'm beyond delighted! I requested a custom mala based on two stones I was called to invite together in this kind of creation. The fun and genuine joy I invite together in this kind of creation.",
       postscript: "The fun and genuine joy.",
-      liked: false
+      liked: false,
     },
     {
       id: 3,
@@ -1390,9 +1392,10 @@ export const reviewsData = {
       totalReviews: 8,
       rating: 4,
       date: "15-10-2022",
-      comment: "I love my new mala! The craftsmanship is exceptional and the stones are exactly what I was looking for. Shipping was fast and the packaging was beautiful.",
+      comment:
+        "I love my new mala! The craftsmanship is exceptional and the stones are exactly what I was looking for. Shipping was fast and the packaging was beautiful.",
       postscript: "Will definitely order again!",
-      liked: false
+      liked: false,
     },
     {
       id: 4,
@@ -1402,9 +1405,10 @@ export const reviewsData = {
       totalReviews: 3,
       rating: 5,
       date: "09-10-2022",
-      comment: "This is my second mala from this shop and I'm just as impressed as the first time. The energy of these stones is amazing and the quality is outstanding.",
+      comment:
+        "This is my second mala from this shop and I'm just as impressed as the first time. The energy of these stones is amazing and the quality is outstanding.",
       postscript: "Highly recommended for meditation practitioners.",
-      liked: true
-    }
-  ]
+      liked: true,
+    },
+  ],
 };
