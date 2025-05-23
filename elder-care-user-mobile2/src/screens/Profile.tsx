@@ -37,7 +37,7 @@ const menuItems: MenuItem[] = [
   { id: "help", title: "Trợ giúp và Hỗ trợ", icon: "chevron-forward" },
   { id: "terms", title: "Điều khoản và Điều kiện", icon: "chevron-forward" },
   { id: "logout", title: "Đăng xuất", icon: "chevron-forward" },
-  {id: "test", title: "Test", icon: "chevron-forward"}
+  // {id: "test", title: "Test", icon: "chevron-forward"}
 ];
 
 const Profile: React.FC = () => {
@@ -110,9 +110,9 @@ const Profile: React.FC = () => {
       case "help":
         navigation.navigate("BookAService");
         break;
-      case "test":
-        navigation.navigate("DoctorDetails")
-        break;
+      // case "test":
+      //   navigation.navigate("DoctorDetails")
+      //   break;
       default:
         break;
 
@@ -125,7 +125,7 @@ const handleLogoutConfirm = async () => {
     setShowLogoutModal(false);
     navigation.reset({
       index: 0,
-      routes: [{ name: "Login" }],
+      routes: [{ name: "Home" }],
     });
   } catch (error) {
     console.error("Lỗi khi đăng xuất:", error);
@@ -147,7 +147,6 @@ const handleLogoutConfirm = async () => {
       case "terms":
         return <Ionicons name="document-text-outline" size={20} color="#000" />;
       case "logout":
-
         return <Ionicons name="log-out-outline" size={20} color="#000" />;
       default:
         return null;
