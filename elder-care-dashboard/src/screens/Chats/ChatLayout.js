@@ -35,11 +35,14 @@ const ChatLayout = () => {
 
   useEffect(() => {
     if (user?._id) {
-      // Connect to socket
       socketService.connect(user._id);
 
-      // Fetch user's chats
-      dispatch(fetchMyChats());
+      dispatch(fetchMyChats()).then((res) => {
+        if (res.payload && Array.isArray(res.payload)) {
+          const chatIds = res.payload.map(chat => chat._id);
+          socketService.joinMultipleChats(chatIds);
+        }
+      });
     }
 
     return () => {

@@ -5,7 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 const ChatSidebar = ({ chats, currentChat, onChatSelect, isLoading, currentUser }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterType, setFilterType] = useState('all'); // all, admin-staff, admin-family, staff-family
+    const [filterType, setFilterType] = useState('all');
     const { onlineUsers, unreadCounts } = useSelector(state => state.chat);
 
     // Filter chats based on search term and type
@@ -21,6 +21,12 @@ const ChatSidebar = ({ chats, currentChat, onChatSelect, isLoading, currentUser 
         const matchesType = filterType === 'all' || chat.chatType === filterType;
 
         return matchesSearch && matchesType;
+    });
+
+    const sortedChats = [...filteredChats].sort((a, b) => {
+        const aTime = new Date(a.metadata?.lastActivity || 0);
+        const bTime = new Date(b.metadata?.lastActivity || 0);
+        return bTime - aTime;
     });
 
     const getChatDisplayInfo = (chat) => {
@@ -176,7 +182,7 @@ const ChatSidebar = ({ chats, currentChat, onChatSelect, isLoading, currentUser 
                     </div>
                 ) : (
                     <div className="p-2 space-y-1">
-                        {filteredChats.map(chat => {
+                        {sortedChats.map(chat => {
                             const {
                                 displayName,
                                 isOnline,
