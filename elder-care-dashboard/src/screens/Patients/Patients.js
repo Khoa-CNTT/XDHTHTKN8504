@@ -9,7 +9,12 @@ import { toast } from "react-hot-toast";
 import { Button, FromToDate, Select } from "../../components/Form";
 import { PatientTable } from "../../components/Tables";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchCustomers, deleteCustomerByAdmin, fetchCustomerCounts, searchCustomers } from "../../store/customerSlice.js";
+import {
+  fetchCustomers,
+  deleteCustomerByAdmin,
+  fetchCustomerCounts,
+  searchCustomers,
+} from "../../store/customerSlice.js";
 import { getUserIdFromToken } from "../../utils/jwtHelper.js";
 import { io } from "socket.io-client";
 import axios from "axios";
@@ -23,7 +28,9 @@ function Patients() {
   const [dateRange, setDateRange] = useState([new Date(), new Date()]);
   const [startDate, endDate] = dateRange;
   const navigate = useNavigate();
-  const { data, counts, loading, error } = useSelector((state) => state.customers);
+  const { data, counts, loading, error } = useSelector(
+    (state) => state.customers
+  );
   const dispatch = useDispatch();
 
   const sorts = [
@@ -42,26 +49,25 @@ function Patients() {
   ];
   console.log(gender.name);
 
-
   // boxes
   const boxes = [
     {
       id: 1,
-      title: "Khách hàng hôm nay",
+      title: "Customers Today",
       value: counts?.today,
       color: ["bg-subMain", "text-subMain"],
       icon: BiTime,
     },
     {
       id: 2,
-      title: "Khách hàng hàng tháng",
+      title: "Monthly Customers",
       value: counts?.month,
       color: ["bg-orange-500", "text-orange-500"],
       icon: BsCalendarMonth,
     },
     {
       id: 3,
-      title: "Khách hàng hàng năm",
+      title: "Yearly Customers",
       value: counts?.year,
       color: ["bg-green-500", "text-green-500"],
       icon: MdOutlineCalendarMonth,
@@ -132,7 +138,7 @@ function Patients() {
       >
         <BiPlus className="text-2xl" />
       </Link>
-      <h1 className="text-xl font-semibold">Khách hàng</h1>
+      <h1 className="text-xl font-semibold">Customers</h1>
       {/* boxes */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
         {boxes.map((box) => (
@@ -144,13 +150,13 @@ function Patients() {
               <h2 className="text-sm font-medium">{box.title}</h2>
               <h2 className="text-xl my-6 font-medium">{box.value}</h2>
               <p className="text-xs text-textGray">
-                Tổng Khách hàng{" "}
+                Total Customers{" "}
                 <span className={box.color[1]}>{box.value}</span>{" "}
                 {box.title === "Khách hàng hôm nay"
-                  ? "hôm nay"
+                  ? "Today"
                   : box.title === "Khách hàng hàng tháng"
-                    ? "tháng này"
-                    : "năm này"}
+                  ? "This Month"
+                  : "This Year"}
               </p>
             </div>
             <div
@@ -184,13 +190,13 @@ function Patients() {
               datas={item.datas}
             >
               <div className="h-14 w-full text-xs text-main rounded-md bg-dry border border-border px-4 flex items-center justify-between">
-                <p>{
-                  item.selected.name === "male"
+                <p>
+                  {item.selected.name === "male"
                     ? "Nam"
                     : item.selected.name === "female"
-                      ? "Nữ"
-                      : item.selected.name
-                }</p>
+                    ? "Nữ"
+                    : item.selected.name}
+                </p>
                 <BiChevronDown className="text-xl" />
               </div>
             </Select>
@@ -203,11 +209,7 @@ function Patients() {
             onChange={(update) => setDateRange(update)}
           />
           {/* export */}
-          <Button
-            label="Filter"
-            Icon={MdFilterList}
-            onClick={handleFilter}
-          />
+          <Button label="Filter" Icon={MdFilterList} onClick={handleFilter} />
         </div>
         <div className="mt-8 w-full overflow-x-scroll">
           <PatientTable

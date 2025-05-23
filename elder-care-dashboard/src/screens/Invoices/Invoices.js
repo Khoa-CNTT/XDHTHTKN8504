@@ -7,7 +7,7 @@ import { InvoiceTable } from "../../components/Tables";
 import { invoicesData } from "../../components/Datas";
 import { BiPlus } from "react-icons/bi";
 import { Link } from "react-router-dom";
-import * as XLSX from "xlsx"; 
+import * as XLSX from "xlsx";
 import { fetchInvoice } from "../../store/invoiceSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Loading from "../../components/Loading";
@@ -20,7 +20,7 @@ function Invoices() {
     dispatch(fetchInvoice());
   }, [dispatch]);
 
-  if(loading) return <Loading />
+  if (loading) return <Loading />;
 
   // 🔹 Chuyển chuỗi sang ArrayBuffer
   const s2ab = (s) => {
@@ -75,7 +75,7 @@ function Invoices() {
       </Link>
 
       {/* tiêu đề */}
-      <h1 className="text-xl font-semibold">Hóa Đơn</h1>
+      <h1 className="text-xl font-semibold">Invoices</h1>
       <div
         data-aos="fade-up"
         data-aos-duration="1000"
