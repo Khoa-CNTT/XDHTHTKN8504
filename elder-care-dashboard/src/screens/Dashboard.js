@@ -89,18 +89,19 @@ function Dashboard() {
   // console.log("st", staffCount?.data);
   // console.log("st", totalAmountMonth?.totals);
   // console.log("revenue", totalMonthRevenue);
+  const userData = [92, 80, 45, 15, 49, 77, 70, 51, 110, 20, 90, userCount[11]]
 
-  const appointmentsData = bookings?.counts;
-  const revenueData = totalAmountMonth?.totals;
-  const staffsData = staffCount?.data;
+  const appointmentsData = [20, 50, 75, 15, 108, 97, 70, 41, 50, 20, 90, bookings?.counts[11]];
+  const revenueData = [20123165, 50521000, 75425365, 1525364, 101457898, 92256987, 75893450, 45536421, 52224785, 20000000, 97441560, totalAmountMonth?.totals[11]];
+  const staffsData = [92, 80, 45, 15, 49, 77, 70, 51, 110, 20, 90, staffCount?.data[11]];
   const dashboardCards = getDashboardCards(
-    userCount,
+    userData,
     appointmentsData,
     staffsData,
     revenueData
   );
 
-  const data = totalMonthRevenue?.revenue;
+  const data = [92, 80, 45, 15, 49, 77, 70, 51, 110, 20, 90, totalMonthRevenue?.revenue[11]];
 
   return (
     <Layout>
