@@ -182,6 +182,14 @@ class SocketService {
         }
     }
 
+    joinMultipleChats(chatIds = []) {
+        if (this.socket?.connected) {
+            chatIds.forEach(chatId => {
+                this.socket.emit('join_chat', { chatId });
+            });
+        }
+    }
+
     // Disconnect
     disconnect() {
         if (this.socket) {

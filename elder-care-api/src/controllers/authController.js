@@ -8,6 +8,7 @@ import cloudinary from "../config/cloudinary.js";
 import fs from "fs";
 import { getIO } from "../config/socketConfig.js";
 import moment from 'moment';
+import paginate from "../utils/pagination.js";
 
 dotenv.config();
 
@@ -489,16 +490,34 @@ const authController = {
 
   getAllUsers: async (req, res) => {
     try {
-      const users = await User.find({ role: "family_member" })
-        .select("-password")
-        .sort({ createdAt: -1 })
-        .populate("profiles");
-      res
-        .status(200)
-        .json({ message: "Lấy danh sách người dùng thành công", data: users });
+      const page = req.query.page || 1;
+      const limit = 10;
+      const sort = { createdAt: -1 };
+      const filter = { role: "family_member" };
+
+      const result = await paginate(User, filter, {
+        page,
+        limit,
+        sort,
+        populate: ['profiles'],
+      });
+
+      return res.status(200).json({
+        message: "Lấy danh sách người dùng thành công",
+        data: result.docs,
+        pagination: {
+          totalDocs: result.totalDocs,
+          totalPages: result.totalPages,
+          currentPage: result.currentPage,
+          perPage: result.perPage,
+        },
+      });
     } catch (error) {
       console.error("Lỗi khi lấy danh sách người dùng:", error);
-      res.status(500).json({ message: "Lỗi server", error: error.message });
+      return res.status(500).json({
+        message: "Lỗi server",
+        error: error.message,
+      });
     }
   },
 

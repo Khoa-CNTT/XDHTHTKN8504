@@ -19,6 +19,7 @@ import { getUserIdFromToken } from "../../utils/jwtHelper.js";
 import { io } from "socket.io-client";
 import axios from "axios";
 import Loading from "../../components/Loading.js";
+import Paginate from "../../utils/pagination.js";
 
 const socket = io("http://localhost:5000");
 
@@ -28,26 +29,19 @@ function Patients() {
   const [dateRange, setDateRange] = useState([new Date(), new Date()]);
   const [startDate, endDate] = dateRange;
   const navigate = useNavigate();
-  const { data, counts, loading, error } = useSelector(
+  const { data, counts, loading, error, pagination } = useSelector(
     (state) => state.customers
   );
   const dispatch = useDispatch();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState("newest");
+  const [dateFilter, setDateFilter] = useState({ from: "", to: "" });
+  const [filteredData, setFilteredData] = useState([]);
 
-  const sorts = [
-    {
-      id: 2,
-      selected: status,
-      setSelected: setStatus,
-      datas: sortsDatas.filterPatient,
-    },
-    {
-      id: 3,
-      selected: gender,
-      setSelected: setGender,
-      datas: sortsDatas.genderFilter,
-    },
-  ];
-  console.log(gender.name);
+  const [page, setPage] = React.useState(1);
+  const limit = 10;
+
+  // console.log(gender.name);
 
   // boxes
   const boxes = [
@@ -74,13 +68,56 @@ function Patients() {
     },
   ];
 
+  useEffect(() => {
+    let temp = [...data];
+
+    // Tìm kiếm theo tên
+    if (searchTerm.trim() !== "") {
+      temp = temp.filter((item) => {
+        const profile = item.profiles[0];
+        const fullName = `${profile?.firstName || ""} ${profile?.lastName || ""}`.toLowerCase();
+        return fullName.includes(searchTerm.toLowerCase());
+      });
+    }
+
+    // Lọc theo ngày
+    if (dateFilter.from) {
+      const fromDate = new Date(dateFilter.from);
+      temp = temp.filter((item) => {
+        const created = new Date(item.profiles[0]?.createdAt || item.createdAt);
+        return created >= fromDate;
+      });
+    }
+
+    if (dateFilter.to) {
+      const toDate = new Date(dateFilter.to);
+      temp = temp.filter((item) => {
+        const created = new Date(item.profiles[0]?.createdAt || item.createdAt);
+        return created <= toDate;
+      });
+    }
+
+    // Sắp xếp
+    temp.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+    });
+
+    setFilteredData(temp);
+  }, [data, searchTerm, dateFilter, sortOrder]);
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
+
   // preview
   const previewPayment = (_id) => {
     navigate(`/customers/preview/${_id}`);
   };
 
   useEffect(() => {
-    dispatch(fetchCustomers());
+    dispatch(fetchCustomers({ page, limit }));
     dispatch(fetchCustomerCounts());
 
     const user = getUserIdFromToken();
@@ -108,27 +145,6 @@ function Patients() {
   if (loading) return <Loading />;
   if (error) return <p>Lỗi: {error}</p>;
 
-  const handleFilter = () => {
-    const queryParams = {};
-
-    if (gender.name !== "Giới tính...") {
-      queryParams.gender = gender.name;
-    }
-
-    if (status.name === "khách hàng mới nhất") {
-      queryParams.sort = "newest";
-    } else if (status.name === "khách hàng cũ nhất") {
-      queryParams.sort = "oldest";
-    }
-
-    if (startDate && endDate) {
-      queryParams.startDate = new Date(startDate).toISOString();
-      queryParams.endDate = new Date(endDate).toISOString();
-    }
-
-    dispatch(searchCustomers(queryParams));
-  };
-
   return (
     <Layout>
       {/* add button */}
@@ -155,8 +171,8 @@ function Patients() {
                 {box.title === "Khách hàng hôm nay"
                   ? "Today"
                   : box.title === "Khách hàng hàng tháng"
-                  ? "This Month"
-                  : "This Year"}
+                    ? "This Month"
+                    : "This Year"}
               </p>
             </div>
             <div
@@ -175,45 +191,43 @@ function Patients() {
         data-aos-offset="200"
         className="bg-white my-8 rounded-xl border-[1px] border-border p-5"
       >
-        <div className="grid lg:grid-cols-5 grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-2">
+        <div className="md:col-span-5 grid lg:grid-cols-4 items-center gap-6 mb-6">
           <input
             type="text"
-            placeholder='Tìm kiếm "customer"'
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder='Search customer'
             className="h-14 text-sm text-main rounded-md bg-dry border border-border px-4"
           />
-          {/* sort  */}
-          {sorts.map((item) => (
-            <Select
-              key={item.id}
-              selectedPerson={item.selected}
-              setSelectedPerson={item.setSelected}
-              datas={item.datas}
-            >
-              <div className="h-14 w-full text-xs text-main rounded-md bg-dry border border-border px-4 flex items-center justify-between">
-                <p>
-                  {item.selected.name === "male"
-                    ? "Nam"
-                    : item.selected.name === "female"
-                    ? "Nữ"
-                    : item.selected.name}
-                </p>
-                <BiChevronDown className="text-xl" />
-              </div>
-            </Select>
-          ))}
-          {/* date */}
-          <FromToDate
-            startDate={startDate}
-            endDate={endDate}
-            bg="bg-dry"
-            onChange={(update) => setDateRange(update)}
+
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+            className="h-14 w-full text-xs text-main rounded-md bg-dry border border-border px-4 flex items-center justify-between"
+          >
+            <option value="newest">Mới nhất</option>
+            <option value="oldest">Cũ nhất</option>
+          </select>
+
+          <input
+            type="date"
+            value={dateFilter.from}
+            onChange={(e) => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
+            className="text-xs px-4 h-14 border border-border text-main font-normal rounded-lg focus:border focus:border-subMain"
           />
-          {/* export */}
-          <Button label="Filter" Icon={MdFilterList} onClick={handleFilter} />
+
+          <input
+            type="date"
+            value={dateFilter.to}
+            onChange={(e) => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
+            className="text-xs px-4 h-14 border border-border text-main font-normal rounded-lg focus:border focus:border-subMain"
+          />
         </div>
         <div className="mt-8 w-full overflow-x-scroll">
           <PatientTable
-            data={data}
+            data={filteredData}
+            page={page}
+            limit={limit}
             functions={{
               preview: previewPayment,
               onDelete: (id) => {
@@ -223,6 +237,11 @@ function Patients() {
             used={false}
           />
         </div>
+        <Paginate
+          page={page}
+          totalPages={pagination?.totalPages || 1}
+          onPageChange={handlePageChange}
+        />
       </div>
     </Layout>
   );

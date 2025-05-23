@@ -3,9 +3,13 @@ import axios from '../api/axios.js';
 
 export const fetchCustomers = createAsyncThunk(
     'customers/fetchCustomers',
-    async () => {
-        const response = await axios.get('/auth/get-customer');
-        return response.data.data;
+    async ({ page = 1, limit = 10 } = {}, thunkAPI) => {
+        try {
+            const response = await axios.get(`/auth/get-customer?page=${page}&limit=${limit}`);
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
+        }
     }
 );
 
@@ -51,7 +55,7 @@ export const searchCustomers = createAsyncThunk(
         try {
             const params = new URLSearchParams(filters).toString();
             const response = await axios.get(`/auth/search-customer?${params}`);
-            console.log(response.data.data);            
+            console.log(response.data.data);
             return response.data.reviews;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || error.message);
@@ -67,6 +71,12 @@ const customerSlice = createSlice({
         error: null,
         counts: null,
         selectedCustomer: null,
+        pagination: {
+            totalDocs: 0,
+            totalPages: 0,
+            currentPage: 1,
+            perPage: 10,
+        },
     },
     reducers: {
         addCustomer: (state, action) => {
@@ -90,7 +100,8 @@ const customerSlice = createSlice({
             })
             .addCase(fetchCustomers.fulfilled, (state, action) => {
                 state.loading = false;
-                state.data = action.payload;
+                state.data = action.payload.data;
+                state.pagination = action.payload.pagination;
             })
             .addCase(fetchCustomers.rejected, (state, action) => {
                 state.loading = false;

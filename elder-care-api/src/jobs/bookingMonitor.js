@@ -26,11 +26,10 @@ cron.schedule("*/5 * * * *", async () => {
       );
 
       if (transaction) {
-        // Hoàn tiền
+        // Hoàn tiền  
         wallet.balance += transaction.amount;
         transaction.status = "failed";
-        transaction.description +=
-          " - Hoàn tiền do booking chưa được chấp nhận sau 1 giờ";
+        transaction.description ="Hoàn tiền do booking chưa được chấp nhận sau 1 giờ";
         await wallet.save();
 
         const payment = await Payments.findOne({ bookingId: booking._id });

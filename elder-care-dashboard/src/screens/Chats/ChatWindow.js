@@ -47,14 +47,19 @@ const ChatWindow = ({ chat, currentUser, onBack }) => {
     const [isTyping, setIsTyping] = useState(false);
     const [showChatInfo, setShowChatInfo] = useState(false);
 
-    const {
-        messages,
-        isLoadingMessages,
-        typingUsers,
-        onlineUsers
-    } = useSelector(state => state.chat);
+    const chatMessages = useSelector(
+        (state) => state.chat.messages[chat._id] || []
+    );
+    const isLoadingMessages = useSelector(
+        (state) => state.chat.isLoadingMessages
+    );
+    const typingUsers = useSelector(
+        (state) => state.chat.typingUsers
+    );
+    const onlineUsers = useSelector(
+        (state) => state.chat.onlineUsers
+    );
 
-    const chatMessages = messages[chat._id] || [];
     const otherParticipant = chat.participants.find(p => p._id !== currentUser._id);
     const isOtherUserOnline = onlineUsers.includes(otherParticipant?._id);
     const isOtherUserTyping = typingUsers[chat._id]?.includes(otherParticipant?._id);
