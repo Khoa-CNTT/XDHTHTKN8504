@@ -122,7 +122,7 @@ const NewChatModal = ({ onClose, currentUser }) => {
 
         setIsCreating(true);
         setCreationStatus(null);
-
+ 
         try {
             const chatType = determineChatType(currentUser.role, selectedUser.role);
 
