@@ -178,7 +178,7 @@ function Patients() {
         <div className="grid lg:grid-cols-5 grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-2">
           <input
             type="text"
-            placeholder='Tìm kiếm "Khách hàng"'
+            placeholder='Tìm kiếm "customer"'
             className="h-14 text-sm text-main rounded-md bg-dry border border-border px-4"
           />
           {/* sort  */}
