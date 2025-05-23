@@ -1,319 +1,477 @@
-import React, { useState, useCallback } from 'react';
-import { View, TouchableOpacity, StyleSheet, Alert, Modal, Text } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RouteProp } from '@react-navigation/native';
+import React, { useRef, useState } from "react";
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  Modal,
+  Text,
+  Animated,
+} from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "../navigation/navigation";
 import useAuthStore from "../stores/authStore";
 
-type RootStackParamList = {
-    Home: undefined;
-    MyBookings: undefined;
-    Profile: undefined;
-    Map: undefined;
-    Booking: undefined;
-    DoctorDetails: { doctor: any };
-    BookAppointment: { doctor: any };
-    WorkScreen: undefined;
-    Login: undefined; // Ensure Login route is defined
-};
-
 type NavigationProp = StackNavigationProp<RootStackParamList>;
-type RouteProps = RouteProp<RootStackParamList>;
 
 const Footer: React.FC = () => {
-    const navigation = useNavigation<NavigationProp>();
-    const route = useRoute<RouteProps>();
-    const [activeTab, setActiveTab] = useState<keyof RootStackParamList | null>(route.name as keyof RootStackParamList | null);
-    const [pressedTab, setPressedTab] = useState<keyof RootStackParamList | null>(null);
-    const [iconSizes, setIconSizes] = useState<{ [key in keyof RootStackParamList]: number }>({
-        Home: 28,
-        Map: 28,
-        Booking: 28,
-        MyBookings: 28,
-        Profile: 28,
-        DoctorDetails: 28,
-        BookAppointment: 28,
-        WorkScreen: 28,
-        Login: 28,
-    });
+  const navigation = useNavigation<NavigationProp>();
+  const route = useRoute();
+  const { token } = useAuthStore();
 
-    const { token } = useAuthStore();
+  // Animated.Value cho từng icon
+  const iconScales = useRef<Record<string, Animated.Value>>({}).current;
+  const getIconScale = (key: string) => {
+    if (!iconScales[key]) {
+      iconScales[key] = new Animated.Value(1);
+    }
+    return iconScales[key];
+  };
 
-    // State for custom alert modal
-    const [isAlertVisible, setAlertVisible] = useState(false);
+  const [pressedTab, setPressedTab] = useState<keyof RootStackParamList | null>(
+    null
+  );
+  const [isAlertVisible, setAlertVisible] = useState(false);
+  const [pendingTab, setPendingTab] = useState<keyof RootStackParamList | null>(
+    null
+  );
 
-    const handleNavigation = useCallback((screenName: keyof RootStackParamList) => {
-        if (screenName === 'DoctorDetails' || screenName === 'BookAppointment') {
-            console.log('Cannot navigate directly to this screen');
-            return;
-        }
-        navigation.navigate(screenName);
-        setActiveTab(screenName);
-    }, [navigation]);
+  const activeTab = route.name as keyof RootStackParamList;
 
-    const handleProfilePress1 = () => {
-        if (token) {
-            navigation.navigate("WorkScreen");
-        } else {
-            setAlertVisible(true); // Show custom alert
-        }
-    };
-    const handleProfilePress2 = () => {
-        if (token) {
-            navigation.navigate("Booking");
-        } else {
-            setAlertVisible(true); // Show custom alert
-        }
-    };
-    const handleProfilePress3 = () => {
-        if (token) {
-            navigation.navigate("MyBookings");
-        } else {
-            setAlertVisible(true); // Show custom alert
-        }
-    };
-    const handleProfilePress4 = () => {
-        if (token) {
-            navigation.navigate("Profile");
-        } else {
-            setAlertVisible(true); // Show custom alert
-        }
-    };
+  const handleTabPress = (tabKey: keyof RootStackParamList) => {
+    // Kiểm tra yêu cầu đăng nhập cho 3 tab
+    if (
+      (tabKey === "Booking" ||
+        tabKey === "MyBookings" ||
+        tabKey === "Profile") &&
+      !token
+    ) {
+      setPendingTab(tabKey);
+      setAlertVisible(true);
+      return;
+    }
 
-    const handleConfirmLogin = () => {
-        setAlertVisible(false);
-        navigation.navigate("Login");
-    };
+    switch (tabKey) {
+      case "Home":
+        navigation.navigate("Home");
+        break;
+      case "WorkScreen":
+        navigation.navigate("WorkScreen");
+        break;
+      case "Booking":
+        navigation.navigate("Booking");
+        break;
+      case "MyBookings":
+        navigation.navigate("MyBookings");
+        break;
+      case "Profile":
+        navigation.navigate("Profile");
+        break;
+      default:
+        break;
+    }
+  };
 
-    const handleCancelLogin = () => {
-        setAlertVisible(false);
-    };
+  const handleConfirmLogin = () => {
+    setAlertVisible(false);
+    navigation.navigate("Login");
+  };
 
-    const handlePressIn = useCallback((tabName: keyof RootStackParamList) => {
-        setPressedTab(tabName);
-        setIconSizes(prevSizes => ({
-            ...prevSizes,
-            [tabName]: 34,
-        }));
-    }, []);
+  const handleCancelLogin = () => {
+    setAlertVisible(false);
+    setPendingTab(null);
+  };
 
-    const handlePressOut = useCallback(() => {
-        if (pressedTab) {
-            setIconSizes(prevSizes => {
-                const newSizes = { ...prevSizes };
-                for (const key in newSizes) {
-                    newSizes[key as keyof RootStackParamList] = 28;
-                }
-                return newSizes;
-            });
-            setPressedTab(null);
-        }
-    }, [pressedTab]);
+  const onPressIn = (key: string) => {
+    Animated.spring(getIconScale(key), {
+      toValue: 1.2,
+      useNativeDriver: true,
+    }).start();
+  };
 
-    const getTabStyle = (tabName: keyof RootStackParamList) => {
-        return [
+  const onPressOut = (key: string) => {
+    Animated.spring(getIconScale(key), {
+      toValue: 1,
+      friction: 3,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  // Render từng tab thủ công
+  return (
+    <>
+      <View style={styles.container}>
+        {/* Home */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={[
             styles.tab,
-            pressedTab === tabName && styles.tabPressed,
-        ];
-    };
+            {
+              backgroundColor:
+                activeTab === "Home"
+                  ? "rgba(55, 180, 78, 0.15)"
+                  : "transparent",
+            },
+          ]}
+          onPress={() => handleTabPress("Home")}
+          onPressIn={() => {
+            setPressedTab("Home");
+            onPressIn("Home");
+          }}
+          onPressOut={() => {
+            setPressedTab(null);
+            onPressOut("Home");
+          }}
+        >
+          <Animated.View
+            style={{
+              transform: [
+                { scale: pressedTab === "Home" ? getIconScale("Home") : 1 },
+              ],
+            }}
+          >
+            <Ionicons
+              name="home"
+              size={28}
+              color={activeTab === "Home" ? "#37B44E" : "#9DA3A6"}
+            />
+          </Animated.View>
+          <Text
+            style={[
+              styles.label,
+              { color: activeTab === "Home" ? "#37B44E" : "#9DA3A6" },
+            ]}
+          >
+            Trang chủ
+          </Text>
+        </TouchableOpacity>
 
-    const getIconSize = (tabName: keyof RootStackParamList) => {
-        return iconSizes[tabName];
-    };
+        {/* WorkScreen */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={[
+            styles.tab,
+            {
+              backgroundColor:
+                activeTab === "WorkScreen"
+                  ? "rgba(55, 180, 78, 0.15)"
+                  : "transparent",
+            },
+          ]}
+          onPress={() => handleTabPress("WorkScreen")}
+          onPressIn={() => {
+            setPressedTab("WorkScreen");
+            onPressIn("WorkScreen");
+          }}
+          onPressOut={() => {
+            setPressedTab(null);
+            onPressOut("WorkScreen");
+          }}
+        >
+          <Animated.View
+            style={{
+              transform: [
+                {
+                  scale:
+                    pressedTab === "WorkScreen"
+                      ? getIconScale("WorkScreen")
+                      : 1,
+                },
+              ],
+            }}
+          >
+            <Ionicons
+              name="location"
+              size={28}
+              color={activeTab === "WorkScreen" ? "#37B44E" : "#9DA3A6"}
+            />
+          </Animated.View>
+          <Text
+            style={[
+              styles.label,
+              { color: activeTab === "WorkScreen" ? "#37B44E" : "#9DA3A6" },
+            ]}
+          >
+            Theo dõi
+          </Text>
+        </TouchableOpacity>
 
-    const getIconColor = (tabName: keyof RootStackParamList) => {
-        return activeTab === tabName || pressedTab === tabName ? '#37B44E' : '#9DA3A6';
-    };
+        {/* Booking */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={[
+            styles.tab,
+            {
+              backgroundColor:
+                activeTab === "Booking"
+                  ? "rgba(55, 180, 78, 0.15)"
+                  : "transparent",
+            },
+          ]}
+          onPress={() => handleTabPress("Booking")}
+          onPressIn={() => {
+            setPressedTab("Booking");
+            onPressIn("Booking");
+          }}
+          onPressOut={() => {
+            setPressedTab(null);
+            onPressOut("Booking");
+          }}
+        >
+          <Animated.View
+            style={{
+              transform: [
+                {
+                  scale: pressedTab === "Booking" ? getIconScale("Booking") : 1,
+                },
+              ],
+            }}
+          >
+            <Ionicons
+              name="book"
+              size={28}
+              color={activeTab === "Booking" ? "#37B44E" : "#9DA3A6"}
+            />
+          </Animated.View>
+          <Text
+            style={[
+              styles.label,
+              { color: activeTab === "Booking" ? "#37B44E" : "#9DA3A6" },
+            ]}
+          >
+            Đặt lịch
+          </Text>
+        </TouchableOpacity>
 
-    return (
-        <View style={styles.container}>
-            <TouchableOpacity
-                style={getTabStyle('Home')}
-                onPress={() => handleNavigation('Home')}
-                onPressIn={() => handlePressIn('Home')}
-                onPressOut={handlePressOut}
-            >
-                <Ionicons name="home" size={getIconSize('Home')} color={getIconColor('Home')} />
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={getTabStyle('Map')}
-                // onPress={() => handleNavigation('WorkScreen')}
-                onPress={handleProfilePress1}
-                onPressIn={() => handlePressIn('Map')}
-                onPressOut={handlePressOut}
-            >
-                <Ionicons name="location" size={getIconSize('Map')} color={getIconColor('Map')} />
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={getTabStyle('Booking')}
-                // onPress={() => handleNavigation('Booking')}
-                onPress={handleProfilePress2}
-                onPressIn={() => handlePressIn('Booking')}
-                onPressOut={handlePressOut}
-            >
-                <Ionicons name="book" size={getIconSize('Booking')} color={getIconColor('Booking')} />
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={getTabStyle('MyBookings')}
-                onPress={handleProfilePress3}
-                // onPress={() => handleNavigation('MyBookings')}
-                onPressIn={() => handlePressIn('MyBookings')}
-                onPressOut={handlePressOut}
-            >
-                <Ionicons name="calendar" size={getIconSize('MyBookings')} color={getIconColor('MyBookings')} />
-                
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={getTabStyle('Profile')}
-                onPress={handleProfilePress4}
-                onPressIn={() => handlePressIn('Profile')}
-                onPressOut={handlePressOut}
-            >
-                <Ionicons name="person-circle" size={getIconSize('Profile')} color={getIconColor('Profile')} />
-            </TouchableOpacity>
+        {/* MyBookings */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={[
+            styles.tab,
+            {
+              backgroundColor:
+                activeTab === "MyBookings"
+                  ? "rgba(55, 180, 78, 0.15)"
+                  : "transparent",
+            },
+          ]}
+          onPress={() => handleTabPress("MyBookings")}
+          onPressIn={() => {
+            setPressedTab("MyBookings");
+            onPressIn("MyBookings");
+          }}
+          onPressOut={() => {
+            setPressedTab(null);
+            onPressOut("MyBookings");
+          }}
+        >
+          <Animated.View
+            style={{
+              transform: [
+                {
+                  scale:
+                    pressedTab === "MyBookings"
+                      ? getIconScale("MyBookings")
+                      : 1,
+                },
+              ],
+            }}
+          >
+            <Ionicons
+              name="calendar"
+              size={28}
+              color={activeTab === "MyBookings" ? "#37B44E" : "#9DA3A6"}
+            />
+          </Animated.View>
+          <Text
+            style={[
+              styles.label,
+              { color: activeTab === "MyBookings" ? "#37B44E" : "#9DA3A6" },
+            ]}
+          >
+            Lịch sử
+          </Text>
+        </TouchableOpacity>
 
-            {/* Custom Alert Modal */}
-            <Modal
-                transparent={true}
-                animationType="fade"
-                visible={isAlertVisible}
-                onRequestClose={() => setAlertVisible(false)}
-            >
-                <View style={customAlertStyles.centeredView}>
-                    <View style={customAlertStyles.modalView}>
-                        <Text style={customAlertStyles.modalTitle}>Yêu cầu đăng nhập</Text>
-                        <Text style={customAlertStyles.modalText}>
-                            Bạn cần đăng nhập để truy cập trang cá nhân. Bạn có muốn đăng nhập ngay bây giờ không?
-                        </Text>
-                        <View style={customAlertStyles.buttonContainer}>
-                            <TouchableOpacity
-                                style={[customAlertStyles.button, customAlertStyles.buttonCancel]}
-                                onPress={handleCancelLogin}
-                            >
-                                <Text style={customAlertStyles.textStyle}>Không</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[customAlertStyles.button, customAlertStyles.buttonConfirm]}
-                                onPress={handleConfirmLogin}
-                            >
-                                <Text style={customAlertStyles.textStyle}>Đăng nhập</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
+        {/* Profile */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={[
+            styles.tab,
+            {
+              backgroundColor:
+                activeTab === "Profile"
+                  ? "rgba(55, 180, 78, 0.15)"
+                  : "transparent",
+            },
+          ]}
+          onPress={() => handleTabPress("Profile")}
+          onPressIn={() => {
+            setPressedTab("Profile");
+            onPressIn("Profile");
+          }}
+          onPressOut={() => {
+            setPressedTab(null);
+            onPressOut("Profile");
+          }}
+        >
+          <Animated.View
+            style={{
+              transform: [
+                {
+                  scale: pressedTab === "Profile" ? getIconScale("Profile") : 1,
+                },
+              ],
+            }}
+          >
+            <Ionicons
+              name="person-circle"
+              size={28}
+              color={activeTab === "Profile" ? "#37B44E" : "#9DA3A6"}
+            />
+          </Animated.View>
+          <Text
+            style={[
+              styles.label,
+              { color: activeTab === "Profile" ? "#37B44E" : "#9DA3A6" },
+            ]}
+          >
+            Cá nhân
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <Modal
+        transparent
+        animationType="fade"
+        visible={isAlertVisible}
+        onRequestClose={handleCancelLogin}
+      >
+        <View style={customAlertStyles.centeredView}>
+          <View style={customAlertStyles.modalView}>
+            <Text style={customAlertStyles.modalTitle}>Yêu cầu đăng nhập</Text>
+            <Text style={customAlertStyles.modalText}>
+              Bạn cần đăng nhập để sử dụng chức năng này. Đăng nhập ngay?
+            </Text>
+            <View style={customAlertStyles.buttonContainer}>
+              <TouchableOpacity
+                style={[
+                  customAlertStyles.button,
+                  customAlertStyles.buttonCancel,
+                ]}
+                onPress={handleCancelLogin}
+              >
+                <Text style={customAlertStyles.textStyle}>Không</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  customAlertStyles.button,
+                  customAlertStyles.buttonConfirm,
+                ]}
+                onPress={handleConfirmLogin}
+              >
+                <Text style={customAlertStyles.textStyle}>Đăng nhập</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-    );
+      </Modal>
+    </>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        paddingVertical: 12,
-        borderTopWidth: 0.7,
-        borderTopColor: '#ccc',
-        borderTopLeftRadius: 15,
-        borderTopRightRadius: 15,
-        elevation: 8, // Android shadow
-        shadowColor: '#000', // iOS shadow
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-    },
-    tab: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 12,
-        borderRadius: 50,
-    },
-    tabPressed: {
-        backgroundColor: '#F0F8F4',
-    },
+  container: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.95)",
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#E1E5EA",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 10,
+  },
+  tab: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 30,
+    minWidth: 60,
+  },
+  label: {
+    fontSize: 11,
+    marginTop: 2,
+    fontWeight: "600",
+  },
 });
 
 const customAlertStyles = StyleSheet.create({
-    centeredView: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: 'rgba(0,0,0,0.5)', // Dim background
-    },
-    modalView: {
-        margin: 20,
-        backgroundColor: "white",
-        borderRadius: 20,
-        padding: 35,
-        alignItems: "center",
-        // Enhanced shadow for a more luxurious feel
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 6 // More vertical offset for depth
-        },
-        shadowOpacity: 0.15, // Softer opacity
-        shadowRadius: 10, // Wider spread
-        elevation: 10, // Android shadow
-        width: '85%', // Slightly wider
-        maxWidth: 400, // Max width for larger screens
-    },
-    modalTitle: {
-        marginBottom: 18, // More space below title
-        textAlign: "center",
-        fontSize: 22, // Slightly larger font size
-        fontWeight: "bold",
-        color: '#2C3E50', // Deeper, more sophisticated dark gray
-    },
-    modalText: {
-        marginBottom: 25, // More space below text
-        textAlign: "center",
-        fontSize: 16,
-        color: '#4A4A4A', // Softer dark gray
-        lineHeight: 24, // Improved readability
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        width: '100%',
-        marginTop: 10, // Space above buttons
-    },
-    button: {
-        borderRadius: 12, // Slightly more rounded corners
-        paddingVertical: 14, // More vertical padding
-        paddingHorizontal: 25, // More horizontal padding
-        elevation: 5, // Android button shadow
-        flex: 1, // Distribute space evenly
-        marginHorizontal: 8, // Space between buttons
-        // iOS button shadow
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 3
-        },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-    },
-    buttonCancel: {
-        backgroundColor: "#95A5A6", // Muted gray for "Không"
-        
-    },
-    buttonConfirm: {
-        backgroundColor: "#37B44E", // Richer green for "Đăng nhập"
-    },
-    textStyle: {
-        color: "white",
-        fontWeight: "bold",
-        textAlign: "center",
-    
-        fontSize: 17, // Slightly larger font for button text
-    }
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  modalView: {
+    backgroundColor: "white",
+    borderRadius: 20,
+    paddingVertical: 30,
+    paddingHorizontal: 28,
+    width: 280,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 14,
+  },
+  modalText: {
+    fontSize: 15,
+    fontWeight: "500",
+    textAlign: "center",
+    marginBottom: 25,
+    color: "#666",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-between",
+  },
+  button: {
+    borderRadius: 15,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    minWidth: 100,
+    alignItems: "center",
+  },
+  buttonCancel: {
+    backgroundColor: "#E5E5E5",
+  },
+  buttonConfirm: {
+    backgroundColor: "#37B44E",
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 15,
+  },
 });
 
 export default Footer;

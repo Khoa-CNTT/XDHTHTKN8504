@@ -5,7 +5,9 @@ import { ScheduleStatus } from "../../types/ScheduleStatus";
 type Props = {
   status: ScheduleStatus;
   onUpdate: (newStatus: ScheduleStatus) => void;
+  loading?: boolean; // 👈 thêm dòng này
 };
+
 
 const ActionButtonByStatus: React.FC<Props> = ({ status, onUpdate }) => {
   const getContent = (): [string, (() => void)?] => {
@@ -24,7 +26,7 @@ const ActionButtonByStatus: React.FC<Props> = ({ status, onUpdate }) => {
       case "check_out":
         return ["Xác nhận hoàn thành", () => onUpdate("completed")];
       case "completed":
-        return ["Đánh giá"];
+        return ["Về màn hình chính"];
       case "cancelled":
         return ["Kết thúc chăm sóc"];
       default:

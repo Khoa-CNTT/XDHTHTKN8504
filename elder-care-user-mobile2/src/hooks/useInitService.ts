@@ -5,6 +5,8 @@ import initData from "../utils/initData";
 import useScheduleStore from "../stores/scheduleStore";
 import { loadAllSounds } from "../utils/soundService";
 import { registerForPushNotificationsAsync } from "../utils/notificationService"
+import { useServicesStore } from "../stores/serviceStore";
+import { usePackageStore } from "../stores/PackageService";
 // import { preloadAssetsAsync } from "../utils/preloadAssets";
 
 import * as Notifications from "expo-notifications";
@@ -25,6 +27,14 @@ const useInitService = () => {
     registerForPushNotificationsAsync();
   }, []);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      await useServicesStore.getState().fetchServices();
+      await usePackageStore.getState().fetchPackages();
+    };
+
+    fetchData();
+  }, []);
 
   // Phục hồi session từ AsyncStorage
   useEffect(() => {

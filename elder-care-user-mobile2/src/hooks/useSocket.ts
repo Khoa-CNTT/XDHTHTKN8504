@@ -54,6 +54,7 @@ export const registerSocketListeners = () => {
       "Đơn đặt lịch của bạn đã được nhân viên y tế tiếp nhận! Lịch chăm sóc sẽ được cập nhật!"
     );
   });
+
   socket.on("completedBooking", async(data: any ) =>{
     log("hoàn thành đơn chăm sóc")
     await notifyUser(
@@ -94,6 +95,18 @@ export const registerSocketListeners = () => {
     });
     await Promise.all([fetchWallet(), fetchBookings()]);
   });
+
+  socket.on("bookingCanceled", async (data) => {
+    const { fetchWallet } = useWalletStore.getState();
+    const { fetchBookings } = useBookingStore.getState();
+    log("Nhận thông báo hủy lịch thành công");
+    await notifyUser(
+      "🛑 Tự động hủy lịch",
+      "Lịch hẹn bị hủy tự động, do không tìm thấy nhân viên y tế"
+    );
+    await Promise.all([fetchWallet(), fetchBookings()]);
+  });
+  
 
   socket.on("new_message", async () => {
     log("nhận được tin nhắn mới");
